@@ -41,26 +41,26 @@
 .map-canvas__controls {
   position: absolute;
   z-index: 500;
-  top: 16px;
-  right: 16px;
+  top: 20px;
+  right: 20px;
   display: flex;
   align-items: center;
-  padding: 4px;
+  padding: 5px;
   border: 1px solid rgba(24, 32, 28, 0.09);
-  border-radius: 14px;
+  border-radius: 17.5px;
   background: rgba(255, 255, 252, 0.94);
-  box-shadow: 0 12px 34px rgba(18, 27, 22, 0.15);
-  backdrop-filter: blur(16px) saturate(1.15);
+  box-shadow: 0 15px 42.5px rgba(18, 27, 22, 0.15);
+  backdrop-filter: blur(20px) saturate(1.15);
 }
 
 .map-canvas__control {
   display: grid;
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   padding: 0;
   place-items: center;
   border: 0;
-  border-radius: 7px;
+  border-radius: 8.75px;
   color: #1d6043;
   background: transparent;
   cursor: pointer;
@@ -81,7 +81,7 @@
 
 .map-canvas__control-divider {
   width: 1px;
-  height: 20px;
+  height: 25px;
   margin: 0 3px;
   background: rgba(24, 32, 28, 0.11);
 }
@@ -89,22 +89,22 @@
 .map-canvas__mode-hint {
   position: absolute;
   z-index: 500;
-  bottom: 18px;
+  bottom: 22.5px;
   left: 50%;
-  max-width: calc(100% - 40px);
-  padding: 8px 12px;
+  max-width: calc(100% - 50px);
+  padding: 10px 15px;
   border: 1px solid rgba(24, 32, 28, 0.09);
-  border-radius: 14px;
+  border-radius: 17.5px;
   color: #fffefa;
   background: rgba(47, 125, 89, 0.94);
-  box-shadow: 0 12px 30px rgba(18, 27, 22, 0.18);
-  font-size: 12px;
+  box-shadow: 0 15px 37.5px rgba(18, 27, 22, 0.18);
+  font-size: 15px;
   font-weight: 500;
   line-height: 1.4;
   white-space: nowrap;
   pointer-events: none;
   transform: translateX(-50%);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12.5px);
 }
 
 .map-canvas__marker-icon {
@@ -116,15 +116,15 @@
   --marker-color: #315f4b;
   position: relative;
   display: grid;
-  width: 45px;
-  height: 45px;
+  width: 49.5px;
+  height: 49.5px;
   place-items: center;
   overflow: visible;
   border: 1px solid rgba(25, 36, 30, 0.1);
   border-radius: 50%;
   color: var(--marker-color);
   background: rgba(255, 255, 252, 0.96);
-  box-shadow: 0 7px 18px rgba(16, 24, 20, 0.16);
+  box-shadow: 0 8.75px 22.5px rgba(16, 24, 20, 0.16);
   transform-origin: 50% 50%;
   transition:
     transform 150ms ease,
@@ -140,14 +140,16 @@
 
 .map-canvas__marker.is-selected {
   box-shadow:
-    0 0 0 3px color-mix(in srgb, var(--marker-color) 24%, transparent),
-    0 6px 14px rgba(16, 24, 20, 0.2);
+    0 0 0 2px rgba(255, 255, 252, 0.92),
+    0 0 0 7.5px rgba(245, 158, 11, 0.72),
+    0 0 22.5px 7.5px rgba(245, 158, 11, 0.24),
+    0 7.5px 17.5px rgba(16, 24, 20, 0.2);
 }
 
 .map-canvas__marker-label {
   overflow: hidden;
-  max-width: 26px;
-  font-size: 15px;
+  max-width: 32.5px;
+  font-size: 16.5px;
   font-weight: 600;
   line-height: 1;
   text-overflow: clip;
@@ -161,7 +163,7 @@
   max-height: 100% !important;
   object-fit: contain;
   pointer-events: none;
-  filter: drop-shadow(0 7px 9px rgba(20, 24, 21, 0.21));
+  filter: drop-shadow(0 8.75px 11.25px rgba(20, 24, 21, 0.21));
 }
 
 .map-canvas__marker-mask {
@@ -178,8 +180,8 @@
 }
 
 .map-canvas__marker.is-animal {
-  width: 66px;
-  height: 66px;
+  width: 72.6px;
+  height: 72.6px;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -189,7 +191,10 @@
 .map-canvas__marker.is-animal.is-selected {
   border-radius: 50%;
   background: rgba(255, 255, 252, 0.48);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--marker-color) 24%, transparent);
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 252, 0.86),
+    0 0 0 8.75px rgba(245, 158, 11, 0.68),
+    0 0 25px 8.75px rgba(245, 158, 11, 0.22);
 }
 
 .map-canvas__empty {
@@ -200,7 +205,7 @@
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  gap: 5px;
+  gap: 6.25px;
   color: #6f7873;
   text-align: center;
   pointer-events: none;
@@ -213,7 +218,7 @@
   background-image:
     linear-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.055) 1px, transparent 1px);
-  background-size: 28px 28px;
+  background-size: 35px 35px;
   content: '';
 }
 
@@ -223,24 +228,24 @@
 
 .map-canvas__empty-icon {
   display: grid;
-  width: 44px;
-  height: 44px;
-  margin-bottom: 5px;
+  width: 55px;
+  height: 55px;
+  margin-bottom: 6.25px;
   place-items: center;
   border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 12px;
+  border-radius: 15px;
   color: #2f7d59;
   background: rgba(255, 255, 252, 0.88);
 }
 
 .map-canvas__empty strong {
   color: #18201c;
-  font-size: 14px;
+  font-size: 17.5px;
   font-weight: 500;
 }
 
 .map-canvas__empty > span:last-child {
-  font-size: 12px;
+  font-size: 15px;
 }
 
 .leaflet-dragging .map-canvas__marker {

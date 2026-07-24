@@ -144,9 +144,9 @@ function createMarkerIcon(
   return L.divIcon({
     className: 'map-canvas__marker-icon',
     html: body,
-    iconSize: isAnimal ? [72, 78] : [51, 57],
-    iconAnchor: isAnimal ? [36, 66] : [26, 51],
-    tooltipAnchor: isAnimal ? [0, -60] : [0, -42],
+    iconSize: isAnimal ? [79.2, 85.8] : [56.1, 62.7],
+    iconAnchor: isAnimal ? [39.6, 72.6] : [28.6, 56.1],
+    tooltipAnchor: isAnimal ? [0, -66] : [0, -46.2],
   });
 }
 
@@ -214,6 +214,7 @@ export function MapCanvas({
     const map = L.map(container, {
       crs: L.CRS.Simple,
       zoomControl: false,
+      doubleClickZoom: false,
       attributionControl: false,
       minZoom: -6,
       maxZoom: 5,
