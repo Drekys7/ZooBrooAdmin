@@ -85,3 +85,5 @@ Ein Medium darf nur gelöscht werden, wenn es weder von der Karte noch von einer
 ## Migration zu Firebase
 
 Der Plan für Firestore-Sammlungen, Storage-Pfade, Authentication, Security Rules und die Umschaltung der Repository-Implementierungen ist in [FIREBASE_MIGRATION.md](./FIREBASE_MIGRATION.md) beschrieben. Firebase ist bewusst nicht im aktuellen Bundle enthalten.
+
+Die verbindliche Zielarchitektur für Speichern, atomare Veröffentlichung, Versionierung, Client-Aktualisierung, Caching und Rollback steht in [docs/PUBLISHING_ARCHITECTURE.md](./docs/PUBLISHING_ARCHITECTURE.md).
