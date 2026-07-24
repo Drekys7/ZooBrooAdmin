@@ -87,6 +87,14 @@ export function latLngToPosition(
   return normalizePoint({ x: latLng.lng, y: height - latLng.lat }, width, height);
 }
 
+export function canDragMarker(
+  itemId: string,
+  selectedItemId: string | null | undefined,
+  disabled: boolean,
+): boolean {
+  return !disabled && itemId === selectedItemId;
+}
+
 function safeDimension(value: number): number {
   return Number.isFinite(value) && value > 0 ? value : DEFAULT_DIMENSION;
 }
@@ -298,6 +306,7 @@ export function MapCanvas({
 
       const iconUrl = getItemIconUrl?.(item, category);
       const isSelected = item.id === selectedItemId;
+      const isDraggable = canDragMarker(item.id, selectedItemId, disabled);
       const signature = [
         item.title,
         item.iconAssetId ?? '',
@@ -309,7 +318,7 @@ export function MapCanvas({
       let marker = markersRef.current.get(item.id);
       if (!marker) {
         marker = L.marker(positionToLatLng(item.position, width, height), {
-          draggable: !disabled,
+          draggable: isDraggable,
           keyboard: true,
           riseOnHover: true,
           title: item.title,
@@ -367,8 +376,8 @@ export function MapCanvas({
       markerElement?.setAttribute('title', item.title);
       markerElement?.setAttribute('aria-label', item.title);
       markerElement?.setAttribute('aria-pressed', String(isSelected));
-      if (disabled) marker.dragging?.disable();
-      else marker.dragging?.enable();
+      if (isDraggable) marker.dragging?.enable();
+      else marker.dragging?.disable();
 
       if (draggingItemRef.current !== item.id) {
         marker.setLatLng(positionToLatLng(item.position, width, height));

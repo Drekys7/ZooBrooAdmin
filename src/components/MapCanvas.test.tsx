@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import {
+  canDragMarker,
   denormalizePosition,
   latLngToPosition,
   MapCanvas,
@@ -28,6 +29,15 @@ describe('MapCanvas coordinate helpers', () => {
 
   it('clamps coordinates dragged beyond the background bounds', () => {
     expect(normalizePoint({ x: -20, y: 1200 }, 1000, 1000)).toEqual({ x: 0, y: 1 });
+  });
+});
+
+describe('MapCanvas marker interaction', () => {
+  it('only allows an already selected marker to be dragged', () => {
+    expect(canDragMarker('antelope', null, false)).toBe(false);
+    expect(canDragMarker('antelope', 'bear', false)).toBe(false);
+    expect(canDragMarker('antelope', 'antelope', false)).toBe(true);
+    expect(canDragMarker('antelope', 'antelope', true)).toBe(false);
   });
 });
 
