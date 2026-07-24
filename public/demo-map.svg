@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-label="Demonstrationskarte des Zoos">
+  <defs>
+    <linearGradient id="paper" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e8efe4"/><stop offset="1" stop-color="#d8e7d8"/></linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-opacity=".12"/></filter>
+    <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.3" fill="#4b7a68" opacity=".14"/></pattern>
+  </defs>
+  <rect width="1600" height="1000" rx="30" fill="url(#paper)"/>
+  <rect width="1600" height="1000" rx="30" fill="url(#dots)"/>
+  <path d="M-40 660C210 530 344 702 520 624s230-292 438-236 215 255 394 201c117-35 178-129 288-137" fill="none" stroke="#f9faf4" stroke-width="74"/>
+  <path d="M-40 660C210 530 344 702 520 624s230-292 438-236 215 255 394 201c117-35 178-129 288-137" fill="none" stroke="#b5c5b5" stroke-width="3" stroke-dasharray="11 14"/>
+  <path d="M815 103c-62 135-178 179-297 197-159 24-218-9-340 69C91 426 68 529 73 650" fill="none" stroke="#fbfcf8" stroke-width="56"/>
+  <path d="M815 103c-62 135-178 179-297 197-159 24-218-9-340 69C91 426 68 529 73 650" fill="none" stroke="#b5c5b5" stroke-width="3" stroke-dasharray="11 14"/>
+  <path d="M725 888c88-151 75-284 207-340 126-53 270 31 407 97 70 34 131 42 250 35" fill="none" stroke="#fafbf6" stroke-width="62"/>
+  <path d="M725 888c88-151 75-284 207-340 126-53 270 31 407 97 70 34 131 42 250 35" fill="none" stroke="#b5c5b5" stroke-width="3" stroke-dasharray="11 14"/>
+  <path d="M955 57c90 17 152 73 162 154 11 91-49 162-151 171-106 9-193-45-203-132-11-92 78-214 192-193z" fill="#a9d5c6" stroke="#80bba7" stroke-width="8"/>
+  <path d="M1259 124c127-27 240 46 238 154-2 93-91 154-211 153-124-1-211-69-196-163 13-78 74-126 169-144z" fill="#d4c99b" stroke="#b6a978" stroke-width="7"/>
+  <path d="M171 92c144-28 284 43 303 150 17 94-85 173-241 170-132-3-225-64-211-151 13-79 62-150 149-169z" fill="#bcd69c" stroke="#98b977" stroke-width="7"/>
+  <path d="M113 711c114-69 276-38 332 62 50 88-11 176-146 197-133 20-258-37-271-126-8-56 25-97 85-133z" fill="#d7c7b4" stroke="#bba990" stroke-width="7"/>
+  <path d="M1049 708c106-68 263-47 329 44 58 79 16 166-103 203-120 37-251 3-290-80-29-62-7-121 64-167z" fill="#b8d4a7" stroke="#94b883" stroke-width="7"/>
+  <g fill="#507966" opacity=".72">
+    <circle cx="554" cy="163" r="20"/><circle cx="598" cy="137" r="14"/><circle cx="629" cy="181" r="23"/><circle cx="527" cy="205" r="13"/>
+    <circle cx="531" cy="816" r="23"/><circle cx="578" cy="850" r="17"/><circle cx="620" cy="807" r="26"/><circle cx="669" cy="841" r="15"/>
+    <circle cx="1454" cy="544" r="22"/><circle cx="1510" cy="529" r="16"/><circle cx="1477" cy="579" r="14"/>
+  </g>
+  <g font-family="Manrope,Arial,sans-serif" fill="#385246" text-anchor="middle">
+    <text x="252" y="230" font-size="30" font-weight="600">SAVANNE</text><text x="252" y="267" font-size="17">Giraffen · Zebras</text>
+    <text x="941" y="202" font-size="30" font-weight="600">SEE</text><text x="941" y="239" font-size="17">Flamingos</text>
+    <text x="1293" y="266" font-size="30" font-weight="600">LÖWENFELSEN</text><text x="1293" y="303" font-size="17">Großkatzen</text>
+    <text x="236" y="826" font-size="30" font-weight="600">ASIENWALD</text><text x="236" y="863" font-size="17">Rote Pandas</text>
+    <text x="1180" y="813" font-size="30" font-weight="600">GRÜNE INSEL</text><text x="1180" y="850" font-size="17">Primaten</text>
+  </g>
+  <g transform="translate(770 905)" filter="url(#shadow)"><rect x="-102" y="-34" width="204" height="68" rx="34" fill="#214f40"/><text y="9" text-anchor="middle" font-family="Manrope,Arial" font-size="25" fill="white">HAUPTEINGANG</text></g>
+  <text x="1510" y="946" text-anchor="end" font-family="Manrope,Arial" font-size="18" fill="#547064">ZOO PARK · ÜBERSICHT</text>
+</svg>

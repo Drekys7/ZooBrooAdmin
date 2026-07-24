@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "projectId": "zooweb-berlin",
+  "version": 3,
+  "publishedAt": "2026-07-13T09:30:00.000Z",
+  "background": {
+    "assetId": "asset-map-summer-2026",
+    "url": "https://cdn.example.org/zoo/maps/summer-2026.webp",
+    "width": 4096,
+    "height": 2731
+  },
+  "categories": [
+    {
+      "id": "category-animals",
+      "name": "Tiere",
+      "type": "animal",
+      "color": "#287A52",
+      "defaultIcon": {
+        "assetId": "asset-icon-paw",
+        "url": "https://cdn.example.org/zoo/icons/paw.svg"
+      },
+      "visible": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "category-services",
+      "name": "Service",
+      "type": "restaurant",
+      "color": "#D47B32",
+      "defaultIcon": null,
+      "visible": true,
+      "sortOrder": 20
+    }
+  ],
+  "items": [
+    {
+      "id": "item-red-panda",
+      "categoryId": "category-animals",
+      "type": "animal",
+      "title": "Roter Panda",
+      "subtitle": "Gehege an der Bambusallee",
+      "description": "Ein ruhiges, schattiges Gehege mit zwei Aussichtsplattformen.",
+      "icon": {
+        "assetId": "asset-icon-paw",
+        "url": "https://cdn.example.org/zoo/icons/paw.svg"
+      },
+      "image": {
+        "assetId": "asset-photo-red-panda",
+        "url": "https://cdn.example.org/zoo/photos/red-panda.webp"
+      },
+      "position": {
+        "x": 0.3725,
+        "y": 0.418
+      },
+      "facts": [
+        {
+          "id": "fact-active-time",
+          "label": "Beste Besuchszeit",
+          "value": "Bis 11:00 Uhr",
+          "icon": null
+        }
+      ],
+      "visible": true,
+      "createdAt": "2026-07-10T08:15:00.000Z",
+      "updatedAt": "2026-07-13T09:20:00.000Z"
+    },
+    {
+      "id": "item-jungle-cafe",
+      "categoryId": "category-services",
+      "type": "restaurant",
+      "title": "Café Dschungel",
+      "subtitle": "Warme Speisen und Getränke",
+      "description": "Ein Café mit Terrasse am zentralen Platz.",
+      "icon": null,
+      "image": null,
+      "position": {
+        "x": 0.614,
+        "y": 0.5575
+      },
+      "facts": [],
+      "visible": true,
+      "createdAt": "2026-07-11T12:00:00.000Z",
+      "updatedAt": "2026-07-12T15:45:00.000Z"
+    }
+  ]
+}
