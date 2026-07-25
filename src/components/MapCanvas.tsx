@@ -144,9 +144,9 @@ function createMarkerIcon(
   return L.divIcon({
     className: 'map-canvas__marker-icon',
     html: body,
-    iconSize: isAnimal ? [79.2, 85.8] : [56.1, 62.7],
-    iconAnchor: isAnimal ? [39.6, 72.6] : [28.6, 56.1],
-    tooltipAnchor: isAnimal ? [0, -66] : [0, -46.2],
+    iconSize: isAnimal ? [72.6, 72.6] : [49.5, 49.5],
+    iconAnchor: isAnimal ? [36.3, 36.3] : [24.75, 24.75],
+    tooltipAnchor: isAnimal ? [0, -45] : [0, -33],
   });
 }
 
@@ -418,6 +418,49 @@ export function MapCanvas({
 
   return (
     <section className={rootClassName} aria-label={ariaLabel}>
+      <svg
+        className="map-canvas__filter-definitions"
+        width="0"
+        height="0"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <defs>
+          <filter
+            id="map-canvas-marker-selection-outline"
+            x="-25%"
+            y="-25%"
+            width="150%"
+            height="150%"
+            colorInterpolationFilters="sRGB"
+          >
+            <feMorphology
+              in="SourceAlpha"
+              operator="dilate"
+              radius="3"
+              result="expanded"
+            />
+            <feFlood floodColor="#f59e0b" result="outlineColor" />
+            <feComposite
+              in="outlineColor"
+              in2="expanded"
+              operator="in"
+              result="expandedColor"
+            />
+            <feComposite
+              in="expandedColor"
+              in2="SourceAlpha"
+              operator="out"
+              result="outline"
+            />
+            <feMerge>
+              <feMergeNode in="outline" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+      </svg>
+
       <div ref={containerRef} className="map-canvas__leaflet" data-testid="map-canvas" />
 
       <div className="map-canvas__controls" role="group" aria-label="Kartenzoom">

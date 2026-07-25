@@ -23,6 +23,13 @@
   font-family: inherit;
 }
 
+.map-canvas__filter-definitions {
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
 .map-canvas.is-adding .map-canvas__leaflet,
 .map-canvas.is-adding .map-canvas__leaflet.leaflet-grab,
 .map-canvas.is-adding .map-canvas__leaflet.leaflet-dragging .leaflet-grab {
@@ -135,15 +142,7 @@
 
 .map-canvas__marker-icon:hover .map-canvas__marker,
 .map-canvas__marker.is-selected {
-  transform: translateY(-1px) scale(1.05);
-}
-
-.map-canvas__marker.is-selected {
-  box-shadow:
-    0 0 0 2px rgba(255, 255, 252, 0.92),
-    0 0 0 7.5px rgba(245, 158, 11, 0.72),
-    0 0 22.5px 7.5px rgba(245, 158, 11, 0.24),
-    0 7.5px 17.5px rgba(16, 24, 20, 0.2);
+  transform: scale(1.05);
 }
 
 .map-canvas__marker-label {
@@ -164,6 +163,7 @@
   object-fit: contain;
   pointer-events: none;
   filter: drop-shadow(0 8.75px 11.25px rgba(20, 24, 21, 0.21));
+  transition: filter 150ms ease;
 }
 
 .map-canvas__marker-mask {
@@ -177,6 +177,7 @@
   mask-repeat: no-repeat;
   -webkit-mask-size: contain;
   mask-size: contain;
+  transition: filter 150ms ease;
 }
 
 .map-canvas__marker.is-animal {
@@ -188,13 +189,17 @@
   box-shadow: none;
 }
 
-.map-canvas__marker.is-animal.is-selected {
-  border-radius: 50%;
-  background: rgba(255, 255, 252, 0.48);
+.map-canvas__marker.is-poi.is-selected {
   box-shadow:
-    0 0 0 2px rgba(255, 255, 252, 0.86),
-    0 0 0 8.75px rgba(245, 158, 11, 0.68),
-    0 0 25px 8.75px rgba(245, 158, 11, 0.22);
+    0 0 0 2px rgba(255, 255, 252, 0.96),
+    0 0 0 5px rgba(245, 158, 11, 0.92),
+    0 8.75px 22.5px rgba(16, 24, 20, 0.16);
+}
+
+.leaflet-container .leaflet-marker-pane
+  .map-canvas__marker.is-selected
+  .map-canvas__marker-image {
+  filter: url("#map-canvas-marker-selection-outline");
 }
 
 .map-canvas__empty {
@@ -250,7 +255,6 @@
 
 .leaflet-dragging .map-canvas__marker {
   cursor: grabbing;
-  transform: translateY(-3px) scale(1.06);
 }
 
 @media (prefers-reduced-motion: reduce) {
