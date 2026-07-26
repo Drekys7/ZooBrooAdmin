@@ -10,6 +10,7 @@ import {
   moveItem,
   publishProject,
   setBackground,
+  setBackgroundColor,
   updateCategory,
   updateItem,
   type OperationRecord,
@@ -59,6 +60,7 @@ interface EditorState {
   uploadAsset: (file: File, kind: Asset['kind']) => Promise<Asset>
   deleteAsset: (id: string) => Promise<void>
   setBackgroundFile: (file: File) => Promise<void>
+  setBackgroundColor: (color: string) => void
   importProjectFile: (file: File) => Promise<void>
   exportProject: () => void
   publish: () => Promise<number>
@@ -360,6 +362,14 @@ export const useEditorStore = create<EditorState>((set, get) => {
       const asset = await get().uploadAsset(file, 'background')
       if (!asset.width || !asset.height) throw new Error('Die Bildgröße konnte nicht ermittelt werden')
       commit('setBackground', 'project', get().project?.id ?? 'project', (project) => setBackground(project, { assetId: asset.id, width: asset.width!, height: asset.height! }))
+    },
+    setBackgroundColor: (color) => {
+      commit(
+        'setBackgroundColor',
+        'project',
+        get().project?.id ?? 'project',
+        (project) => setBackgroundColor(project, { color }),
+      )
     },
     importProjectFile: async (file) => {
       const project = importProjectFromJson(await file.text())

@@ -93,6 +93,55 @@
   background: rgba(24, 32, 28, 0.11);
 }
 
+.map-canvas__background-color-control {
+  position: absolute;
+  z-index: 500;
+  right: 20px;
+  bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 6px 7px 6px 12px;
+  border: 1px solid rgba(24, 32, 28, 0.09);
+  border-radius: 16px;
+  color: #415049;
+  background: rgba(255, 255, 252, 0.94);
+  box-shadow: 0 15px 42.5px rgba(18, 27, 22, 0.15);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(20px) saturate(1.15);
+}
+
+.map-canvas__background-color-control > svg {
+  color: #1d6043;
+}
+
+.map-canvas__background-color-control input[type='color'] {
+  width: 34px;
+  height: 34px;
+  padding: 3px;
+  border: 1px solid rgba(24, 32, 28, 0.14);
+  border-radius: 10px;
+  background: #fffefa;
+  cursor: pointer;
+}
+
+.map-canvas__background-color-control input[type='color']::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.map-canvas__background-color-control input[type='color']::-webkit-color-swatch {
+  border: 0;
+  border-radius: 6px;
+}
+
+.map-canvas__background-color-control input[type='color']:focus-visible {
+  outline: 2px solid #a9d5b9;
+  outline-offset: 2px;
+}
+
 .map-canvas__mode-hint {
   position: absolute;
   z-index: 500;

@@ -69,6 +69,7 @@ zoos/{zooId}
   customDomain
   schemaVersion
   draftRevision
+  backgroundColor
   currentVersion
   currentSnapshotId
   currentContractUrl
@@ -123,6 +124,7 @@ Entwurfsmedien sind privat. Veröffentlichte Dateien sind unveränderlich. Eine 
 - Während des Ziehens bleibt die Position im lokalen Zustand.
 - Die persistente Speicherung erfolgt nach `dragend`.
 - Normalisierte Koordinaten `x` und `y` im Bereich `0…1` bleiben der öffentliche Vertrag.
+- Die frei wählbare Karten-Hintergrundfarbe wird im Entwurf gespeichert und als `background.color` an ZooWeb veröffentlicht.
 - Vor dem Speichern wird die aktuelle `draftRevision` geprüft.
 - Konflikte zwischen mehreren Administratoren werden angezeigt, statt fremde Änderungen still zu überschreiben.
 

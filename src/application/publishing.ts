@@ -50,6 +50,7 @@ export function buildPublishedSnapshot(
       ...backgroundAsset,
       width: project.backgroundWidth,
       height: project.backgroundHeight,
+      color: project.backgroundColor,
     },
     categories: project.categories.map((category) => ({
       id: category.id,

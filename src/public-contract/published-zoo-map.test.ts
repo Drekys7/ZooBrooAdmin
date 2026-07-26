@@ -15,6 +15,16 @@ describe('PublishedZooMap public contract', () => {
 
     expect(snapshot.schemaVersion).toBe(1)
     expect(snapshot.items).toHaveLength(2)
+    expect(snapshot.background.color).toBe('#DDE7D3')
+  })
+
+  it('uses the legacy gray background when an older snapshot has no color', () => {
+    const example = readExample() as {
+      background: { color?: string }
+    }
+    delete example.background.color
+
+    expect(validatePublishedZooMap(example).background.color).toBe('#DDDDDD')
   })
 
   it('rejects coordinates outside the normalized range', () => {

@@ -10,6 +10,7 @@ import {
   importProjectFromJson,
   moveItem,
   setBackground,
+  setBackgroundColor,
   updateItem,
 } from "../application";
 import { createEmptyProject, denormalizePosition, normalizePosition } from "../domain";
@@ -80,6 +81,16 @@ describe("history and serialization", () => {
     expect(() => importProjectFromJson("not-json")).toThrow("not valid JSON");
   });
 
+  it("stores a validated map background color and supplies gray for legacy projects", () => {
+    const project = projectWithCategory();
+    const updated = setBackgroundColor(project, { color: "#a1b2c3", now });
+    expect(updated.backgroundColor).toBe("#A1B2C3");
+
+    const legacy = JSON.parse(exportProjectToJson(project)) as Record<string, unknown>;
+    delete legacy.backgroundColor;
+    expect(importProjectFromJson(JSON.stringify(legacy)).backgroundColor).toBe("#DDDDDD");
+  });
+
   it("creates a detached published snapshot", () => {
     const project = setBackground(projectWithCategory(), { assetId: "map", width: 2000, height: 1000, now });
     const snapshot = buildPublishedSnapshot(project, 3, now, (assetId) => `/assets/${assetId}`);
@@ -87,7 +98,7 @@ describe("history and serialization", () => {
       projectId: "project",
       version: 3,
       publishedAt: now,
-      background: { assetId: "map", url: "/assets/map", width: 2000, height: 1000 },
+      background: { assetId: "map", url: "/assets/map", width: 2000, height: 1000, color: "#DDDDDD" },
     });
     project.categories[0]!.name = "Changed after publish";
     expect(snapshot.categories[0]!.name).toBe("Tiere");

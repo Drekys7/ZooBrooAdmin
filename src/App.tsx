@@ -16,7 +16,7 @@ import { AssetManager, type AssetView } from './components/AssetManager'
 import { ConfirmDialog } from './components/ConfirmDialog'
 import { InspectorPanel } from './components/InspectorPanel'
 import { LeftSidebar } from './components/LeftSidebar'
-import { MapCanvas } from './components/MapCanvas'
+import { MapCanvas, type MapFocusRequest } from './components/MapCanvas'
 import { ToastRegion, type ToastData } from './components/Toast'
 import { useEditorStore } from './store/editorStore'
 import './styles.css'
@@ -35,9 +35,11 @@ function App() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [activityOpen, setActivityOpen] = useState(false)
   const [toasts, setToasts] = useState<ToastData[]>([])
+  const [mapFocusRequest, setMapFocusRequest] = useState<MapFocusRequest | null>(null)
   const importRef = useRef<HTMLInputElement>(null)
   const backgroundRef = useRef<HTMLInputElement>(null)
   const lastError = useRef<string | null>(null)
+  const mapFocusRequestId = useRef(0)
 
   const toast = useCallback((message: string, tone: ToastData['tone'] = 'success') => {
     const id = crypto.randomUUID()
@@ -80,6 +82,16 @@ function App() {
     const item = project?.items.find((entry) => entry.id === editor.selectedItemId) ?? null
     return item && editor.dragPreview?.itemId === item.id ? { ...item, position: editor.dragPreview.position } : item
   }, [editor.dragPreview, editor.selectedItemId, project])
+
+  const focusItemOnMap = useCallback((itemId: string) => {
+    const item = project?.items.find((entry) => entry.id === itemId)
+    if (!item) return
+    mapFocusRequestId.current += 1
+    setMapFocusRequest({
+      requestId: mapFocusRequestId.current,
+      position: item.position,
+    })
+  }, [project])
 
   const usedAssetIds = useMemo(() => {
     const ids = new Set<string>()
@@ -165,18 +177,20 @@ function App() {
           onCategory={editor.setSelectedCategoryId}
           onToggleCategory={(id) => { const category = project.categories.find((entry) => entry.id === id); if (category) editor.updateCategory(id, { visible: !category.visible }) }}
           onSelectItem={editor.setSelectedItemId}
+          onFocusItem={focusItemOnMap}
           onAddItem={() => editor.setActiveTool(editor.activeTool === 'add' ? 'select' : 'add')}
-          onAddCategory={() => { editor.createCategory(); toast('Kategorie hinzugefügt', 'info') }}
         />
         <section className="map-workspace">
           <MapCanvas
             backgroundUrl={backgroundUrl}
             backgroundWidth={project.backgroundWidth ?? 1}
             backgroundHeight={project.backgroundHeight ?? 1}
+            backgroundColor={project.backgroundColor}
             items={project.items}
             categories={project.categories}
             selectedItemId={editor.selectedItemId}
             addMode={editor.activeTool === 'add'}
+            focusRequest={mapFocusRequest}
             getItemIconUrl={(item, category) => {
               const assetId = item.iconAssetId ?? category?.defaultIconAssetId
               return assetId ? editor.assetUrls[assetId] : null
@@ -185,6 +199,7 @@ function App() {
             onAdd={editor.createItemAt}
             onMove={editor.moveItem}
             onDragPreview={editor.previewMoveItem}
+            onBackgroundColorChange={editor.setBackgroundColor}
           />
         </section>
         <InspectorPanel

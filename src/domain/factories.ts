@@ -1,4 +1,9 @@
-import { CURRENT_SCHEMA_VERSION, MapProjectSchema, type MapProject } from "./models";
+import {
+  CURRENT_SCHEMA_VERSION,
+  DEFAULT_MAP_BACKGROUND_COLOR,
+  MapProjectSchema,
+  type MapProject,
+} from "./models";
 
 export type CreateEmptyProjectOptions = {
   id?: string;
@@ -21,6 +26,7 @@ export function createEmptyProject(options: CreateEmptyProjectOptions = {}): Map
     backgroundAssetId: null,
     backgroundWidth: null,
     backgroundHeight: null,
+    backgroundColor: DEFAULT_MAP_BACKGROUND_COLOR,
     categories: [],
     items: [],
     createdAt: now,

@@ -22,6 +22,7 @@ export const PublishedAssetSchema = z
 export const PublishedBackgroundSchema = PublishedAssetSchema.extend({
   width: z.number().int().positive(),
   height: z.number().int().positive(),
+  color: z.string().regex(/^#[0-9a-f]{6}$/i).default('#DDDDDD'),
 }).strict()
 
 export const NormalizedPositionSchema = z

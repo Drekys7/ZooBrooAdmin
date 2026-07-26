@@ -7,7 +7,8 @@
     "assetId": "asset-map-summer-2026",
     "url": "https://cdn.example.org/zoo/maps/summer-2026.webp",
     "width": 4096,
-    "height": 2731
+    "height": 2731,
+    "color": "#DDE7D3"
   },
   "categories": [
     {

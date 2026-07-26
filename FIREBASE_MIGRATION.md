@@ -81,6 +81,7 @@ service cloud.firestore {
           'schemaVersion',
           'draftRevision',
           'backgroundAssetId',
+          'backgroundColor',
           'width',
           'height',
           'updatedAt'

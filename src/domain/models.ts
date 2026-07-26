@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const CURRENT_SCHEMA_VERSION = 1 as const;
+export const DEFAULT_MAP_BACKGROUND_COLOR = "#DDDDDD";
 
 export const EntityIdSchema = z.string().trim().min(1);
 export const IsoDateSchema = z.string().datetime();
@@ -17,6 +18,11 @@ export const NormalizedPositionSchema = z.object({
   x: z.number().finite().min(0).max(1),
   y: z.number().finite().min(0).max(1),
 });
+
+export const MapBackgroundColorSchema = z
+  .string()
+  .regex(/^#[0-9a-f]{6}$/i)
+  .default(DEFAULT_MAP_BACKGROUND_COLOR);
 
 export const MapFactSchema = z.object({
   id: EntityIdSchema,
@@ -59,6 +65,7 @@ export const MapProjectSchema = z
     backgroundAssetId: EntityIdSchema.nullable(),
     backgroundWidth: z.number().int().positive().nullable(),
     backgroundHeight: z.number().int().positive().nullable(),
+    backgroundColor: MapBackgroundColorSchema,
     categories: z.array(MapCategorySchema),
     items: z.array(MapItemSchema),
     createdAt: IsoDateSchema,

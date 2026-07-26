@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 import {
   canDragMarker,
   denormalizePosition,
@@ -56,5 +56,36 @@ describe('MapCanvas rendering', () => {
     expect(screen.getByTestId('map-canvas')).toBeInTheDocument();
     expect(screen.getByText('Noch keine Karte geladen')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Vergrößern' })).toBeInTheDocument();
+  });
+
+  it('applies and reports the configured map background color', () => {
+    const onBackgroundColorChange = vi.fn();
+    const { container } = render(
+      <MapCanvas
+        backgroundUrl={null}
+        backgroundWidth={1}
+        backgroundHeight={1}
+        backgroundColor="#B8D8C0"
+        items={[]}
+        categories={[]}
+        onBackgroundColorChange={onBackgroundColorChange}
+      />,
+    );
+
+    expect(container.querySelector('.map-canvas')).toHaveStyle({
+      backgroundColor: '#B8D8C0',
+    });
+    expect(container.querySelector('[data-testid="map-canvas"]')).toHaveStyle({
+      backgroundColor: '#B8D8C0',
+    });
+
+    const colorInput = container.querySelector(
+      'input[aria-label="Hintergrundfarbe der Karte"]',
+    );
+    expect(colorInput).toBeInstanceOf(HTMLInputElement);
+    fireEvent.change(colorInput!, {
+      target: { value: '#a1b2c3' },
+    });
+    expect(onBackgroundColorChange).toHaveBeenCalledWith('#a1b2c3');
   });
 });

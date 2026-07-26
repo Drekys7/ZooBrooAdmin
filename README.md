@@ -70,7 +70,7 @@ Die Abhängigkeiten sind nach innen gerichtet: React-Komponenten rufen Anwendung
 
 Der Entwurf ist das aktuell bearbeitete `MapProject`. Das automatische Speichern aktualisiert nur diesen Entwurf. Eine Veröffentlichung ist eine separate Version vom Typ `PublishedZooMap`; die öffentliche Website soll künftig ausschließlich diesen Vertrag lesen. Änderungen am Entwurf werden erst durch den Befehl „Veröffentlichen“ öffentlich.
 
-Das öffentliche Modul wird aus `src/public-contract/index.ts` exportiert und hängt nur von Zod ab. Es enthält `PublishedZooMapSchema`, TypeScript-Typen und `validatePublishedZooMap`. Ein gültiges Beispiel steht unter `public/published-map.example.json` bereit. Das Modul importiert weder React noch Dexie oder Firebase und kann in ein gemeinsames npm-Paket ausgelagert werden.
+Das öffentliche Modul wird aus `src/public-contract/index.ts` exportiert und hängt nur von Zod ab. Es enthält `PublishedZooMapSchema`, TypeScript-Typen und `validatePublishedZooMap`. Ein gültiges Beispiel steht unter `public/published-map.example.json` bereit. Die gewählte Karten-Hintergrundfarbe wird als `background.color` übertragen. Das Modul importiert weder React noch Dexie oder Firebase und kann in ein gemeinsames npm-Paket ausgelagert werden.
 
 ### Lokaler Speicher
 

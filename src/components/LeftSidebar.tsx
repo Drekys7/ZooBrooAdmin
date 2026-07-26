@@ -1,4 +1,4 @@
-import { Eye, EyeOff, ListFilter, Plus, Search, SlidersHorizontal } from 'lucide-react'
+import { ArrowRight, Eye, EyeOff, ListFilter, Plus, Search, SlidersHorizontal } from 'lucide-react'
 import type { MapCategory, MapItem } from '../domain/models'
 import { CategoryIcon } from './CategoryIcon'
 
@@ -17,8 +17,8 @@ interface LeftSidebarProps {
   onCategory: (id: string | null) => void
   onToggleCategory: (id: string) => void
   onSelectItem: (id: string) => void
+  onFocusItem: (id: string) => void
   onAddItem: () => void
-  onAddCategory: () => void
 }
 
 export function LeftSidebar(props: LeftSidebarProps) {
@@ -33,22 +33,6 @@ export function LeftSidebar(props: LeftSidebarProps) {
     <aside className="sidebar left-sidebar" aria-label="Kartenobjekte">
       <div className="sidebar-heading">
         <div><span className="eyebrow">Inhalt</span><h2>Kartenpunkte</h2></div>
-        <button className="icon-button" onClick={props.onAddCategory} title="Neue Kategorie"><Plus size={17} /></button>
-      </div>
-
-      <label className="search-field">
-        <Search size={15} />
-        <input value={props.search} onChange={(event) => props.onSearch(event.target.value)} placeholder="Punkte durchsuchen…" aria-label="Punkte durchsuchen" />
-        <kbd>/</kbd>
-      </label>
-
-      <div className="filter-row" aria-label="Sichtbarkeitsfilter">
-        <SlidersHorizontal size={14} />
-        {(['all', 'visible', 'hidden'] as VisibilityFilter[]).map((filter) => (
-          <button key={filter} className={props.visibility === filter ? 'active' : ''} onClick={() => props.onVisibility(filter)}>
-            {filter === 'all' ? 'Alle' : filter === 'visible' ? 'Sichtbar' : 'Ausgeblendet'}
-          </button>
-        ))}
       </div>
 
       <div className="panel-section categories-section">
@@ -75,16 +59,48 @@ export function LeftSidebar(props: LeftSidebarProps) {
         </div>
       </div>
 
+      <div className="section-title search-title">
+        <span>Suche</span>
+      </div>
+
+      <label className="search-field">
+        <Search size={15} />
+        <input value={props.search} onChange={(event) => props.onSearch(event.target.value)} placeholder="Punkte durchsuchen…" aria-label="Punkte durchsuchen" />
+      </label>
+
+      <div className="filter-row" aria-label="Sichtbarkeitsfilter">
+        <SlidersHorizontal size={14} />
+        {(['all', 'visible', 'hidden'] as VisibilityFilter[]).map((filter) => (
+          <button key={filter} className={props.visibility === filter ? 'active' : ''} onClick={() => props.onVisibility(filter)}>
+            {filter === 'all' ? 'Alle' : filter === 'visible' ? 'Sichtbar' : 'Ausgeblendet'}
+          </button>
+        ))}
+      </div>
+
       <div className="panel-section items-section">
-        <div className="section-title"><span>Objekte</span><span>{visibleItems.length}</span></div>
         <div className="item-list">
           {visibleItems.map((item) => {
             const category = props.categories.find((entry) => entry.id === item.categoryId)
-            return <button key={item.id} className={`item-row ${props.selectedItemId === item.id ? 'selected' : ''} ${!item.visible ? 'muted' : ''}`} onClick={() => props.onSelectItem(item.id)}>
-              <span className="item-dot" style={{ background: category?.color ?? '#60756d' }} />
-              <span className="item-copy"><strong>{item.title}</strong><small>{category?.name ?? 'Ohne Kategorie'}{item.subtitle ? ` · ${item.subtitle}` : ''}</small></span>
-              {!item.visible && <EyeOff size={13} />}
-            </button>
+            const isSelected = props.selectedItemId === item.id
+            return <div key={item.id} className={`item-row ${isSelected ? 'selected' : ''} ${!item.visible ? 'muted' : ''}`}>
+              <button
+                className="item-select"
+                onClick={() => props.onSelectItem(item.id)}
+                onDoubleClick={() => isSelected && props.onFocusItem(item.id)}
+              >
+                <span className="item-dot" style={{ background: category?.color ?? '#60756d' }} />
+                <span className="item-copy"><strong>{item.title}</strong><small>{category?.name ?? 'Ohne Kategorie'}{item.subtitle ? ` · ${item.subtitle}` : ''}</small></span>
+                {!item.visible && <EyeOff size={13} />}
+              </button>
+              {isSelected && <button
+                className="item-focus-button"
+                onClick={() => props.onFocusItem(item.id)}
+                title="Auf der Karte zentrieren"
+                aria-label={`${item.title} auf der Karte zentrieren`}
+              >
+                <ArrowRight size={16} />
+              </button>}
+            </div>
           })}
           {visibleItems.length === 0 && <div className="compact-empty"><Search size={20} /><p>Keine Punkte gefunden</p><small>Ändern Sie den Filter oder Suchbegriff</small></div>}
         </div>

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import L from 'leaflet';
-import { LocateFixed, Minus, Plus } from 'lucide-react';
+import { LocateFixed, Minus, Palette, Plus } from 'lucide-react';
 import type { MapCategory, MapItem } from '../domain/models';
 import 'leaflet/dist/leaflet.css';
 import './map-canvas.css';
@@ -15,15 +15,22 @@ export interface ImagePoint {
   y: number;
 }
 
+export interface MapFocusRequest {
+  requestId: number;
+  position: NormalizedPosition;
+}
+
 export interface MapCanvasProps {
   backgroundUrl: string | null;
   backgroundWidth: number;
   backgroundHeight: number;
+  backgroundColor?: string;
   items: readonly MapItem[];
   categories: readonly MapCategory[];
   selectedItemId?: string | null;
   addMode?: boolean;
   disabled?: boolean;
+  focusRequest?: MapFocusRequest | null;
   className?: string;
   ariaLabel?: string;
   getItemIconUrl?: (item: MapItem, category: MapCategory | undefined) => string | null | undefined;
@@ -31,6 +38,7 @@ export interface MapCanvasProps {
   onAdd?: (position: NormalizedPosition) => void;
   onMove?: (itemId: string, position: NormalizedPosition) => void;
   onDragPreview?: (itemId: string, position: NormalizedPosition) => void;
+  onBackgroundColorChange?: (color: string) => void;
 }
 
 const DEFAULT_MARKER_COLOR = '#315f4b';
@@ -164,11 +172,13 @@ export function MapCanvas({
   backgroundUrl,
   backgroundWidth,
   backgroundHeight,
+  backgroundColor = '#DDDDDD',
   items,
   categories,
   selectedItemId = null,
   addMode = false,
   disabled = false,
+  focusRequest = null,
   className,
   ariaLabel = 'Interaktive Zoo-Karte',
   getItemIconUrl,
@@ -176,6 +186,7 @@ export function MapCanvas({
   onAdd,
   onMove,
   onDragPreview,
+  onBackgroundColorChange,
 }: MapCanvasProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -401,6 +412,24 @@ export function MapCanvas({
     selectedItemId,
   ]);
 
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !focusRequest) return;
+
+    map.panTo(
+      positionToLatLng(
+        focusRequest.position,
+        safeDimension(backgroundWidth),
+        safeDimension(backgroundHeight),
+      ),
+      {
+        animate: true,
+        duration: 0.4,
+        easeLinearity: 0.25,
+      },
+    );
+  }, [backgroundHeight, backgroundWidth, focusRequest]);
+
   const resetView = () => {
     const map = mapRef.current;
     const bounds = boundsRef.current;
@@ -417,7 +446,11 @@ export function MapCanvas({
     .join(' ');
 
   return (
-    <section className={rootClassName} aria-label={ariaLabel}>
+    <section
+      className={rootClassName}
+      aria-label={ariaLabel}
+      style={{ backgroundColor }}
+    >
       <svg
         className="map-canvas__filter-definitions"
         width="0"
@@ -461,7 +494,12 @@ export function MapCanvas({
         </defs>
       </svg>
 
-      <div ref={containerRef} className="map-canvas__leaflet" data-testid="map-canvas" />
+      <div
+        ref={containerRef}
+        className="map-canvas__leaflet"
+        data-testid="map-canvas"
+        style={{ backgroundColor }}
+      />
 
       <div className="map-canvas__controls" role="group" aria-label="Kartenzoom">
         <button
@@ -493,6 +531,18 @@ export function MapCanvas({
           <LocateFixed size={17} strokeWidth={1.9} aria-hidden="true" />
         </button>
       </div>
+
+      <label className="map-canvas__background-color-control">
+        <Palette size={16} strokeWidth={1.8} aria-hidden="true" />
+        <span>Hintergrund</span>
+        <input
+          type="color"
+          value={backgroundColor}
+          aria-label="Hintergrundfarbe der Karte"
+          title="Hintergrundfarbe der Karte"
+          onChange={(event) => onBackgroundColorChange?.(event.target.value)}
+        />
+      </label>
 
       {addMode && backgroundUrl ? (
         <div className="map-canvas__mode-hint" aria-live="polite">

@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   CategoryTypeSchema,
   EntityIdSchema,
+  MapBackgroundColorSchema,
   MapCategorySchema,
   MapFactSchema,
   MapItemSchema,
@@ -93,6 +94,11 @@ export const SetBackgroundInputSchema = z.union([
   }),
 ]);
 
+export const SetBackgroundColorInputSchema = z.object({
+  color: MapBackgroundColorSchema,
+  now: z.string().datetime().optional(),
+});
+
 export type CreateItemInput = z.input<typeof CreateItemInputSchema>;
 export type UpdateItemInput = z.input<typeof UpdateItemInputSchema>;
 export type MoveItemInput = z.input<typeof MoveItemInputSchema>;
@@ -102,6 +108,7 @@ export type CreateCategoryInput = z.input<typeof CreateCategoryInputSchema>;
 export type UpdateCategoryInput = z.input<typeof UpdateCategoryInputSchema>;
 export type DeleteCategoryInput = z.input<typeof DeleteCategoryInputSchema>;
 export type SetBackgroundInput = z.input<typeof SetBackgroundInputSchema>;
+export type SetBackgroundColorInput = z.input<typeof SetBackgroundColorInputSchema>;
 
 const timestamp = (now?: string) => now ?? new Date().toISOString();
 
@@ -226,6 +233,20 @@ export function setBackground(projectValue: MapProject, inputValue: SetBackgroun
     backgroundAssetId: input.assetId,
     backgroundWidth: input.assetId === null ? null : input.width,
     backgroundHeight: input.assetId === null ? null : input.height,
+    updatedAt: now,
+  });
+}
+
+export function setBackgroundColor(
+  projectValue: MapProject,
+  inputValue: SetBackgroundColorInput,
+): MapProject {
+  const project = checkedProject(projectValue);
+  const input = SetBackgroundColorInputSchema.parse(inputValue);
+  const now = timestamp(input.now);
+  return finish({
+    ...project,
+    backgroundColor: input.color.toUpperCase(),
     updatedAt: now,
   });
 }
