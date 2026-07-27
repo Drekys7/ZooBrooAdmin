@@ -172,8 +172,8 @@
   --marker-color: #315f4b;
   position: relative;
   display: grid;
-  width: 49.5px;
-  height: 49.5px;
+  width: var(--marker-size, 49.5px);
+  height: var(--marker-size, 49.5px);
   place-items: center;
   overflow: visible;
   border: 1px solid rgba(25, 36, 30, 0.1);
@@ -212,7 +212,8 @@
   object-fit: contain;
   pointer-events: none;
   filter: drop-shadow(0 8.75px 11.25px rgba(20, 24, 21, 0.21));
-  transition: filter 150ms ease;
+  transform: scale(var(--marker-content-scale, 1));
+  transition: filter 150ms ease, transform 150ms ease;
 }
 
 .map-canvas__marker-mask {
@@ -226,29 +227,89 @@
   mask-repeat: no-repeat;
   -webkit-mask-size: contain;
   mask-size: contain;
-  transition: filter 150ms ease;
+  transform: scale(var(--marker-content-scale, 1));
+  transition: filter 150ms ease, transform 150ms ease;
 }
 
-.map-canvas__marker.is-animal {
-  width: 72.6px;
-  height: 72.6px;
+.map-canvas__marker.is-image {
+  width: var(--marker-size, 72.6px);
+  height: var(--marker-size, 72.6px);
   border: 0;
   border-radius: 0;
   background: transparent;
   box-shadow: none;
 }
 
-.map-canvas__marker.is-poi.is-selected {
+.map-canvas__marker.has-outline:not(.is-image) {
+  box-shadow:
+    0 0 0 var(--marker-outline-width, 2px) var(--marker-outline-color, #fff),
+    0 8.75px 22.5px rgba(16, 24, 20, 0.16);
+}
+
+.leaflet-container .leaflet-marker-pane
+  .map-canvas__marker.has-outline.is-image
+  .map-canvas__marker-image,
+.map-canvas__marker.has-outline.is-image .map-canvas__marker-mask {
+  filter: var(--marker-outline-filter);
+}
+
+.map-canvas__marker.is-circle.is-selected {
   box-shadow:
     0 0 0 2px rgba(255, 255, 252, 0.96),
     0 0 0 5px rgba(245, 158, 11, 0.92),
     0 8.75px 22.5px rgba(16, 24, 20, 0.16);
 }
 
+.map-canvas__marker.is-circle.is-animal .map-canvas__marker-image {
+  width: 76%;
+  height: 76%;
+  filter: none;
+}
+
+.map-canvas__marker.is-image .map-canvas__marker-mask {
+  width: 72%;
+  height: 72%;
+}
+
 .leaflet-container .leaflet-marker-pane
-  .map-canvas__marker.is-selected
+  .map-canvas__marker.is-selected.is-image
   .map-canvas__marker-image {
   filter: url("#map-canvas-marker-selection-outline");
+}
+
+.map-canvas__marker.is-selected.is-image .map-canvas__marker-mask {
+  filter: url("#map-canvas-marker-selection-outline");
+}
+
+.map-canvas__marker.is-pin {
+  width: var(--marker-size, 52px);
+  height: var(--marker-size, 52px);
+  border-radius: 50% 50% 50% 14%;
+  transform: rotate(-45deg);
+}
+
+.map-canvas__marker.is-pin > * {
+  width: 50%;
+  height: 50%;
+  transform: rotate(45deg) scale(var(--marker-content-scale, 1));
+}
+
+.leaflet-container .leaflet-marker-pane .map-canvas__marker.is-pin .map-canvas__marker-image {
+  width: 50%;
+  height: 50%;
+  filter: none;
+}
+
+.map-canvas__marker-icon:hover .map-canvas__marker.is-pin,
+.map-canvas__marker.is-pin.is-selected {
+  transform: rotate(-45deg) scale(1.05);
+}
+
+.map-canvas__marker.is-pin.is-selected {
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 252, 0.96),
+    0 0 0 5px rgba(245, 158, 11, 0.92),
+    0 8.75px 22.5px rgba(16, 24, 20, 0.16);
 }
 
 .map-canvas__empty {

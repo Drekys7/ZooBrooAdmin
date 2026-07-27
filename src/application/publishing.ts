@@ -1,5 +1,13 @@
 import { z } from "zod";
-import type { MapProject } from "../domain";
+import {
+  categoryIconScale,
+  categoryIconContentScale,
+  categoryMarkerStyle,
+  categoryOutlineColor,
+  categoryOutlineEnabled,
+  categoryOutlineWidth,
+  type MapProject,
+} from "../domain";
 import {
   PublishedZooMapSchema,
   type PublishedAsset,
@@ -58,6 +66,12 @@ export function buildPublishedSnapshot(
       type: category.type,
       color: category.color,
       defaultIcon: publishedAsset(category.defaultIconAssetId, resolveAssetUrl),
+      markerStyle: categoryMarkerStyle(category),
+      iconScale: categoryIconScale(category),
+      iconContentScale: categoryIconContentScale(category),
+      outlineEnabled: categoryOutlineEnabled(category),
+      outlineWidth: categoryOutlineWidth(category),
+      outlineColor: categoryOutlineColor(category),
       visible: category.visible,
       sortOrder: category.sortOrder,
     })),
@@ -70,6 +84,7 @@ export function buildPublishedSnapshot(
       description: item.description,
       icon: publishedAsset(item.iconAssetId, resolveAssetUrl),
       image: publishedAsset(item.imageAssetId, resolveAssetUrl),
+      colorOverride: item.colorOverride ?? null,
       position: item.position,
       facts: item.facts.map((fact) => ({
         id: fact.id,

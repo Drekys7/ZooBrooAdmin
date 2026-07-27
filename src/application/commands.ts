@@ -24,6 +24,7 @@ export const CreateItemInputSchema = z.object({
   description: z.string().default(""),
   iconAssetId: NullableIdSchema.optional().default(null),
   imageAssetId: NullableIdSchema.optional().default(null),
+  colorOverride: z.string().regex(/^#[0-9a-f]{6}$/i).nullable().optional().default(null),
   position: RawPositionSchema,
   facts: z.array(MapFactSchema).default([]),
   visible: z.boolean().default(true),
@@ -41,6 +42,7 @@ export const UpdateItemInputSchema = z.object({
       description: z.string(),
       iconAssetId: NullableIdSchema,
       imageAssetId: NullableIdSchema,
+      colorOverride: z.string().regex(/^#[0-9a-f]{6}$/i).nullable(),
       position: RawPositionSchema,
       facts: z.array(MapFactSchema),
       visible: z.boolean(),
@@ -139,7 +141,14 @@ export function createItem(projectValue: MapProject, inputValue: CreateItemInput
   const id = input.id ?? createId();
   if (project.items.some((item) => item.id === id)) throw new Error(`Item already exists: ${id}`);
   const now = timestamp(input.now);
-  const item = MapItemSchema.parse({ ...input, id, type: input.type ?? category.type, position: normalizePosition(input.position), createdAt: now, updatedAt: now });
+  const item = MapItemSchema.parse({
+    ...input,
+    id,
+    type: input.type ?? category.type,
+    position: normalizePosition(input.position),
+    createdAt: now,
+    updatedAt: now,
+  });
   return finish({ ...project, items: [...project.items, item], updatedAt: now });
 }
 

@@ -3,12 +3,14 @@ import type { MapCategory, MapItem } from '../domain/models'
 import { CategoryIcon } from './CategoryIcon'
 
 export type VisibilityFilter = 'all' | 'visible' | 'hidden'
+export const ALL_CATEGORIES_ID = '__all-categories__'
 
 interface LeftSidebarProps {
   categories: MapCategory[]
   items: MapItem[]
   selectedItemId: string | null
   selectedCategoryId: string | null
+  inspectedCategoryId: string | null
   search: string
   visibility: VisibilityFilter
   activeTool: 'select' | 'add'
@@ -16,6 +18,8 @@ interface LeftSidebarProps {
   onVisibility: (value: VisibilityFilter) => void
   onCategory: (id: string | null) => void
   onToggleCategory: (id: string) => void
+  onToggleAllCategories: () => void
+  onCreateCategory: () => void
   onSelectItem: (id: string) => void
   onFocusItem: (id: string) => void
   onAddItem: () => void
@@ -24,10 +28,11 @@ interface LeftSidebarProps {
 export function LeftSidebar(props: LeftSidebarProps) {
   const query = props.search.trim().toLocaleLowerCase('de-DE')
   const visibleItems = props.items
-    .filter((item) => !props.selectedCategoryId || item.categoryId === props.selectedCategoryId)
+    .filter((item) => !props.selectedCategoryId || props.selectedCategoryId === ALL_CATEGORIES_ID || item.categoryId === props.selectedCategoryId)
     .filter((item) => props.visibility === 'all' || (props.visibility === 'visible' ? item.visible : !item.visible))
     .filter((item) => !query || `${item.title} ${item.subtitle}`.toLocaleLowerCase('de-DE').includes(query))
     .sort((a, b) => a.title.localeCompare(b.title, 'de-DE'))
+  const allCategoriesVisible = props.categories.every((category) => category.visible)
 
   return (
     <aside className="sidebar left-sidebar" aria-label="Kartenobjekte">
@@ -36,16 +41,23 @@ export function LeftSidebar(props: LeftSidebarProps) {
       </div>
 
       <div className="panel-section categories-section">
-        <div className="section-title"><span>Kategorien</span><span>{props.categories.length}</span></div>
+        <div className="section-title"><span>Kategorien</span><button className="section-add-button" onClick={props.onCreateCategory} title="Kategorie hinzufügen" aria-label="Kategorie hinzufügen"><Plus size={15}/></button></div>
         <div className="category-list">
-          <button className={`category-row ${props.selectedCategoryId === null ? 'selected' : ''}`} onClick={() => props.onCategory(null)}>
-            <span className="category-icon neutral"><ListFilter size={15} /></span>
-            <span className="category-name">Alle Objekte</span>
-            <span className="count-badge">{props.items.length}</span>
-          </button>
+          <div className={`category-row ${props.inspectedCategoryId === ALL_CATEGORIES_ID ? 'selected' : props.selectedCategoryId === ALL_CATEGORIES_ID ? 'active' : ''}`}>
+            <button className="category-select" onClick={() => props.onCategory(ALL_CATEGORIES_ID)}>
+              <span className="category-icon neutral"><ListFilter size={15} /></span>
+              <span className="category-name">Alle Objekte</span>
+              <span className="count-badge">{props.items.length}</span>
+            </button>
+            <button className="visibility-button" onClick={props.onToggleAllCategories} title={allCategoriesVisible ? 'Alle Kategorien ausblenden' : 'Alle Kategorien anzeigen'} aria-label={allCategoriesVisible ? 'Alle Kategorien ausblenden' : 'Alle Kategorien anzeigen'}>
+              {allCategoriesVisible ? <Eye size={14} /> : <EyeOff size={14} />}
+            </button>
+          </div>
           {[...props.categories].sort((a, b) => a.sortOrder - b.sortOrder).map((category) => {
             const count = props.items.filter((item) => item.categoryId === category.id).length
-            return <div key={category.id} className={`category-row ${props.selectedCategoryId === category.id ? 'selected' : ''}`}>
+            const selectedInInspector = props.inspectedCategoryId === category.id || props.inspectedCategoryId === ALL_CATEGORIES_ID
+            const activeAsFilter = !selectedInInspector && props.selectedCategoryId === category.id
+            return <div key={category.id} className={`category-row ${selectedInInspector ? 'selected' : activeAsFilter ? 'active' : ''}`}>
               <button className="category-select" onClick={() => props.onCategory(category.id)}>
                 <span className="category-icon" style={{ color: category.color, background: `${category.color}18` }}><CategoryIcon type={category.type} size={15} /></span>
                 <span className="category-name">{category.name}</span>

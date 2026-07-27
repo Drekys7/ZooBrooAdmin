@@ -20,6 +20,12 @@
         "assetId": "asset-icon-paw",
         "url": "https://cdn.example.org/zoo/icons/paw.svg"
       },
+      "markerStyle": "image",
+      "iconScale": 1,
+      "iconContentScale": 1,
+      "outlineEnabled": true,
+      "outlineWidth": 2,
+      "outlineColor": "#FF0000",
       "visible": true,
       "sortOrder": 10
     },
@@ -29,6 +35,12 @@
       "type": "restaurant",
       "color": "#D47B32",
       "defaultIcon": null,
+      "markerStyle": "circle",
+      "iconScale": 1.2,
+      "iconContentScale": 0.9,
+      "outlineEnabled": false,
+      "outlineWidth": 2,
+      "outlineColor": "#FF0000",
       "visible": true,
       "sortOrder": 20
     }
@@ -49,6 +61,7 @@
         "assetId": "asset-photo-red-panda",
         "url": "https://cdn.example.org/zoo/photos/red-panda.webp"
       },
+      "colorOverride": null,
       "position": {
         "x": 0.3725,
         "y": 0.418
@@ -74,6 +87,7 @@
       "description": "Ein Café mit Terrasse am zentralen Platz.",
       "icon": null,
       "image": null,
+      "colorOverride": "#D47B32",
       "position": {
         "x": 0.614,
         "y": 0.5575

@@ -3,6 +3,7 @@ import {
   CommandHistory,
   createCategory,
   createItem,
+  deleteCategory,
   deleteItem,
   duplicateItem,
   exportProjectToJson,
@@ -29,6 +30,7 @@ interface EditorState {
   assetUrls: Record<string, string>
   selectedItemId: string | null
   selectedCategoryId: string | null
+  inspectedCategoryId: string | null
   search: string
   visibilityFilter: VisibilityFilter
   activeTool: Tool
@@ -45,6 +47,7 @@ interface EditorState {
   setSearch: (search: string) => void
   setVisibilityFilter: (filter: VisibilityFilter) => void
   setSelectedCategoryId: (id: string | null) => void
+  setInspectedCategoryId: (id: string | null) => void
   setSelectedItemId: (id: string | null) => void
   setActiveTool: (tool: Tool) => void
   createItemAt: (position: NormalizedPosition) => void
@@ -55,6 +58,8 @@ interface EditorState {
   deleteSelected: () => void
   createCategory: () => void
   updateCategory: (id: string, patch: Partial<MapCategory>) => void
+  updateAllCategories: (patch: Partial<MapCategory>) => void
+  deleteSelectedCategory: () => void
   undo: () => void
   redo: () => void
   uploadAsset: (file: File, kind: Asset['kind']) => Promise<Asset>
@@ -236,6 +241,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
     assetUrls: {},
     selectedItemId: null,
     selectedCategoryId: null,
+    inspectedCategoryId: null,
     search: '',
     visibilityFilter: 'all',
     activeTool: 'select',
@@ -272,7 +278,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
         const assets = await container.assetRepository.list()
         const assetUrls = await loadAssetUrls(assets)
         const latest = await container.publishRepository.getLatest(project.id)
-        set({ project, assets, assetUrls, selectedItemId: project.items[0]?.id ?? null, loading: false, lastPublishedAt: latest?.publishedAt ?? null, publishedVersion: latest?.version ?? 0 })
+        set({ project, assets, assetUrls, selectedItemId: project.items[0]?.id ?? null, inspectedCategoryId: null, loading: false, lastPublishedAt: latest?.publishedAt ?? null, publishedVersion: latest?.version ?? 0 })
       } catch (error) {
         initialized = false
         set({ loading: false, error: `Fehler beim Laden: ${errorMessage(error)}` })
@@ -280,8 +286,9 @@ export const useEditorStore = create<EditorState>((set, get) => {
     },
     setSearch: (search) => set({ search }),
     setVisibilityFilter: (visibilityFilter) => set({ visibilityFilter }),
-    setSelectedCategoryId: (selectedCategoryId) => set({ selectedCategoryId }),
-    setSelectedItemId: (selectedItemId) => set({ selectedItemId, activeTool: 'select' }),
+    setSelectedCategoryId: (selectedCategoryId) => set({ selectedCategoryId, inspectedCategoryId: selectedCategoryId, selectedItemId: null, activeTool: 'select' }),
+    setInspectedCategoryId: (inspectedCategoryId) => set({ inspectedCategoryId }),
+    setSelectedItemId: (selectedItemId) => set({ selectedItemId, inspectedCategoryId: null, activeTool: 'select' }),
     setActiveTool: (activeTool) => set({ activeTool }),
 
     createItemAt: (position) => {
@@ -291,7 +298,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
       if (!categoryId) return set({ error: 'Erstellen Sie zuerst eine Kategorie' })
       const itemId = crypto.randomUUID()
       commit('createItem', 'item', itemId, (current) => createItem(current, { id: itemId, categoryId, title: 'Neuer Punkt', position }))
-      set({ selectedItemId: itemId, activeTool: 'select' })
+      set({ selectedItemId: itemId, inspectedCategoryId: null, activeTool: 'select' })
     },
     updateItem: (id, patch) => {
       const { id: _id, createdAt: _createdAt, updatedAt: _updatedAt, ...allowed } = patch
@@ -315,13 +322,30 @@ export const useEditorStore = create<EditorState>((set, get) => {
     },
     createCategory: () => {
       const id = crypto.randomUUID()
-      commit('createCategory', 'category', id, (project) => createCategory(project, { id, name: 'Neue Kategorie', type: 'custom', color: '#4F8F64', defaultIconAssetId: null, visible: true }))
-      set({ selectedCategoryId: id })
+      commit('createCategory', 'category', id, (project) => createCategory(project, { id, name: 'Neue Kategorie', type: 'custom', color: '#4F8F64', defaultIconAssetId: null, markerStyle: 'circle', visible: true }))
+      set({ selectedCategoryId: id, inspectedCategoryId: id, selectedItemId: null, activeTool: 'select' })
     },
     updateCategory: (id, patch) => {
       const { id: _id, ...allowed } = patch
       void _id
       if (Object.keys(allowed).length) commit('updateCategory', 'category', id, (project) => updateCategory(project, { categoryId: id, patch: allowed }))
+    },
+    updateAllCategories: (patch) => {
+      const { id: _id, sortOrder: _sortOrder, ...allowed } = patch
+      void _id; void _sortOrder
+      if (!Object.keys(allowed).length) return
+      commit('updateCategory', 'project', 'all-categories', (project) =>
+        project.categories.reduce(
+          (current, category) => updateCategory(current, { categoryId: category.id, patch: allowed }),
+          project,
+        ),
+      )
+    },
+    deleteSelectedCategory: () => {
+      const categoryId = get().inspectedCategoryId
+      if (!categoryId || !get().project?.categories.some((category) => category.id === categoryId)) return
+      commit('deleteCategory', 'category', categoryId, (project) => deleteCategory(project, { categoryId, deleteItems: true }))
+      set({ selectedCategoryId: null, inspectedCategoryId: null, selectedItemId: null })
     },
     undo: () => {
       const project = get().project
@@ -375,7 +399,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
       const project = importProjectFromJson(await file.text())
       await container.contentRepository.save(project)
       history.clear()
-      set({ project, selectedItemId: project.items[0]?.id ?? null, selectedCategoryId: null, activeTool: 'select', saveStatus: 'saved', canUndo: false, canRedo: false, journal: [], error: null })
+      set({ project, selectedItemId: project.items[0]?.id ?? null, selectedCategoryId: null, inspectedCategoryId: null, activeTool: 'select', saveStatus: 'saved', canUndo: false, canRedo: false, journal: [], error: null })
     },
     exportProject: () => {
       const project = get().project

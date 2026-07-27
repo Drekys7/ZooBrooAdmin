@@ -1,5 +1,6 @@
 export {
   MapCategoryTypeSchema,
+  MarkerStyleSchema,
   NormalizedPositionSchema,
   PublishedAssetSchema,
   PublishedBackgroundSchema,
@@ -12,6 +13,7 @@ export {
 
 export type {
   MapCategoryType,
+  MarkerStyle,
   NormalizedPosition,
   PublishedAsset,
   PublishedBackground,

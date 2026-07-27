@@ -16,6 +16,13 @@ describe('PublishedZooMap public contract', () => {
     expect(snapshot.schemaVersion).toBe(1)
     expect(snapshot.items).toHaveLength(2)
     expect(snapshot.background.color).toBe('#DDE7D3')
+    expect(snapshot.categories.map((category) => category.markerStyle)).toEqual(['image', 'circle'])
+    expect(snapshot.categories.map((category) => category.iconScale)).toEqual([1, 1.2])
+    expect(snapshot.categories.map((category) => category.iconContentScale)).toEqual([1, 0.9])
+    expect(snapshot.categories.map((category) => category.outlineEnabled)).toEqual([true, false])
+    expect(snapshot.categories.map((category) => category.outlineWidth)).toEqual([2, 2])
+    expect(snapshot.categories.map((category) => category.outlineColor)).toEqual(['#FF0000', '#FF0000'])
+    expect(snapshot.items.map((item) => item.colorOverride)).toEqual([null, '#D47B32'])
   })
 
   it('uses the legacy gray background when an older snapshot has no color', () => {

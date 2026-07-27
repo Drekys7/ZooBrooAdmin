@@ -8,7 +8,6 @@ interface InspectorPanelProps {
   categories: MapCategory[]
   assetUrls: Record<string, string>
   onUpdate: (id: string, patch: Partial<MapItem>) => void
-  onUpdateCategory: (id: string, patch: Partial<MapCategory>) => void
   onDuplicate: () => void
   onDelete: () => void
   onUpload: (file: File, field: 'imageAssetId' | 'iconAssetId') => void
@@ -25,9 +24,9 @@ function TextField({ label, value, placeholder, multiline, onCommit }: { label: 
     : <input value={draft} placeholder={placeholder} onChange={(event) => setDraft(event.target.value)} onBlur={commit} onKeyDown={(event) => event.key === 'Enter' && event.currentTarget.blur()} />}</label>
 }
 
-export function InspectorPanel({ item, categories, assetUrls, onUpdate, onUpdateCategory, onDuplicate, onDelete, onUpload, onChooseAsset, onDeselect }: InspectorPanelProps) {
+export function InspectorPanel({ item, categories, assetUrls, onUpdate, onDuplicate, onDelete, onUpload, onChooseAsset, onDeselect }: InspectorPanelProps) {
   if (!item) {
-    return <aside className="sidebar inspector empty-inspector" aria-label="Inspektor"><div className="inspector-placeholder"><span className="placeholder-marker"><span /></span><h2>Punkt auswählen</h2><p>Klicken Sie auf eine Markierung oder einen Eintrag in der Liste, um die Eigenschaften zu bearbeiten.</p></div></aside>
+    return <aside className="sidebar inspector empty-inspector" aria-label="Inspektor"><div className="inspector-placeholder"><span className="placeholder-marker"><span /></span><h2>Kategorie oder Punkt auswählen</h2><p>Klicken Sie auf eine Kategorie oder einen Punkt, um die Einstellungen anzuzeigen.</p></div></aside>
   }
   const category = categories.find((entry) => entry.id === item.categoryId)
   const imageUrl = item.imageAssetId ? assetUrls[item.imageAssetId] : undefined
@@ -62,7 +61,8 @@ export function InspectorPanel({ item, categories, assetUrls, onUpdate, onUpdate
             <div className="media-actions"><label className="mini-button"><Upload size={14} />{imageUrl ? 'Ersetzen' : 'Hochladen'}<input hidden type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => event.target.files?.[0] && onUpload(event.target.files[0], 'imageAssetId')} /></label><button className="mini-button" onClick={() => onChooseAsset('imageAssetId')}>Auswählen</button></div>
           </div>
           <div className="icon-picker-row"><div className="icon-preview">{iconUrl ? <img src={iconUrl} alt="" /> : <CategoryIcon type={item.type} size={19} />}</div><div><strong>Markierungssymbol</strong><span>{iconUrl ? 'Benutzerdefiniert' : 'Aus der Kategorie'}</span></div><button className="mini-button" onClick={() => onChooseAsset('iconAssetId')}>Auswählen</button></div>
-          {category && <label className="field color-field"><span>Kategoriefarbe</span><div><input type="color" value={category.color} onChange={(event) => onUpdateCategory(category.id, { color: event.target.value })} /><code>{category.color.toUpperCase()}</code></div></label>}
+          {category && <label className="switch-row marker-color-switch"><span><strong>Eigene Farbe verwenden</strong><small>Überschreibt die Farbe der Kategorie nur für diesen Punkt</small></span><input type="checkbox" checked={Boolean(item.colorOverride)} onChange={(event) => onUpdate(item.id, { colorOverride: event.target.checked ? category.color : null })}/><i /></label>}
+          {category && item.colorOverride && <label className="field color-field"><span>Eigene Markierungsfarbe</span><div><input type="color" value={item.colorOverride} onChange={(event) => onUpdate(item.id, { colorOverride: event.target.value })} /><code>{item.colorOverride.toUpperCase()}</code></div></label>}
         </section>
 
         <section className="inspector-section facts-section">

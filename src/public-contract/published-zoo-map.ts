@@ -11,6 +11,7 @@ export const MapCategoryTypeSchema = z.enum([
   'entrance',
   'custom',
 ])
+export const MarkerStyleSchema = z.enum(['image', 'circle', 'pin'])
 
 export const PublishedAssetSchema = z
   .object({
@@ -39,6 +40,12 @@ export const PublishedCategorySchema = z
     type: MapCategoryTypeSchema,
     color: z.string().trim().min(1),
     defaultIcon: PublishedAssetSchema.nullable(),
+    markerStyle: MarkerStyleSchema.optional(),
+    iconScale: z.number().finite().min(0.5).max(2).optional(),
+    iconContentScale: z.number().finite().min(0.5).max(1.5).optional(),
+    outlineEnabled: z.boolean().optional(),
+    outlineWidth: z.number().finite().min(0.5).max(10).optional(),
+    outlineColor: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
     visible: z.boolean(),
     sortOrder: z.number().int(),
   })
@@ -63,6 +70,7 @@ export const PublishedMapItemSchema = z
     description: z.string(),
     icon: PublishedAssetSchema.nullable(),
     image: PublishedAssetSchema.nullable(),
+    colorOverride: z.string().regex(/^#[0-9a-f]{6}$/i).nullable().optional(),
     position: NormalizedPositionSchema,
     facts: z.array(PublishedFactSchema),
     visible: z.boolean(),
@@ -118,6 +126,7 @@ export const PublishedZooMapSchema = z
   })
 
 export type MapCategoryType = z.infer<typeof MapCategoryTypeSchema>
+export type MarkerStyle = z.infer<typeof MarkerStyleSchema>
 export type PublishedAsset = z.infer<typeof PublishedAssetSchema>
 export type PublishedBackground = z.infer<typeof PublishedBackgroundSchema>
 export type NormalizedPosition = z.infer<typeof NormalizedPositionSchema>

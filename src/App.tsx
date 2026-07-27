@@ -14,14 +14,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ActivityPanel } from './components/ActivityPanel'
 import { AssetManager, type AssetView } from './components/AssetManager'
 import { ConfirmDialog } from './components/ConfirmDialog'
+import { CategoryInspector } from './components/CategoryInspector'
 import { InspectorPanel } from './components/InspectorPanel'
-import { LeftSidebar } from './components/LeftSidebar'
+import { ALL_CATEGORIES_ID, LeftSidebar } from './components/LeftSidebar'
 import { MapCanvas, type MapFocusRequest } from './components/MapCanvas'
 import { ToastRegion, type ToastData } from './components/Toast'
 import { useEditorStore } from './store/editorStore'
 import './styles.css'
 
-type AssetSelectionField = 'imageAssetId' | 'iconAssetId'
+type AssetSelectionField = 'imageAssetId' | 'iconAssetId' | 'categoryIconAssetId'
 
 function formatDate(value: string | null) {
   if (!value) return 'Noch nicht veröffentlicht'
@@ -33,6 +34,7 @@ function App() {
   const [assetManagerOpen, setAssetManagerOpen] = useState(false)
   const [assetSelectionField, setAssetSelectionField] = useState<AssetSelectionField | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [deleteCategoryDialogOpen, setDeleteCategoryDialogOpen] = useState(false)
   const [activityOpen, setActivityOpen] = useState(false)
   const [toasts, setToasts] = useState<ToastData[]>([])
   const [mapFocusRequest, setMapFocusRequest] = useState<MapFocusRequest | null>(null)
@@ -62,6 +64,7 @@ function App() {
       if (event.key === 'Escape') {
         if (assetManagerOpen) { setAssetManagerOpen(false); setAssetSelectionField(null) }
         else if (deleteDialogOpen) setDeleteDialogOpen(false)
+        else if (deleteCategoryDialogOpen) setDeleteCategoryDialogOpen(false)
         else if (editor.activeTool === 'add') editor.setActiveTool('select')
         else editor.setSelectedItemId(null)
         return
@@ -69,19 +72,25 @@ function App() {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') {
         event.preventDefault()
         if (event.shiftKey) editor.redo(); else editor.undo()
-      } else if (!editable && event.key === 'Delete' && editor.selectedItemId) {
-        event.preventDefault(); setDeleteDialogOpen(true)
+      } else if (!editable && event.key === 'Delete') {
+        if (editor.selectedItemId) { event.preventDefault(); setDeleteDialogOpen(true) }
+        else if (editor.inspectedCategoryId && editor.inspectedCategoryId !== ALL_CATEGORIES_ID) { event.preventDefault(); setDeleteCategoryDialogOpen(true) }
       }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [assetManagerOpen, deleteDialogOpen, editor])
+  }, [assetManagerOpen, deleteCategoryDialogOpen, deleteDialogOpen, editor])
 
   const project = editor.project
   const selectedItem = useMemo(() => {
     const item = project?.items.find((entry) => entry.id === editor.selectedItemId) ?? null
     return item && editor.dragPreview?.itemId === item.id ? { ...item, position: editor.dragPreview.position } : item
   }, [editor.dragPreview, editor.selectedItemId, project])
+  const editAllCategories = editor.inspectedCategoryId === ALL_CATEGORIES_ID
+  const selectedCategory = useMemo(
+    () => project?.categories.find((entry) => entry.id === editor.inspectedCategoryId) ?? null,
+    [editor.inspectedCategoryId, project],
+  )
 
   const focusItemOnMap = useCallback((itemId: string) => {
     const item = project?.items.find((entry) => entry.id === itemId)
@@ -117,7 +126,7 @@ function App() {
     used: usedAssetIds.has(asset.id),
   }))
 
-  const uploadForItem = async (file: File, field: AssetSelectionField) => {
+  const uploadForItem = async (file: File, field: 'imageAssetId' | 'iconAssetId') => {
     if (!selectedItem) return
     try {
       const asset = await editor.uploadAsset(file, field === 'iconAssetId' ? 'icon' : 'image')
@@ -127,7 +136,12 @@ function App() {
   }
 
   const selectAsset = (assetId: string) => {
-    if (assetSelectionField && selectedItem) editor.updateItem(selectedItem.id, { [assetSelectionField]: assetId })
+    if (assetSelectionField === 'categoryIconAssetId') {
+      if (editAllCategories) editor.updateAllCategories({ defaultIconAssetId: assetId })
+      else if (selectedCategory) editor.updateCategory(selectedCategory.id, { defaultIconAssetId: assetId })
+    } else if (assetSelectionField && selectedItem) {
+      editor.updateItem(selectedItem.id, { [assetSelectionField]: assetId })
+    }
     setAssetManagerOpen(false)
     setAssetSelectionField(null)
     toast('Ressource ausgewählt')
@@ -169,6 +183,7 @@ function App() {
           items={project.items}
           selectedItemId={editor.selectedItemId}
           selectedCategoryId={editor.selectedCategoryId}
+          inspectedCategoryId={editor.inspectedCategoryId}
           search={editor.search}
           visibility={editor.visibilityFilter}
           activeTool={editor.activeTool}
@@ -176,6 +191,8 @@ function App() {
           onVisibility={editor.setVisibilityFilter}
           onCategory={editor.setSelectedCategoryId}
           onToggleCategory={(id) => { const category = project.categories.find((entry) => entry.id === id); if (category) editor.updateCategory(id, { visible: !category.visible }) }}
+          onToggleAllCategories={() => editor.updateAllCategories({ visible: !project.categories.every((category) => category.visible) })}
+          onCreateCategory={editor.createCategory}
           onSelectItem={editor.setSelectedItemId}
           onFocusItem={focusItemOnMap}
           onAddItem={() => editor.setActiveTool(editor.activeTool === 'add' ? 'select' : 'add')}
@@ -202,18 +219,37 @@ function App() {
             onBackgroundColorChange={editor.setBackgroundColor}
           />
         </section>
-        <InspectorPanel
-          item={selectedItem}
-          categories={project.categories}
-          assetUrls={editor.assetUrls}
-          onUpdate={editor.updateItem}
-          onUpdateCategory={editor.updateCategory}
-          onDuplicate={() => { editor.duplicateSelected(); toast('Punkt dupliziert') }}
-          onDelete={() => setDeleteDialogOpen(true)}
-          onUpload={(file, field) => void uploadForItem(file, field)}
-          onChooseAsset={(field) => { setAssetSelectionField(field); setAssetManagerOpen(true) }}
-          onDeselect={() => editor.setSelectedItemId(null)}
-        />
+        {selectedItem ? <InspectorPanel
+            item={selectedItem}
+            categories={project.categories}
+            assetUrls={editor.assetUrls}
+            onUpdate={editor.updateItem}
+            onDuplicate={() => { editor.duplicateSelected(); toast('Punkt dupliziert') }}
+            onDelete={() => setDeleteDialogOpen(true)}
+            onUpload={(file, field) => void uploadForItem(file, field)}
+            onChooseAsset={(field) => { setAssetSelectionField(field); setAssetManagerOpen(true) }}
+            onDeselect={() => editor.setSelectedItemId(null)}
+          /> : (selectedCategory || editAllCategories) ? <CategoryInspector
+            categories={project.categories}
+            category={selectedCategory}
+            editAll={editAllCategories}
+            assetUrls={editor.assetUrls}
+            onUpdateCategory={editor.updateCategory}
+            onUpdateAll={editor.updateAllCategories}
+            onChooseIcon={() => { setAssetSelectionField('categoryIconAssetId'); setAssetManagerOpen(true) }}
+            onDelete={() => setDeleteCategoryDialogOpen(true)}
+            onDeselect={() => editor.setInspectedCategoryId(null)}
+          /> : <InspectorPanel
+            item={null}
+            categories={project.categories}
+            assetUrls={editor.assetUrls}
+            onUpdate={editor.updateItem}
+            onDuplicate={() => {}}
+            onDelete={() => {}}
+            onUpload={() => {}}
+            onChooseAsset={() => {}}
+            onDeselect={() => {}}
+          />}
       </main>
 
       <footer className="statusbar">
@@ -229,13 +265,14 @@ function App() {
         open={assetManagerOpen}
         assets={assetViews}
         selectionMode={Boolean(assetSelectionField)}
-        accept={assetSelectionField === 'iconAssetId' ? 'image/png,image/webp,image/svg+xml' : undefined}
-        onUpload={(files) => void Promise.all(files.map((file) => editor.uploadAsset(file, assetSelectionField === 'iconAssetId' ? 'icon' : 'image'))).then(() => toast('Ressourcen hochgeladen')).catch((error) => toast(error instanceof Error ? error.message : 'Fehler beim Hochladen', 'error'))}
+        accept={assetSelectionField === 'iconAssetId' || assetSelectionField === 'categoryIconAssetId' ? 'image/png,image/webp,image/svg+xml' : undefined}
+        onUpload={(files) => void Promise.all(files.map((file) => editor.uploadAsset(file, assetSelectionField === 'iconAssetId' || assetSelectionField === 'categoryIconAssetId' ? 'icon' : 'image'))).then(() => toast('Ressourcen hochgeladen')).catch((error) => toast(error instanceof Error ? error.message : 'Fehler beim Hochladen', 'error'))}
         onDelete={(id) => void editor.deleteAsset(id).then(() => toast('Ressource gelöscht')).catch((error) => toast(error instanceof Error ? error.message : 'Fehler beim Löschen', 'error'))}
         onSelect={selectAsset}
         onClose={() => { setAssetManagerOpen(false); setAssetSelectionField(null) }}
       />
       <ConfirmDialog open={deleteDialogOpen} title={`„${selectedItem?.title ?? 'Punkt'}“ löschen?`} description="Der Punkt wird aus dem Entwurf gelöscht. Die Aktion kann mit Strg+Z rückgängig gemacht werden." onConfirm={() => { editor.deleteSelected(); toast('Punkt gelöscht', 'info') }} onClose={() => setDeleteDialogOpen(false)}/>
+      <ConfirmDialog open={deleteCategoryDialogOpen} title={`„${selectedCategory?.name ?? 'Kategorie'}“ löschen?`} description="Die Kategorie und alle zugehörigen Punkte werden aus dem Entwurf gelöscht. Die Aktion kann mit Strg+Z rückgängig gemacht werden." onConfirm={() => { editor.deleteSelectedCategory(); toast('Kategorie gelöscht', 'info') }} onClose={() => setDeleteCategoryDialogOpen(false)}/>
       <ActivityPanel open={activityOpen} entries={editor.journal.map((entry) => ({ id: entry.id, type: entry.type, timestamp: entry.occurredAt, objectId: entry.affectedEntityId }))} onClose={() => setActivityOpen(false)}/>
       <ToastRegion toasts={toasts} dismiss={(id) => setToasts((current) => current.filter((entry) => entry.id !== id))}/>
     </div>

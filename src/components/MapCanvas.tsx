@@ -1,7 +1,17 @@
 import { useEffect, useMemo, useRef } from 'react';
 import L from 'leaflet';
 import { LocateFixed, Minus, Palette, Plus } from 'lucide-react';
-import type { MapCategory, MapItem } from '../domain/models';
+import {
+  categoryIconScale,
+  categoryIconContentScale,
+  categoryMarkerStyle,
+  categoryOutlineColor,
+  categoryOutlineEnabled,
+  categoryOutlineWidth,
+  type MapCategory,
+  type MapItem,
+  type MarkerStyle,
+} from '../domain/models';
 import 'leaflet/dist/leaflet.css';
 import './map-canvas.css';
 
@@ -115,6 +125,23 @@ function safeMarkerColor(color: string | undefined): string {
     : DEFAULT_MARKER_COLOR;
 }
 
+export function markerVisualMetrics(markerStyle: MarkerStyle, iconScale: number) {
+  const baseIconSize = markerStyle === 'image' ? 72.6 : markerStyle === 'pin' ? 56 : 49.5
+  return {
+    bodySize: (markerStyle === 'pin' ? 52 : baseIconSize) * iconScale,
+    iconSize: baseIconSize * iconScale,
+  }
+}
+
+function categoryOutlineFilterId(categoryId: string): string {
+  let hash = 2166136261
+  for (let index = 0; index < categoryId.length; index += 1) {
+    hash ^= categoryId.charCodeAt(index)
+    hash = Math.imul(hash, 16777619)
+  }
+  return `map-canvas-category-outline-${(hash >>> 0).toString(36)}`
+}
+
 function createMarkerIcon(
   item: MapItem,
   category: MapCategory | undefined,
@@ -122,13 +149,27 @@ function createMarkerIcon(
   iconUrl: string | null | undefined,
 ): L.DivIcon {
   const isAnimal = item.type === 'animal'
+  const markerStyle: MarkerStyle = category ? categoryMarkerStyle(category) : isAnimal ? 'image' : 'circle'
+  const iconScale = category ? categoryIconScale(category) : 1
+  const iconContentScale = category ? categoryIconContentScale(category) : 1
+  const outlineEnabled = category ? categoryOutlineEnabled(category) : false
+  const outlineWidth = category ? categoryOutlineWidth(category) : 2
+  const outlineColor = category ? categoryOutlineColor(category) : '#FF0000'
+  const { bodySize, iconSize } = markerVisualMetrics(markerStyle, iconScale)
   const body = document.createElement('span');
-  body.className = `map-canvas__marker ${isAnimal ? 'is-animal' : 'is-poi'}${selected ? ' is-selected' : ''}`;
-  body.style.setProperty('--marker-color', safeMarkerColor(category?.color));
+  body.className = `map-canvas__marker ${isAnimal ? 'is-animal' : 'is-poi'} is-${markerStyle}${outlineEnabled ? ' has-outline' : ''}${selected ? ' is-selected' : ''}`;
+  body.style.setProperty('--marker-color', safeMarkerColor(item.colorOverride ?? category?.color));
+  body.style.setProperty('--marker-size', `${bodySize}px`);
+  body.style.setProperty('--marker-content-scale', `${iconContentScale}`);
+  body.style.setProperty('--marker-outline-width', `${outlineWidth}px`);
+  body.style.setProperty('--marker-outline-color', safeMarkerColor(outlineColor));
+  if (outlineEnabled && category) {
+    body.style.setProperty('--marker-outline-filter', `url("#${categoryOutlineFilterId(category.id)}")`);
+  }
   body.setAttribute('aria-hidden', 'true');
 
   if (iconUrl) {
-    if (isAnimal) {
+    if (isAnimal && item.iconAssetId) {
       const image = document.createElement('img');
       image.className = 'map-canvas__marker-image';
       image.src = iconUrl;
@@ -152,14 +193,24 @@ function createMarkerIcon(
   return L.divIcon({
     className: 'map-canvas__marker-icon',
     html: body,
-    iconSize: isAnimal ? [72.6, 72.6] : [49.5, 49.5],
-    iconAnchor: isAnimal ? [36.3, 36.3] : [24.75, 24.75],
-    tooltipAnchor: isAnimal ? [0, -45] : [0, -33],
+    iconSize: [iconSize, iconSize],
+    iconAnchor: [iconSize / 2, iconSize / 2],
+    tooltipAnchor: [0, -(iconSize * 0.64)],
   });
 }
 
 function categorySignature(category: MapCategory | undefined): string {
-  return category ? `${category.id}:${category.color}:${category.visible}` : 'missing';
+  return category ? [
+    category.id,
+    category.color,
+    category.visible,
+    categoryMarkerStyle(category),
+    categoryIconScale(category),
+    categoryIconContentScale(category),
+    categoryOutlineEnabled(category),
+    categoryOutlineWidth(category),
+    categoryOutlineColor(category),
+  ].join(':') : 'missing';
 }
 
 function createTooltipContent(title: string): HTMLElement {
@@ -322,6 +373,7 @@ export function MapCanvas({
       const signature = [
         item.title,
         item.iconAssetId ?? '',
+        item.colorOverride ?? '',
         categorySignature(category),
         iconUrl ?? '',
         isSelected ? 'selected' : '',
@@ -491,6 +543,41 @@ export function MapCanvas({
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
+          {categories.filter(categoryOutlineEnabled).map((category) => (
+            <filter
+              key={category.id}
+              id={categoryOutlineFilterId(category.id)}
+              x="-50%"
+              y="-50%"
+              width="200%"
+              height="200%"
+              colorInterpolationFilters="sRGB"
+            >
+              <feMorphology
+                in="SourceAlpha"
+                operator="dilate"
+                radius={categoryOutlineWidth(category)}
+                result="expanded"
+              />
+              <feFlood floodColor={categoryOutlineColor(category)} result="outlineColor" />
+              <feComposite
+                in="outlineColor"
+                in2="expanded"
+                operator="in"
+                result="expandedColor"
+              />
+              <feComposite
+                in="expandedColor"
+                in2="SourceAlpha"
+                operator="out"
+                result="outline"
+              />
+              <feMerge>
+                <feMergeNode in="outline" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          ))}
         </defs>
       </svg>
 

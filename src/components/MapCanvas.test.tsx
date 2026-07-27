@@ -5,6 +5,7 @@ import {
   denormalizePosition,
   latLngToPosition,
   MapCanvas,
+  markerVisualMetrics,
   normalizePoint,
   positionToLatLng,
 } from './MapCanvas';
@@ -87,5 +88,19 @@ describe('MapCanvas rendering', () => {
       target: { value: '#a1b2c3' },
     });
     expect(onBackgroundColorChange).toHaveBeenCalledWith('#a1b2c3');
+  });
+
+  it('scales image, circle and pin marker dimensions around their center', () => {
+    const imageMetrics = markerVisualMetrics('image', 1.5);
+    expect(imageMetrics.bodySize).toBeCloseTo(108.9);
+    expect(imageMetrics.iconSize).toBeCloseTo(108.9);
+    expect(markerVisualMetrics('circle', 0.5)).toEqual({
+      bodySize: 24.75,
+      iconSize: 24.75,
+    });
+    expect(markerVisualMetrics('pin', 2)).toEqual({
+      bodySize: 104,
+      iconSize: 112,
+    });
   });
 });

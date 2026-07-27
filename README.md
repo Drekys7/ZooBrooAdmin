@@ -28,7 +28,8 @@ npm run preview   # lokale Vorschau des Production-Bundles
 - Zoomen mit dem Mausrad, Verschieben der Karte, Schaltflächen zum Zoomen und Zurücksetzen sowie verschiebbare Marker;
 - Hinzufügen eines Punkts per Kartenklick sowie Bearbeiten, Duplizieren und Löschen mit Bestätigung;
 - Suche, Kategorien, Zähler, Sichtbarkeitsfilter und Punktauswahl aus der Liste;
-- Editor für Name, Kategorie, Untertitel, Beschreibung, Bild, Symbol, Farbe, Fakten und Sichtbarkeit;
+- Editor für Name, Kategorie, Untertitel, Beschreibung, Bild, Symbol, optionale eigene Farbe, Fakten und Sichtbarkeit;
+- Kategorie-Editor für Standardsymbol, Farbe, Symbolgröße und Markierungsstil (`Nur Bild`, `Bild im Kreis`, `Pin`) inklusive gemeinsamer Bearbeitung aller Kategorien;
 - Medienverwaltung für PNG-, WebP- und SVG-Dateien mit Vorschau und Wiederverwendung;
 - Rückgängig/Wiederholen und Vorgangsprotokoll; das Verschieben eines Markers wird nach Abschluss des Ziehvorgangs als ein Vorgang gespeichert;
 - automatisches Speichern mit Verzögerung und Statusanzeigen für gespeicherte bzw. ungespeicherte Änderungen;
@@ -70,7 +71,7 @@ Die Abhängigkeiten sind nach innen gerichtet: React-Komponenten rufen Anwendung
 
 Der Entwurf ist das aktuell bearbeitete `MapProject`. Das automatische Speichern aktualisiert nur diesen Entwurf. Eine Veröffentlichung ist eine separate Version vom Typ `PublishedZooMap`; die öffentliche Website soll künftig ausschließlich diesen Vertrag lesen. Änderungen am Entwurf werden erst durch den Befehl „Veröffentlichen“ öffentlich.
 
-Das öffentliche Modul wird aus `src/public-contract/index.ts` exportiert und hängt nur von Zod ab. Es enthält `PublishedZooMapSchema`, TypeScript-Typen und `validatePublishedZooMap`. Ein gültiges Beispiel steht unter `public/published-map.example.json` bereit. Die gewählte Karten-Hintergrundfarbe wird als `background.color` übertragen. Das Modul importiert weder React noch Dexie oder Firebase und kann in ein gemeinsames npm-Paket ausgelagert werden.
+Das öffentliche Modul wird aus `src/public-contract/index.ts` exportiert und hängt nur von Zod ab. Es enthält `PublishedZooMapSchema`, TypeScript-Typen und `validatePublishedZooMap`. Ein gültiges Beispiel steht unter `public/published-map.example.json` bereit. Die gewählte Karten-Hintergrundfarbe wird als `background.color`, Kategorien-Stil, -Größe und innere Bildgröße als `categories[].markerStyle`, `categories[].iconScale` und `categories[].iconContentScale`, die Kontur als `categories[].outlineEnabled`, `categories[].outlineWidth` und `categories[].outlineColor` sowie eine optionale Punktfarbe als `items[].colorOverride` übertragen. Das Modul importiert weder React noch Dexie oder Firebase und kann in ein gemeinsames npm-Paket ausgelagert werden.
 
 ### Lokaler Speicher
 
