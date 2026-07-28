@@ -3,10 +3,17 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   categoryIconScale,
   categoryIconContentScale,
+  categoryIconBackgroundColor,
+  categoryImageMaskRadius,
+  categoryColorizeIcon,
   categoryMarkerStyle,
   categoryOutlineColor,
   categoryOutlineEnabled,
   categoryOutlineWidth,
+  categoryShadowBlur,
+  categoryShadowColor,
+  categoryShadowEnabled,
+  categoryShadowOpacity,
   type MapCategory,
   type MarkerStyle,
 } from '../domain/models'
@@ -150,6 +157,79 @@ function IconContentScaleField({
   )
 }
 
+function ImageMaskRadiusField({
+  value,
+  mixed,
+  onChange,
+}: {
+  value: number
+  mixed: boolean
+  onChange: (value: number) => void
+}) {
+  const [draft, setDraft] = useState(value)
+  useEffect(() => setDraft(value), [value])
+  return (
+    <label className="field category-scale-field">
+      <span><span>Maskenradius</span><strong>{mixed && draft === value ? 'Gemischt' : `${Math.round(draft)}%`}</strong></span>
+      <input
+        type="range"
+        min="0"
+        max="100"
+        step="5"
+        value={draft}
+        onChange={(event) => {
+          const next = Number(event.target.value)
+          setDraft(next)
+          onChange(next)
+        }}
+        aria-label="Maskenradius"
+      />
+      <small><span>0%</span><span>100%</span></small>
+    </label>
+  )
+}
+
+function ShadowRangeField({
+  label,
+  value,
+  max,
+  suffix,
+  mixed,
+  disabled,
+  onChange,
+}: {
+  label: string
+  value: number
+  max: number
+  suffix: string
+  mixed: boolean
+  disabled: boolean
+  onChange: (value: number) => void
+}) {
+  const [draft, setDraft] = useState(value)
+  useEffect(() => setDraft(value), [value])
+  return (
+    <label className={`field category-scale-field${disabled ? ' is-disabled' : ''}`}>
+      <span><span>{label}</span><strong>{mixed && draft === value ? 'Gemischt' : `${Math.round(draft)}${suffix}`}</strong></span>
+      <input
+        type="range"
+        min="0"
+        max={max}
+        step={suffix === '%' ? 5 : 1}
+        value={draft}
+        disabled={disabled}
+        onChange={(event) => {
+          const next = Number(event.target.value)
+          setDraft(next)
+          onChange(next)
+        }}
+        aria-label={label}
+      />
+      <small><span>0{suffix}</span><span>{max}{suffix}</span></small>
+    </label>
+  )
+}
+
 export function CategoryInspector({
   categories,
   category,
@@ -173,12 +253,26 @@ export function CategoryInspector({
   const commonScale = scalesMatch && selectedCategories[0] ? categoryIconScale(selectedCategories[0]) : 1
   const contentScalesMatch = selectedCategories.every((entry) => categoryIconContentScale(entry) === categoryIconContentScale(selectedCategories[0]!))
   const commonContentScale = contentScalesMatch && selectedCategories[0] ? categoryIconContentScale(selectedCategories[0]) : 1
+  const maskRadiiMatch = selectedCategories.every((entry) => categoryImageMaskRadius(entry) === categoryImageMaskRadius(selectedCategories[0]!))
+  const commonMaskRadius = maskRadiiMatch && selectedCategories[0] ? categoryImageMaskRadius(selectedCategories[0]) : 100
+  const backgroundColorsMatch = selectedCategories.every((entry) => categoryIconBackgroundColor(entry) === categoryIconBackgroundColor(selectedCategories[0]!))
+  const commonBackgroundColor = backgroundColorsMatch && selectedCategories[0] ? categoryIconBackgroundColor(selectedCategories[0]) : '#FFFFFF'
+  const colorizeIconsMatch = selectedCategories.every((entry) => categoryColorizeIcon(entry) === categoryColorizeIcon(selectedCategories[0]!))
+  const commonColorizeIcon = colorizeIconsMatch && selectedCategories[0] ? categoryColorizeIcon(selectedCategories[0]) : null
   const outlinesMatch = selectedCategories.every((entry) => categoryOutlineEnabled(entry) === categoryOutlineEnabled(selectedCategories[0]!))
   const commonOutlineEnabled = outlinesMatch && selectedCategories[0] ? categoryOutlineEnabled(selectedCategories[0]) : null
   const outlineWidthsMatch = selectedCategories.every((entry) => categoryOutlineWidth(entry) === categoryOutlineWidth(selectedCategories[0]!))
   const commonOutlineWidth = outlineWidthsMatch && selectedCategories[0] ? categoryOutlineWidth(selectedCategories[0]) : 2
   const outlineColorsMatch = selectedCategories.every((entry) => categoryOutlineColor(entry) === categoryOutlineColor(selectedCategories[0]!))
   const commonOutlineColor = outlineColorsMatch && selectedCategories[0] ? categoryOutlineColor(selectedCategories[0]) : '#FF0000'
+  const shadowsMatch = selectedCategories.every((entry) => categoryShadowEnabled(entry) === categoryShadowEnabled(selectedCategories[0]!))
+  const commonShadowEnabled = shadowsMatch && selectedCategories[0] ? categoryShadowEnabled(selectedCategories[0]) : null
+  const shadowBlursMatch = selectedCategories.every((entry) => categoryShadowBlur(entry) === categoryShadowBlur(selectedCategories[0]!))
+  const commonShadowBlur = shadowBlursMatch && selectedCategories[0] ? categoryShadowBlur(selectedCategories[0]) : 10
+  const shadowOpacitiesMatch = selectedCategories.every((entry) => categoryShadowOpacity(entry) === categoryShadowOpacity(selectedCategories[0]!))
+  const commonShadowOpacity = shadowOpacitiesMatch && selectedCategories[0] ? categoryShadowOpacity(selectedCategories[0]) : 22
+  const shadowColorsMatch = selectedCategories.every((entry) => categoryShadowColor(entry) === categoryShadowColor(selectedCategories[0]!))
+  const commonShadowColor = shadowColorsMatch && selectedCategories[0] ? categoryShadowColor(selectedCategories[0]) : '#000000'
   const iconUrl = commonIconId ? assetUrls[commonIconId] : undefined
   const update = (patch: Partial<MapCategory>) => editAll ? onUpdateAll(patch) : category && onUpdateCategory(category.id, patch)
   const title = editAll ? 'Alle Kategorien' : category?.name ?? 'Kategorie'
@@ -227,6 +321,24 @@ export function CategoryInspector({
             mixed={!contentScalesMatch}
             onChange={(iconContentScale) => update({ iconContentScale })}
           />
+          <ImageMaskRadiusField
+            value={commonMaskRadius}
+            mixed={!maskRadiiMatch}
+            onChange={(imageMaskRadius) => update({ imageMaskRadius })}
+          />
+
+          <label className="field color-field">
+            <span>Symbolhintergrund</span>
+            <div>
+              <input
+                type="color"
+                aria-label="Symbolhintergrund"
+                value={commonBackgroundColor}
+                onChange={(event) => update({ iconBackgroundColor: event.target.value })}
+              />
+              <code>{backgroundColorsMatch ? commonBackgroundColor.toUpperCase() : 'GEMISCHT'}</code>
+            </div>
+          </label>
 
           <label className="field color-field">
             <span>Farbe</span>
@@ -234,6 +346,19 @@ export function CategoryInspector({
               <input type="color" value={commonColor ?? '#4F8F64'} onChange={(event) => update({ color: event.target.value })} />
               <code>{commonColor?.toUpperCase() ?? 'GEMISCHT'}</code>
             </div>
+          </label>
+
+          <label className="switch-row marker-color-switch">
+            <span>
+              <strong>Bild einfärben</strong>
+              <small>{commonColorizeIcon === null ? 'Unterschiedliche Einstellungen' : 'Färbt das gesamte Bild mit der Kategorienfarbe'}</small>
+            </span>
+            <input
+              type="checkbox"
+              checked={commonColorizeIcon === true}
+              onChange={(event) => update({ colorizeIcon: event.target.checked })}
+            />
+            <i />
           </label>
 
           <div className="category-outline-settings">
@@ -268,6 +393,55 @@ export function CategoryInspector({
                   onChange={(event) => update({ outlineColor: event.target.value })}
                 />
                 <code>{outlineColorsMatch ? commonOutlineColor.toUpperCase() : 'GEMISCHT'}</code>
+              </div>
+            </label>
+          </div>
+
+          <div className="category-outline-settings">
+            <label className="switch-row">
+              <span>
+                <strong>Schatten anzeigen</strong>
+                <small>{commonShadowEnabled === null ? 'Unterschiedliche Einstellungen' : 'Fügt dem Symbol einen weichen Schatten hinzu'}</small>
+              </span>
+              <input
+                type="checkbox"
+                checked={commonShadowEnabled === true}
+                onChange={(event) => update({ shadowEnabled: event.target.checked })}
+              />
+              <i />
+            </label>
+
+            <ShadowRangeField
+              label="Schattenweichheit"
+              value={commonShadowBlur}
+              max={30}
+              suffix="px"
+              mixed={!shadowBlursMatch}
+              disabled={commonShadowEnabled !== true}
+              onChange={(shadowBlur) => update({ shadowBlur })}
+            />
+
+            <ShadowRangeField
+              label="Schattendeckkraft"
+              value={commonShadowOpacity}
+              max={100}
+              suffix="%"
+              mixed={!shadowOpacitiesMatch}
+              disabled={commonShadowEnabled !== true}
+              onChange={(shadowOpacity) => update({ shadowOpacity })}
+            />
+
+            <label className={`field color-field${commonShadowEnabled !== true ? ' is-disabled' : ''}`}>
+              <span>Schattenfarbe</span>
+              <div>
+                <input
+                  type="color"
+                  aria-label="Schattenfarbe"
+                  value={commonShadowColor}
+                  disabled={commonShadowEnabled !== true}
+                  onChange={(event) => update({ shadowColor: event.target.value })}
+                />
+                <code>{shadowColorsMatch ? commonShadowColor.toUpperCase() : 'GEMISCHT'}</code>
               </div>
             </label>
           </div>

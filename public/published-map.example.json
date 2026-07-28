@@ -23,9 +23,16 @@
       "markerStyle": "image",
       "iconScale": 1,
       "iconContentScale": 1,
+      "imageMaskRadius": 100,
+      "iconBackgroundColor": "#FFFFFF",
+      "colorizeIcon": false,
       "outlineEnabled": true,
       "outlineWidth": 2,
       "outlineColor": "#FF0000",
+      "shadowEnabled": true,
+      "shadowBlur": 10,
+      "shadowOpacity": 22,
+      "shadowColor": "#000000",
       "visible": true,
       "sortOrder": 10
     },
@@ -38,9 +45,16 @@
       "markerStyle": "circle",
       "iconScale": 1.2,
       "iconContentScale": 0.9,
+      "imageMaskRadius": 100,
+      "iconBackgroundColor": "#FFF4E8",
+      "colorizeIcon": true,
       "outlineEnabled": false,
       "outlineWidth": 2,
       "outlineColor": "#FF0000",
+      "shadowEnabled": true,
+      "shadowBlur": 12,
+      "shadowOpacity": 20,
+      "shadowColor": "#315F4B",
       "visible": true,
       "sortOrder": 20
     }
@@ -62,6 +76,7 @@
         "url": "https://cdn.example.org/zoo/photos/red-panda.webp"
       },
       "colorOverride": null,
+      "markerOverrides": null,
       "position": {
         "x": 0.3725,
         "y": 0.418
@@ -88,6 +103,10 @@
       "icon": null,
       "image": null,
       "colorOverride": "#D47B32",
+      "markerOverrides": {
+        "color": "#D47B32",
+        "iconScale": 1.1
+      },
       "position": {
         "x": 0.614,
         "y": 0.5575

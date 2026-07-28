@@ -5,9 +5,13 @@ import {
   denormalizePosition,
   latLngToPosition,
   MapCanvas,
+  markerIconAnchor,
+  markerShadowColor,
   markerVisualMetrics,
+  imageMaskRadiusToCssRadius,
   normalizePoint,
   positionToLatLng,
+  resolveMarkerIconUrl,
 } from './MapCanvas';
 
 describe('MapCanvas coordinate helpers', () => {
@@ -43,6 +47,17 @@ describe('MapCanvas marker interaction', () => {
 });
 
 describe('MapCanvas rendering', () => {
+  it('converts the category mask percentage to a centered circle radius', () => {
+    expect(imageMaskRadiusToCssRadius(100)).toBe('50%')
+    expect(imageMaskRadiusToCssRadius(55)).toBe('27.5%')
+    expect(imageMaskRadiusToCssRadius(0)).toBe('0%')
+  })
+
+  it('converts category shadow settings to a browser color', () => {
+    expect(markerShadowColor('#123456', 40)).toBe('rgba(18, 52, 86, 0.4)')
+    expect(markerShadowColor('#123456', 40, false)).toBe('rgba(18, 52, 86, 0)')
+  })
+
   it('renders its empty state and map controls without a background', () => {
     render(
       <MapCanvas
@@ -90,17 +105,34 @@ describe('MapCanvas rendering', () => {
     expect(onBackgroundColorChange).toHaveBeenCalledWith('#a1b2c3');
   });
 
-  it('scales image, circle and pin marker dimensions around their center', () => {
+  it('scales image, circle and upright pin marker dimensions', () => {
     const imageMetrics = markerVisualMetrics('image', 1.5);
-    expect(imageMetrics.bodySize).toBeCloseTo(108.9);
-    expect(imageMetrics.iconSize).toBeCloseTo(108.9);
+    expect(imageMetrics.bodyWidth).toBeCloseTo(108.9);
+    expect(imageMetrics.bodyHeight).toBeCloseTo(108.9);
+    expect(imageMetrics.iconWidth).toBeCloseTo(108.9);
+    expect(imageMetrics.iconHeight).toBeCloseTo(108.9);
     expect(markerVisualMetrics('circle', 0.5)).toEqual({
-      bodySize: 24.75,
-      iconSize: 24.75,
+      bodyWidth: 24.75,
+      bodyHeight: 24.75,
+      iconWidth: 24.75,
+      iconHeight: 24.75,
     });
     expect(markerVisualMetrics('pin', 2)).toEqual({
-      bodySize: 104,
-      iconSize: 112,
+      bodyWidth: 104,
+      bodyHeight: 136,
+      iconWidth: 104,
+      iconHeight: 136,
     });
   });
+
+  it('anchors pins at the bottom tip and other markers in the center', () => {
+    expect(markerIconAnchor('pin', 52, 68)).toEqual([26, 68])
+    expect(markerIconAnchor('circle', 50, 50)).toEqual([25, 25])
+    expect(markerIconAnchor('image', 72, 72)).toEqual([36, 36])
+  })
+
+  it('uses the built-in category symbol instead of an item title initial', () => {
+    expect(resolveMarkerIconUrl(null, 'custom')).toMatch(/^data:image\/svg\+xml,/)
+    expect(resolveMarkerIconUrl('/uploaded-symbol.png', 'custom')).toBe('/uploaded-symbol.png')
+  })
 });

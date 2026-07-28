@@ -41,11 +41,35 @@ export const MapCategorySchema = z.object({
   markerStyle: MarkerStyleSchema.optional(),
   iconScale: z.number().finite().min(0.5).max(2).optional(),
   iconContentScale: z.number().finite().min(0.5).max(1.5).optional(),
+  imageMaskRadius: z.number().finite().min(0).max(100).optional(),
+  iconBackgroundColor: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
+  colorizeIcon: z.boolean().optional(),
   outlineEnabled: z.boolean().optional(),
   outlineWidth: z.number().finite().min(0.5).max(10).optional(),
   outlineColor: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
+  shadowEnabled: z.boolean().optional(),
+  shadowBlur: z.number().finite().min(0).max(30).optional(),
+  shadowOpacity: z.number().finite().min(0).max(100).optional(),
+  shadowColor: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
   visible: z.boolean(),
   sortOrder: z.number().int().nonnegative(),
+});
+
+export const MarkerOverridesSchema = z.object({
+  color: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
+  markerStyle: MarkerStyleSchema.optional(),
+  iconScale: z.number().finite().min(0.5).max(2).optional(),
+  iconContentScale: z.number().finite().min(0.5).max(1.5).optional(),
+  imageMaskRadius: z.number().finite().min(0).max(100).optional(),
+  iconBackgroundColor: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
+  colorizeIcon: z.boolean().optional(),
+  outlineEnabled: z.boolean().optional(),
+  outlineWidth: z.number().finite().min(0.5).max(10).optional(),
+  outlineColor: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
+  shadowEnabled: z.boolean().optional(),
+  shadowBlur: z.number().finite().min(0).max(30).optional(),
+  shadowOpacity: z.number().finite().min(0).max(100).optional(),
+  shadowColor: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
 });
 
 export const MapItemSchema = z.object({
@@ -58,6 +82,7 @@ export const MapItemSchema = z.object({
   iconAssetId: EntityIdSchema.nullish(),
   imageAssetId: EntityIdSchema.nullish(),
   colorOverride: z.string().regex(/^#[0-9a-f]{6}$/i).nullish(),
+  markerOverrides: MarkerOverridesSchema.nullish(),
   position: NormalizedPositionSchema,
   facts: z.array(MapFactSchema),
   visible: z.boolean(),
@@ -129,6 +154,7 @@ export type MarkerStyle = z.infer<typeof MarkerStyleSchema>;
 export type NormalizedPosition = z.infer<typeof NormalizedPositionSchema>;
 export type MapFact = z.infer<typeof MapFactSchema>;
 export type MapCategory = z.infer<typeof MapCategorySchema>;
+export type MarkerOverrides = z.infer<typeof MarkerOverridesSchema>;
 export type MapItem = z.infer<typeof MapItemSchema>;
 export type MapProject = z.infer<typeof MapProjectSchema>;
 export type AssetKind = z.infer<typeof AssetKindSchema>;
@@ -146,6 +172,18 @@ export function categoryIconContentScale(category: Pick<MapCategory, "iconConten
   return category.iconContentScale ?? 1;
 }
 
+export function categoryImageMaskRadius(category: Pick<MapCategory, "imageMaskRadius">): number {
+  return category.imageMaskRadius ?? 100;
+}
+
+export function categoryIconBackgroundColor(category: Pick<MapCategory, "iconBackgroundColor">): string {
+  return category.iconBackgroundColor ?? "#FFFFFF";
+}
+
+export function categoryColorizeIcon(category: Pick<MapCategory, "colorizeIcon">): boolean {
+  return category.colorizeIcon ?? false;
+}
+
 export function categoryOutlineEnabled(category: Pick<MapCategory, "outlineEnabled">): boolean {
   return category.outlineEnabled ?? false;
 }
@@ -156,4 +194,20 @@ export function categoryOutlineWidth(category: Pick<MapCategory, "outlineWidth">
 
 export function categoryOutlineColor(category: Pick<MapCategory, "outlineColor">): string {
   return category.outlineColor ?? "#FF0000";
+}
+
+export function categoryShadowEnabled(category: Pick<MapCategory, "shadowEnabled">): boolean {
+  return category.shadowEnabled ?? true;
+}
+
+export function categoryShadowBlur(category: Pick<MapCategory, "shadowBlur">): number {
+  return category.shadowBlur ?? 10;
+}
+
+export function categoryShadowOpacity(category: Pick<MapCategory, "shadowOpacity">): number {
+  return category.shadowOpacity ?? 22;
+}
+
+export function categoryShadowColor(category: Pick<MapCategory, "shadowColor">): string {
+  return category.shadowColor ?? "#000000";
 }

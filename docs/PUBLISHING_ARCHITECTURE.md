@@ -125,7 +125,8 @@ Entwurfsmedien sind privat. Veröffentlichte Dateien sind unveränderlich. Eine 
 - Die persistente Speicherung erfolgt nach `dragend`.
 - Normalisierte Koordinaten `x` und `y` im Bereich `0…1` bleiben der öffentliche Vertrag.
 - Die frei wählbare Karten-Hintergrundfarbe wird im Entwurf gespeichert und als `background.color` an ZooWeb veröffentlicht.
-- Jede Kategorie veröffentlicht ihren Markierungsstil über `markerStyle` (`image`, `circle` oder `pin`), ihre relative Symbolgröße über `iconScale` (0,5 bis 2,0), die Bildgröße innerhalb des Symbols über `iconContentScale` (0,5 bis 1,5) und ihre optionale Kontur über `outlineEnabled`, `outlineWidth` und `outlineColor`; ein Punkt kann die Kategorienfarbe optional über `colorOverride` überschreiben.
+- Jede Kategorie veröffentlicht ihren Markierungsstil über `markerStyle` (`image`, `circle` oder `pin`), ihre relative Symbolgröße über `iconScale` (0,5 bis 2,0), die Bildgröße innerhalb des Symbols über `iconContentScale` (0,5 bis 1,5), den zentrierten Bildmaskenradius über `imageMaskRadius` (0 bis 100 Prozent), den Symbolhintergrund über `iconBackgroundColor`, die vollständige Einfärbung mit der Kategorienfarbe über `colorizeIcon`, ihre optionale Kontur über `outlineEnabled`, `outlineWidth` und `outlineColor` sowie den Schatten über `shadowEnabled`, `shadowBlur`, `shadowOpacity` und `shadowColor`; ein Punkt kann die Kategorienfarbe optional über `colorOverride` überschreiben.
+- Seltene Abweichungen eines einzelnen Punkts werden als partielles Objekt `markerOverrides` veröffentlicht. Nur durch ein Override-Kontrollkästchen aktivierte Felder werden übertragen; alle fehlenden Felder erbt ZooWeb weiterhin aus der Kategorie.
 - Vor dem Speichern wird die aktuelle `draftRevision` geprüft.
 - Konflikte zwischen mehreren Administratoren werden angezeigt, statt fremde Änderungen still zu überschreiben.
 

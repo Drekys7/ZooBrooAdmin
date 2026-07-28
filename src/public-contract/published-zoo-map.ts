@@ -43,9 +43,16 @@ export const PublishedCategorySchema = z
     markerStyle: MarkerStyleSchema.optional(),
     iconScale: z.number().finite().min(0.5).max(2).optional(),
     iconContentScale: z.number().finite().min(0.5).max(1.5).optional(),
+    imageMaskRadius: z.number().finite().min(0).max(100).optional(),
+    iconBackgroundColor: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
+    colorizeIcon: z.boolean().optional(),
     outlineEnabled: z.boolean().optional(),
     outlineWidth: z.number().finite().min(0.5).max(10).optional(),
     outlineColor: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
+    shadowEnabled: z.boolean().optional(),
+    shadowBlur: z.number().finite().min(0).max(30).optional(),
+    shadowOpacity: z.number().finite().min(0).max(100).optional(),
+    shadowColor: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
     visible: z.boolean(),
     sortOrder: z.number().int(),
   })
@@ -60,6 +67,25 @@ export const PublishedFactSchema = z
   })
   .strict()
 
+export const PublishedMarkerOverridesSchema = z
+  .object({
+    color: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
+    markerStyle: MarkerStyleSchema.optional(),
+    iconScale: z.number().finite().min(0.5).max(2).optional(),
+    iconContentScale: z.number().finite().min(0.5).max(1.5).optional(),
+    imageMaskRadius: z.number().finite().min(0).max(100).optional(),
+    iconBackgroundColor: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
+    colorizeIcon: z.boolean().optional(),
+    outlineEnabled: z.boolean().optional(),
+    outlineWidth: z.number().finite().min(0.5).max(10).optional(),
+    outlineColor: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
+    shadowEnabled: z.boolean().optional(),
+    shadowBlur: z.number().finite().min(0).max(30).optional(),
+    shadowOpacity: z.number().finite().min(0).max(100).optional(),
+    shadowColor: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
+  })
+  .strict()
+
 export const PublishedMapItemSchema = z
   .object({
     id: idSchema,
@@ -71,6 +97,7 @@ export const PublishedMapItemSchema = z
     icon: PublishedAssetSchema.nullable(),
     image: PublishedAssetSchema.nullable(),
     colorOverride: z.string().regex(/^#[0-9a-f]{6}$/i).nullable().optional(),
+    markerOverrides: PublishedMarkerOverridesSchema.nullable().optional(),
     position: NormalizedPositionSchema,
     facts: z.array(PublishedFactSchema),
     visible: z.boolean(),
@@ -132,6 +159,7 @@ export type PublishedBackground = z.infer<typeof PublishedBackgroundSchema>
 export type NormalizedPosition = z.infer<typeof NormalizedPositionSchema>
 export type PublishedCategory = z.infer<typeof PublishedCategorySchema>
 export type PublishedFact = z.infer<typeof PublishedFactSchema>
+export type PublishedMarkerOverrides = z.infer<typeof PublishedMarkerOverridesSchema>
 export type PublishedMapItem = z.infer<typeof PublishedMapItemSchema>
 export type PublishedZooMap = z.infer<typeof PublishedZooMapSchema>
 

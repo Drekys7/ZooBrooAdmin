@@ -19,10 +19,18 @@ describe('PublishedZooMap public contract', () => {
     expect(snapshot.categories.map((category) => category.markerStyle)).toEqual(['image', 'circle'])
     expect(snapshot.categories.map((category) => category.iconScale)).toEqual([1, 1.2])
     expect(snapshot.categories.map((category) => category.iconContentScale)).toEqual([1, 0.9])
+    expect(snapshot.categories.map((category) => category.imageMaskRadius)).toEqual([100, 100])
+    expect(snapshot.categories.map((category) => category.iconBackgroundColor)).toEqual(['#FFFFFF', '#FFF4E8'])
+    expect(snapshot.categories.map((category) => category.colorizeIcon)).toEqual([false, true])
     expect(snapshot.categories.map((category) => category.outlineEnabled)).toEqual([true, false])
     expect(snapshot.categories.map((category) => category.outlineWidth)).toEqual([2, 2])
     expect(snapshot.categories.map((category) => category.outlineColor)).toEqual(['#FF0000', '#FF0000'])
+    expect(snapshot.categories.map((category) => category.shadowEnabled)).toEqual([true, true])
+    expect(snapshot.categories.map((category) => category.shadowBlur)).toEqual([10, 12])
+    expect(snapshot.categories.map((category) => category.shadowOpacity)).toEqual([22, 20])
+    expect(snapshot.categories.map((category) => category.shadowColor)).toEqual(['#000000', '#315F4B'])
     expect(snapshot.items.map((item) => item.colorOverride)).toEqual([null, '#D47B32'])
+    expect(snapshot.items.map((item) => item.markerOverrides)).toEqual([null, { color: '#D47B32', iconScale: 1.1 }])
   })
 
   it('uses the legacy gray background when an older snapshot has no color', () => {

@@ -6,6 +6,7 @@ export {
   PublishedBackgroundSchema,
   PublishedCategorySchema,
   PublishedFactSchema,
+  PublishedMarkerOverridesSchema,
   PublishedMapItemSchema,
   PublishedZooMapSchema,
   validatePublishedZooMap,
@@ -19,6 +20,7 @@ export type {
   PublishedBackground,
   PublishedCategory,
   PublishedFact,
+  PublishedMarkerOverrides,
   PublishedMapItem,
   PublishedZooMap,
 } from './published-zoo-map'

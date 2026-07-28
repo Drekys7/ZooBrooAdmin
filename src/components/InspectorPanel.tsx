@@ -2,6 +2,7 @@ import { Copy, ImagePlus, Plus, Trash2, Upload, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { MapCategory, MapFact, MapItem } from '../domain/models'
 import { CategoryIcon } from './CategoryIcon'
+import { ItemMarkerOverrides } from './ItemMarkerOverrides'
 
 interface InspectorPanelProps {
   item: MapItem | null
@@ -61,8 +62,7 @@ export function InspectorPanel({ item, categories, assetUrls, onUpdate, onDuplic
             <div className="media-actions"><label className="mini-button"><Upload size={14} />{imageUrl ? 'Ersetzen' : 'Hochladen'}<input hidden type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => event.target.files?.[0] && onUpload(event.target.files[0], 'imageAssetId')} /></label><button className="mini-button" onClick={() => onChooseAsset('imageAssetId')}>Auswählen</button></div>
           </div>
           <div className="icon-picker-row"><div className="icon-preview">{iconUrl ? <img src={iconUrl} alt="" /> : <CategoryIcon type={item.type} size={19} />}</div><div><strong>Markierungssymbol</strong><span>{iconUrl ? 'Benutzerdefiniert' : 'Aus der Kategorie'}</span></div><button className="mini-button" onClick={() => onChooseAsset('iconAssetId')}>Auswählen</button></div>
-          {category && <label className="switch-row marker-color-switch"><span><strong>Eigene Farbe verwenden</strong><small>Überschreibt die Farbe der Kategorie nur für diesen Punkt</small></span><input type="checkbox" checked={Boolean(item.colorOverride)} onChange={(event) => onUpdate(item.id, { colorOverride: event.target.checked ? category.color : null })}/><i /></label>}
-          {category && item.colorOverride && <label className="field color-field"><span>Eigene Markierungsfarbe</span><div><input type="color" value={item.colorOverride} onChange={(event) => onUpdate(item.id, { colorOverride: event.target.value })} /><code>{item.colorOverride.toUpperCase()}</code></div></label>}
+          {category && <ItemMarkerOverrides item={item} category={category} onUpdate={(patch) => onUpdate(item.id, patch)} />}
         </section>
 
         <section className="inspector-section facts-section">
