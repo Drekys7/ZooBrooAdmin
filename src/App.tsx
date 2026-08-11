@@ -212,6 +212,8 @@ function App() {
               const assetId = item.iconAssetId ?? category?.defaultIconAssetId
               return assetId ? editor.assetUrls[assetId] : null
             }}
+            getItemImageUrl={(item) => item.imageAssetId ? editor.assetUrls[item.imageAssetId] : null}
+            getFactIconUrl={(fact) => fact.iconAssetId ? editor.assetUrls[fact.iconAssetId] : null}
             onSelect={editor.setSelectedItemId}
             onAdd={editor.createItemAt}
             onMove={editor.moveItem}

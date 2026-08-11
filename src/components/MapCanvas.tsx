@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
-import { LocateFixed, Minus, Palette, Plus } from 'lucide-react';
+import { LocateFixed, Minus, Monitor, Palette, Plus, Smartphone } from 'lucide-react';
 import {
   categoryIconScale,
   categoryIconContentScale,
@@ -16,10 +16,12 @@ import {
   categoryShadowEnabled,
   categoryShadowOpacity,
   type MapCategory,
+  type MapFact,
   type MapItem,
   type MarkerStyle,
 } from '../domain/models';
 import { getCategoryIconUrl } from './CategoryIcon';
+import { PhoneClientPreview } from './PhoneClientPreview';
 import 'leaflet/dist/leaflet.css';
 import './map-canvas.css';
 
@@ -52,6 +54,8 @@ export interface MapCanvasProps {
   className?: string;
   ariaLabel?: string;
   getItemIconUrl?: (item: MapItem, category: MapCategory | undefined) => string | null | undefined;
+  getItemImageUrl?: (item: MapItem) => string | null | undefined;
+  getFactIconUrl?: (fact: MapFact, item: MapItem) => string | null | undefined;
   onSelect?: (itemId: string | null) => void;
   onAdd?: (position: NormalizedPosition) => void;
   onMove?: (itemId: string, position: NormalizedPosition) => void;
@@ -117,8 +121,9 @@ export function canDragMarker(
   itemId: string,
   selectedItemId: string | null | undefined,
   disabled: boolean,
+  phonePreview = false,
 ): boolean {
-  return !disabled && itemId === selectedItemId;
+  return !disabled && !phonePreview && itemId === selectedItemId;
 }
 
 function safeDimension(value: number): number {
@@ -143,6 +148,8 @@ export function markerVisualMetrics(markerStyle: MarkerStyle, iconScale: number)
     iconHeight: baseHeight * iconScale,
   }
 }
+
+const PHONE_PREVIEW_MARKER_SCALE = 1
 
 export function markerIconAnchor(
   markerStyle: MarkerStyle,
@@ -194,6 +201,7 @@ function createMarkerIcon(
   category: MapCategory | undefined,
   selected: boolean,
   iconUrl: string | null | undefined,
+  phonePreview = false,
 ): L.DivIcon {
   const isAnimal = item.type === 'animal'
   const effectiveCategory = effectiveMarkerCategory(item, category)
@@ -210,7 +218,8 @@ function createMarkerIcon(
   const shadowBlur = effectiveCategory ? categoryShadowBlur(effectiveCategory) : 10
   const shadowOpacity = effectiveCategory ? categoryShadowOpacity(effectiveCategory) : 22
   const shadowColor = effectiveCategory ? categoryShadowColor(effectiveCategory) : '#000000'
-  const { bodyWidth, bodyHeight, iconWidth, iconHeight } = markerVisualMetrics(markerStyle, iconScale)
+  const previewScale = phonePreview ? PHONE_PREVIEW_MARKER_SCALE : 1
+  const { bodyWidth, bodyHeight, iconWidth, iconHeight } = markerVisualMetrics(markerStyle, iconScale * previewScale)
   const body = document.createElement('span');
   body.className = `map-canvas__marker ${isAnimal ? 'is-animal' : 'is-poi'} is-${markerStyle}${colorizeIcon ? ' is-colorized' : ''}${outlineEnabled ? ' has-outline' : ''}${selected ? ' is-selected' : ''}`;
   body.style.setProperty('--marker-color', safeMarkerColor(effectiveCategory?.color));
@@ -339,12 +348,17 @@ export function MapCanvas({
   className,
   ariaLabel = 'Interaktive Zoo-Karte',
   getItemIconUrl,
+  getItemImageUrl,
+  getFactIconUrl,
   onSelect,
   onAdd,
   onMove,
   onDragPreview,
   onBackgroundColorChange,
 }: MapCanvasProps) {
+  const [phonePreview, setPhonePreview] = useState(false);
+  const [clientPreviewItemId, setClientPreviewItemId] = useState<string | null>(null);
+  const [clientDetailsOpen, setClientDetailsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const overlayRef = useRef<L.ImageOverlay | null>(null);
@@ -356,6 +370,7 @@ export function MapCanvas({
   const stateRef = useRef({
     addMode,
     disabled,
+    phonePreview,
     hasBackground: Boolean(backgroundUrl),
     width: safeDimension(backgroundWidth),
     height: safeDimension(backgroundHeight),
@@ -365,6 +380,7 @@ export function MapCanvas({
   stateRef.current = {
     addMode,
     disabled,
+    phonePreview,
     hasBackground: Boolean(backgroundUrl),
     width: safeDimension(backgroundWidth),
     height: safeDimension(backgroundHeight),
@@ -395,6 +411,11 @@ export function MapCanvas({
 
     map.on('click', (event: L.LeafletMouseEvent) => {
       const current = stateRef.current;
+      if (current.phonePreview) {
+        setClientPreviewItemId(null);
+        setClientDetailsOpen(false);
+        return;
+      }
       if (!current.addMode || current.disabled || !current.hasBackground) {
         callbacksRef.current.onSelect?.(null);
         return;
@@ -474,8 +495,8 @@ export function MapCanvas({
       renderedItemIds.add(item.id);
 
       const iconUrl = getItemIconUrl?.(item, category);
-      const isSelected = item.id === selectedItemId;
-      const isDraggable = canDragMarker(item.id, selectedItemId, disabled);
+      const isSelected = !phonePreview && item.id === selectedItemId;
+      const isDraggable = canDragMarker(item.id, selectedItemId, disabled, phonePreview);
       const signature = [
         item.title,
         item.iconAssetId ?? '',
@@ -484,6 +505,7 @@ export function MapCanvas({
         categorySignature(category),
         iconUrl ?? '',
         isSelected ? 'selected' : '',
+        phonePreview ? 'phone-preview' : 'desktop',
       ].join('|');
 
       let marker = markersRef.current.get(item.id);
@@ -494,7 +516,7 @@ export function MapCanvas({
           riseOnHover: true,
           title: item.title,
           alt: item.title,
-          icon: createMarkerIcon(item, category, isSelected, iconUrl),
+          icon: createMarkerIcon(item, category, isSelected, iconUrl, phonePreview),
         })
           .bindTooltip(createTooltipContent(item.title), {
             direction: 'top',
@@ -503,7 +525,14 @@ export function MapCanvas({
           })
           .addTo(map);
 
-        marker.on('click', () => callbacksRef.current.onSelect?.(item.id));
+        marker.on('click', () => {
+          if (stateRef.current.phonePreview) {
+            setClientPreviewItemId(item.id);
+            setClientDetailsOpen(false);
+            return;
+          }
+          callbacksRef.current.onSelect?.(item.id);
+        });
         marker.on('dragstart', () => {
           draggingItemRef.current = item.id;
           callbacksRef.current.onSelect?.(item.id);
@@ -537,7 +566,7 @@ export function MapCanvas({
       }
 
       if (markerSignaturesRef.current.get(item.id) !== signature) {
-        marker.setIcon(createMarkerIcon(item, category, isSelected, iconUrl));
+        marker.setIcon(createMarkerIcon(item, category, isSelected, iconUrl, phonePreview));
         marker.setTooltipContent(createTooltipContent(item.title));
         markerSignaturesRef.current.set(item.id, signature);
       }
@@ -568,6 +597,7 @@ export function MapCanvas({
     disabled,
     getItemIconUrl,
     items,
+    phonePreview,
     selectedItemId,
   ]);
 
@@ -589,6 +619,28 @@ export function MapCanvas({
     );
   }, [backgroundHeight, backgroundWidth, focusRequest]);
 
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      const map = mapRef.current;
+      const bounds = boundsRef.current;
+      if (!map) return;
+      map.invalidateSize({ pan: false });
+      if (bounds) {
+        map.fitBounds(bounds, {
+          animate: false,
+          padding: phonePreview ? [14, 14] : [30, 30],
+        });
+      }
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [phonePreview]);
+
+  useEffect(() => {
+    if (phonePreview) return;
+    setClientPreviewItemId(null);
+    setClientDetailsOpen(false);
+  }, [phonePreview]);
+
   const resetView = () => {
     const map = mapRef.current;
     const bounds = boundsRef.current;
@@ -599,16 +651,30 @@ export function MapCanvas({
     'map-canvas',
     addMode ? 'is-adding' : '',
     disabled ? 'is-disabled' : '',
+    phonePreview ? 'is-phone-preview' : '',
     className ?? '',
   ]
     .filter(Boolean)
     .join(' ');
 
+  const clientPreviewItem = phonePreview
+    ? items.find((item) => item.id === clientPreviewItemId) ?? null
+    : null;
+  const clientPreviewCategory = clientPreviewItem
+    ? categoriesById.get(clientPreviewItem.categoryId)
+    : undefined;
+  const clientPreviewIconUrl = clientPreviewItem
+    ? resolveMarkerIconUrl(
+        getItemIconUrl?.(clientPreviewItem, clientPreviewCategory),
+        clientPreviewCategory?.type ?? clientPreviewItem.type,
+      )
+    : null;
+
   return (
     <section
       className={rootClassName}
       aria-label={ariaLabel}
-      style={{ backgroundColor }}
+      style={{ backgroundColor: phonePreview ? '#D9DFDC' : backgroundColor }}
     >
       <svg
         className="map-canvas__filter-definitions"
@@ -692,12 +758,62 @@ export function MapCanvas({
         </defs>
       </svg>
 
-      <div
-        ref={containerRef}
-        className="map-canvas__leaflet"
-        data-testid="map-canvas"
-        style={{ backgroundColor }}
-      />
+      <div className="map-canvas__viewport-shell" data-testid="map-viewport-shell">
+        <div
+          ref={containerRef}
+          className="map-canvas__leaflet"
+          data-testid="map-canvas"
+          style={{ backgroundColor }}
+        />
+
+        {phonePreview ? (
+          <>
+            <span className="map-canvas__phone-island" aria-hidden="true" />
+            <span className="map-canvas__phone-home-indicator" aria-hidden="true" />
+          </>
+        ) : null}
+
+        {!backgroundUrl ? (
+          <div className="map-canvas__empty" role="status">
+            <span className="map-canvas__empty-icon" aria-hidden="true">
+              <LocateFixed size={22} strokeWidth={1.6} />
+            </span>
+            <strong>Noch keine Karte geladen</strong>
+            <span>Fügen Sie in der Medienverwaltung ein Hintergrundbild hinzu</span>
+          </div>
+        ) : null}
+
+        {clientPreviewItem && clientPreviewIconUrl ? (
+          <PhoneClientPreview
+            item={clientPreviewItem}
+            category={clientPreviewCategory}
+            imageUrl={getItemImageUrl?.(clientPreviewItem)}
+            iconUrl={clientPreviewIconUrl}
+            expanded={clientDetailsOpen}
+            getFactIconUrl={getFactIconUrl}
+            onExpand={() => setClientDetailsOpen(true)}
+            onClose={() => {
+              setClientPreviewItemId(null)
+              setClientDetailsOpen(false)
+            }}
+          />
+        ) : null}
+      </div>
+
+      <button
+        type="button"
+        className="map-canvas__preview-toggle"
+        aria-label={phonePreview ? 'Desktopansicht anzeigen' : 'Handy-Vorschau anzeigen'}
+        title={phonePreview ? 'Desktopansicht anzeigen' : 'Handy-Vorschau anzeigen'}
+        aria-pressed={phonePreview}
+        onClick={() => setPhonePreview((active) => !active)}
+      >
+        {phonePreview ? (
+          <Monitor size={19} strokeWidth={1.8} aria-hidden="true" />
+        ) : (
+          <Smartphone size={19} strokeWidth={1.8} aria-hidden="true" />
+        )}
+      </button>
 
       <div className="map-canvas__controls" role="group" aria-label="Kartenzoom">
         <button
@@ -748,15 +864,6 @@ export function MapCanvas({
         </div>
       ) : null}
 
-      {!backgroundUrl ? (
-        <div className="map-canvas__empty" role="status">
-          <span className="map-canvas__empty-icon" aria-hidden="true">
-            <LocateFixed size={22} strokeWidth={1.6} />
-          </span>
-          <strong>Noch keine Karte geladen</strong>
-          <span>Fügen Sie in der Medienverwaltung ein Hintergrundbild hinzu</span>
-        </div>
-      ) : null}
     </section>
   );
 }

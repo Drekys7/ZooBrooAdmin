@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import {
   canDragMarker,
@@ -43,6 +43,7 @@ describe('MapCanvas marker interaction', () => {
     expect(canDragMarker('antelope', 'bear', false)).toBe(false);
     expect(canDragMarker('antelope', 'antelope', false)).toBe(true);
     expect(canDragMarker('antelope', 'antelope', true)).toBe(false);
+    expect(canDragMarker('antelope', 'antelope', false, true)).toBe(false);
   });
 });
 
@@ -73,6 +74,33 @@ describe('MapCanvas rendering', () => {
     expect(screen.getByText('Noch keine Karte geladen')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Vergrößern' })).toBeInTheDocument();
   });
+
+  it('switches between desktop and phone preview modes', () => {
+    const { container } = render(
+      <MapCanvas
+        backgroundUrl={null}
+        backgroundWidth={1}
+        backgroundHeight={1}
+        items={[]}
+        categories={[]}
+      />,
+    )
+
+    const renderedMap = within(container)
+    const phoneButton = renderedMap.getByRole('button', { name: 'Handy-Vorschau anzeigen' })
+    expect(container.querySelector('.map-canvas')).not.toHaveClass('is-phone-preview')
+
+    fireEvent.click(phoneButton)
+
+    expect(container.querySelector('.map-canvas')).toHaveClass('is-phone-preview')
+    expect(renderedMap.getByRole('button', { name: 'Desktopansicht anzeigen' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+
+    fireEvent.click(renderedMap.getByRole('button', { name: 'Desktopansicht anzeigen' }))
+    expect(container.querySelector('.map-canvas')).not.toHaveClass('is-phone-preview')
+  })
 
   it('applies and reports the configured map background color', () => {
     const onBackgroundColorChange = vi.fn();
