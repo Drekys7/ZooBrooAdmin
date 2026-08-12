@@ -111,6 +111,20 @@ export function buildPublishedSnapshot(
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
     })),
+    events: project.events.map((event) => ({
+      id: event.id,
+      title: event.title,
+      description: event.description,
+      location: event.location,
+      relatedItemId: event.relatedItemId ?? null,
+      startDate: event.startDate,
+      startTime: event.startTime,
+      endTime: event.endTime ?? null,
+      recurrence: event.recurrence,
+      visible: event.visible,
+      createdAt: event.createdAt,
+      updatedAt: event.updatedAt,
+    })),
   });
 }
 

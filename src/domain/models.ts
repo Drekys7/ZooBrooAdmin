@@ -14,6 +14,10 @@ export const CategoryTypeSchema = z.enum([
   "custom",
 ]);
 export const MarkerStyleSchema = z.enum(["image", "circle", "pin"]);
+export const EventFrequencySchema = z.enum(["once", "daily", "weekly", "monthly"]);
+export const WeekdaySchema = z.enum(["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]);
+export const CalendarDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+export const ClockTimeSchema = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
 
 export const NormalizedPositionSchema = z.object({
   x: z.number().finite().min(0).max(1),
@@ -90,6 +94,38 @@ export const MapItemSchema = z.object({
   updatedAt: IsoDateSchema,
 });
 
+export const EventRecurrenceSchema = z
+  .object({
+    frequency: EventFrequencySchema,
+    interval: z.number().int().min(1).max(52).default(1),
+    weekdays: z.array(WeekdaySchema).default([]),
+    monthDays: z.array(z.number().int().min(1).max(31)).default([]),
+    endsOn: CalendarDateSchema.nullable().default(null),
+  })
+  .superRefine((recurrence, context) => {
+    if (recurrence.frequency === "weekly" && recurrence.weekdays.length === 0) {
+      context.addIssue({ code: z.ZodIssueCode.custom, message: "Weekly events need at least one weekday", path: ["weekdays"] });
+    }
+    if (recurrence.frequency === "monthly" && recurrence.monthDays.length === 0) {
+      context.addIssue({ code: z.ZodIssueCode.custom, message: "Monthly events need at least one day", path: ["monthDays"] });
+    }
+  });
+
+export const MapEventSchema = z.object({
+  id: EntityIdSchema,
+  title: z.string().trim().min(1),
+  description: z.string(),
+  location: z.string(),
+  relatedItemId: EntityIdSchema.nullish(),
+  startDate: CalendarDateSchema,
+  startTime: ClockTimeSchema,
+  endTime: ClockTimeSchema.nullish(),
+  recurrence: EventRecurrenceSchema,
+  visible: z.boolean(),
+  createdAt: IsoDateSchema,
+  updatedAt: IsoDateSchema,
+});
+
 export const MapProjectSchema = z
   .object({
     id: EntityIdSchema,
@@ -101,6 +137,7 @@ export const MapProjectSchema = z
     backgroundColor: MapBackgroundColorSchema,
     categories: z.array(MapCategorySchema),
     items: z.array(MapItemSchema),
+    events: z.array(MapEventSchema).default([]),
     createdAt: IsoDateSchema,
     updatedAt: IsoDateSchema,
   })
@@ -134,6 +171,17 @@ export const MapProjectSchema = z
         message: "Background id, width and height must either all be present or all be null",
       });
     }
+
+    const eventIds = new Set<string>();
+    for (const event of project.events) {
+      if (eventIds.has(event.id)) {
+        context.addIssue({ code: z.ZodIssueCode.custom, message: `Duplicate event id: ${event.id}` });
+      }
+      eventIds.add(event.id);
+      if (event.relatedItemId && !itemIds.has(event.relatedItemId)) {
+        context.addIssue({ code: z.ZodIssueCode.custom, message: `Event ${event.id} references unknown item ${event.relatedItemId}` });
+      }
+    }
   });
 
 export const AssetKindSchema = z.enum(["background", "image", "icon"]);
@@ -156,6 +204,10 @@ export type MapFact = z.infer<typeof MapFactSchema>;
 export type MapCategory = z.infer<typeof MapCategorySchema>;
 export type MarkerOverrides = z.infer<typeof MarkerOverridesSchema>;
 export type MapItem = z.infer<typeof MapItemSchema>;
+export type EventFrequency = z.infer<typeof EventFrequencySchema>;
+export type Weekday = z.infer<typeof WeekdaySchema>;
+export type EventRecurrence = z.infer<typeof EventRecurrenceSchema>;
+export type MapEvent = z.infer<typeof MapEventSchema>;
 export type MapProject = z.infer<typeof MapProjectSchema>;
 export type AssetKind = z.infer<typeof AssetKindSchema>;
 export type Asset = z.infer<typeof AssetSchema>;

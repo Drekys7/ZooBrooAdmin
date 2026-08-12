@@ -51,7 +51,11 @@ describe('PhoneClientPreview', () => {
 
     expect(screen.getByLabelText('Bär Vorschau')).toBeInTheDocument()
     expect(screen.getByText('Region: Europa und Asien')).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Weitere Informationen →' }))
+    fireEvent.click(screen.getByText('Bär'))
+    expect(onExpand).toHaveBeenCalledOnce()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Vorschau schließen' }))
+    expect(onClose).toHaveBeenCalledOnce()
     expect(onExpand).toHaveBeenCalledOnce()
 
     rerender(<PhoneClientPreview {...props} expanded />)

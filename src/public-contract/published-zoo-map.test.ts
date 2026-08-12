@@ -15,6 +15,12 @@ describe('PublishedZooMap public contract', () => {
 
     expect(snapshot.schemaVersion).toBe(1)
     expect(snapshot.items).toHaveLength(2)
+    expect(snapshot.events).toHaveLength(1)
+    expect(snapshot.events[0]).toMatchObject({
+      id: 'event-red-panda-feeding',
+      relatedItemId: 'item-red-panda',
+      recurrence: { frequency: 'weekly', weekdays: ['tuesday', 'thursday', 'saturday'] },
+    })
     expect(snapshot.background.color).toBe('#DDE7D3')
     expect(snapshot.categories.map((category) => category.markerStyle)).toEqual(['image', 'circle'])
     expect(snapshot.categories.map((category) => category.iconScale)).toEqual([1, 1.2])
@@ -40,6 +46,13 @@ describe('PublishedZooMap public contract', () => {
     delete example.background.color
 
     expect(validatePublishedZooMap(example).background.color).toBe('#DDDDDD')
+  })
+
+  it('keeps older published snapshots compatible when they have no events', () => {
+    const example = readExample() as { events?: unknown[] }
+    delete example.events
+
+    expect(validatePublishedZooMap(example).events).toEqual([])
   })
 
   it('rejects coordinates outside the normalized range', () => {

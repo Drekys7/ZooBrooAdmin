@@ -53,8 +53,16 @@ export function PhoneClientPreview({
 
   if (!expanded) {
     return (
-      <aside className="map-client-preview__quick" aria-label={`${item.title} Vorschau`} style={style}>
-        <button type="button" className="map-client-preview__close" aria-label="Vorschau schließen" onClick={onClose}>
+      <aside className="map-client-preview__quick" aria-label={`${item.title} Vorschau`} style={style} onClick={onExpand}>
+        <button
+          type="button"
+          className="map-client-preview__close"
+          aria-label="Vorschau schließen"
+          onClick={(event) => {
+            event.stopPropagation()
+            onClose()
+          }}
+        >
           <X size={13} strokeWidth={2} aria-hidden="true" />
         </button>
         <PreviewVisual imageUrl={imageUrl} iconUrl={iconUrl} />
@@ -72,7 +80,14 @@ export function PhoneClientPreview({
               <p className="map-client-preview__quick-description">{item.description}</p>
             </>
           )}
-          <button type="button" className="map-client-preview__more" onClick={onExpand}>
+          <button
+            type="button"
+            className="map-client-preview__more"
+            onClick={(event) => {
+              event.stopPropagation()
+              onExpand()
+            }}
+          >
             Weitere Informationen →
           </button>
         </div>

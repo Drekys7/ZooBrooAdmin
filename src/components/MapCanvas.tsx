@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
-import { LocateFixed, Minus, Monitor, Palette, Plus, Smartphone } from 'lucide-react';
+import { CalendarClock, LocateFixed, Minus, Monitor, Palette, Plus, Smartphone } from 'lucide-react';
 import {
   categoryIconScale,
   categoryIconContentScale,
@@ -16,12 +16,14 @@ import {
   categoryShadowEnabled,
   categoryShadowOpacity,
   type MapCategory,
+  type MapEvent,
   type MapFact,
   type MapItem,
   type MarkerStyle,
 } from '../domain/models';
 import { getCategoryIconUrl } from './CategoryIcon';
 import { PhoneClientPreview } from './PhoneClientPreview';
+import { nextVisibleEventOccurrence, PhoneEventPanel } from './PhoneEventPanel';
 import 'leaflet/dist/leaflet.css';
 import './map-canvas.css';
 
@@ -47,6 +49,7 @@ export interface MapCanvasProps {
   backgroundColor?: string;
   items: readonly MapItem[];
   categories: readonly MapCategory[];
+  events?: readonly MapEvent[];
   selectedItemId?: string | null;
   addMode?: boolean;
   disabled?: boolean;
@@ -341,6 +344,7 @@ export function MapCanvas({
   backgroundColor = '#DDDDDD',
   items,
   categories,
+  events = [],
   selectedItemId = null,
   addMode = false,
   disabled = false,
@@ -359,6 +363,8 @@ export function MapCanvas({
   const [phonePreview, setPhonePreview] = useState(false);
   const [clientPreviewItemId, setClientPreviewItemId] = useState<string | null>(null);
   const [clientDetailsOpen, setClientDetailsOpen] = useState(false);
+  const [clientEventsOpen, setClientEventsOpen] = useState(false);
+  const [eventClock, setEventClock] = useState(() => new Date());
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const overlayRef = useRef<L.ImageOverlay | null>(null);
@@ -414,6 +420,7 @@ export function MapCanvas({
       if (current.phonePreview) {
         setClientPreviewItemId(null);
         setClientDetailsOpen(false);
+        setClientEventsOpen(false);
         return;
       }
       if (!current.addMode || current.disabled || !current.hasBackground) {
@@ -527,8 +534,10 @@ export function MapCanvas({
 
         marker.on('click', () => {
           if (stateRef.current.phonePreview) {
+            callbacksRef.current.onSelect?.(item.id);
             setClientPreviewItemId(item.id);
             setClientDetailsOpen(false);
+            setClientEventsOpen(false);
             return;
           }
           callbacksRef.current.onSelect?.(item.id);
@@ -639,6 +648,14 @@ export function MapCanvas({
     if (phonePreview) return;
     setClientPreviewItemId(null);
     setClientDetailsOpen(false);
+    setClientEventsOpen(false);
+  }, [phonePreview]);
+
+  useEffect(() => {
+    if (!phonePreview) return;
+    setEventClock(new Date());
+    const timer = window.setInterval(() => setEventClock(new Date()), 30_000);
+    return () => window.clearInterval(timer);
   }, [phonePreview]);
 
   const resetView = () => {
@@ -669,6 +686,29 @@ export function MapCanvas({
         clientPreviewCategory?.type ?? clientPreviewItem.type,
       )
     : null;
+  const nextEventOccurrence = useMemo(
+    () => nextVisibleEventOccurrence(events, eventClock),
+    [eventClock, events],
+  );
+
+  const focusClientEventItem = (itemId: string) => {
+    const item = items.find((candidate) => candidate.id === itemId);
+    const map = mapRef.current;
+    if (!item || !map) return;
+
+    const target = positionToLatLng(
+      item.position,
+      safeDimension(backgroundWidth),
+      safeDimension(backgroundHeight),
+    );
+    const fitZoom = boundsRef.current ? map.getBoundsZoom(boundsRef.current) : map.getZoom();
+    const destinationZoom = Math.min(map.getMaxZoom(), Math.max(map.getZoom(), fitZoom + 1.35));
+    map.flyTo(target, destinationZoom, { animate: true, duration: 0.55, easeLinearity: 0.25 });
+    callbacksRef.current.onSelect?.(item.id);
+    setClientEventsOpen(false);
+    setClientPreviewItemId(item.id);
+    setClientDetailsOpen(false);
+  };
 
   return (
     <section
@@ -770,6 +810,29 @@ export function MapCanvas({
           <>
             <span className="map-canvas__phone-island" aria-hidden="true" />
             <span className="map-canvas__phone-home-indicator" aria-hidden="true" />
+            <button
+              type="button"
+              className={`map-client-events__toggle${clientPreviewItem ? ' is-raised' : ''}`}
+              aria-label="Veranstaltungen anzeigen"
+              title={nextEventOccurrence ? `Nächster Termin: ${nextEventOccurrence.time} Uhr` : 'Zoo-Programm'}
+              aria-expanded={clientEventsOpen}
+              onClick={() => {
+                setClientPreviewItemId(null);
+                setClientDetailsOpen(false);
+                setClientEventsOpen(true);
+              }}
+            >
+              <CalendarClock size={21} strokeWidth={1.8} aria-hidden="true" />
+              {nextEventOccurrence ? (
+                <span
+                  aria-hidden="true"
+                  title={`${nextEventOccurrence.time} · ${nextEventOccurrence.event.title}`}
+                >
+                  <strong>{nextEventOccurrence.time}</strong>
+                  <small>{nextEventOccurrence.event.title}</small>
+                </span>
+              ) : null}
+            </button>
           </>
         ) : null}
 
@@ -796,6 +859,15 @@ export function MapCanvas({
               setClientPreviewItemId(null)
               setClientDetailsOpen(false)
             }}
+          />
+        ) : null}
+
+        {phonePreview && clientEventsOpen ? (
+          <PhoneEventPanel
+            events={events}
+            items={items}
+            onFocusItem={focusClientEventItem}
+            onClose={() => setClientEventsOpen(false)}
           />
         ) : null}
       </div>

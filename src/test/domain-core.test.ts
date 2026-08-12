@@ -3,8 +3,10 @@ import {
   CommandHistory,
   buildPublishedSnapshot,
   createCategory,
+  createEvent,
   createItem,
   deleteCategory,
+  deleteEvent,
   duplicateItem,
   exportProjectToJson,
   importProjectFromJson,
@@ -12,6 +14,7 @@ import {
   setBackground,
   setBackgroundColor,
   updateItem,
+  updateEvent,
 } from "../application";
 import { createEmptyProject, denormalizePosition, normalizePosition } from "../domain";
 
@@ -58,6 +61,34 @@ describe("project commands", () => {
     expect(duplicated.items[1]?.title).toContain("Kopie");
     expect(deleteCategory(duplicated, { categoryId: "animals", deleteItems: true, now }).items).toHaveLength(0);
   });
+
+  it("creates, updates and deletes recurring zoo events", () => {
+    const withItem = createItem(projectWithCategory(), {
+      id: "penguins",
+      categoryId: "animals",
+      title: "Pinguine",
+      position: { x: 0.3, y: 0.4 },
+      now,
+    });
+    const created = createEvent(withItem, {
+      id: "penguin-feeding",
+      title: "Pinguinfütterung",
+      description: "Treffpunkt an der Anlage",
+      location: "Pinguinanlage",
+      relatedItemId: "penguins",
+      startDate: "2026-08-15",
+      startTime: "11:00",
+      endTime: "11:20",
+      recurrence: { frequency: "weekly", interval: 1, weekdays: ["tuesday", "saturday"], monthDays: [], endsOn: null },
+      visible: true,
+      now,
+    });
+
+    expect(created.events[0]).toMatchObject({ id: "penguin-feeding", relatedItemId: "penguins" });
+    const updated = updateEvent(created, { eventId: "penguin-feeding", patch: { startTime: "11:30", visible: false }, now });
+    expect(updated.events[0]).toMatchObject({ startTime: "11:30", visible: false });
+    expect(deleteEvent(updated, { eventId: "penguin-feeding", now }).events).toHaveLength(0);
+  });
 });
 
 describe("history and serialization", () => {
@@ -74,6 +105,25 @@ describe("history and serialization", () => {
     expect(undone?.project.items).toHaveLength(0);
     expect(history.redo(undone!.project)?.project.items).toHaveLength(1);
     expect(history.getJournal()).toHaveLength(3);
+  });
+
+  it("groups continuous slider updates into one undo step", () => {
+    const history = new CommandHistory();
+    const original = createEmptyProject({ id: "slider-project", title: "Slider" });
+    const descriptor = {
+      type: "updateCategory" as const,
+      affectedEntityType: "project" as const,
+      affectedEntityId: original.id,
+    };
+
+    history.beginTransaction(original);
+    const first = history.execute(original, descriptor, (project) => ({ ...project, backgroundColor: "#111111" }));
+    const second = history.execute(first, descriptor, (project) => ({ ...project, backgroundColor: "#222222" }));
+    const final = history.endTransaction(second);
+
+    expect(history.getJournal()).toHaveLength(1);
+    expect(history.undo(final)?.project.backgroundColor).toBe(original.backgroundColor);
+    expect(history.canUndo()).toBe(false);
   });
 
   it("round-trips valid JSON and rejects an invalid project", () => {
@@ -94,13 +144,29 @@ describe("history and serialization", () => {
   });
 
   it("creates a detached published snapshot", () => {
-    const project = setBackground(projectWithCategory(), { assetId: "map", width: 2000, height: 1000, now });
+    const project = createEvent(
+      setBackground(projectWithCategory(), { assetId: "map", width: 2000, height: 1000, now }),
+      {
+        id: "daily-talk",
+        title: "Tierpfleger-Treff",
+        description: "Fragen und Antworten",
+        location: "Haupteingang",
+        relatedItemId: null,
+        startDate: "2026-08-15",
+        startTime: "10:00",
+        endTime: null,
+        recurrence: { frequency: "daily", interval: 1, weekdays: [], monthDays: [], endsOn: null },
+        visible: true,
+        now,
+      },
+    );
     const snapshot = buildPublishedSnapshot(project, 3, now, (assetId) => `/assets/${assetId}`);
     expect(snapshot).toMatchObject({
       projectId: "project",
       version: 3,
       publishedAt: now,
       background: { assetId: "map", url: "/assets/map", width: 2000, height: 1000, color: "#DDDDDD" },
+      events: [{ id: "daily-talk", recurrence: { frequency: "daily", interval: 1 } }],
     });
     project.categories[0]!.name = "Changed after publish";
     expect(snapshot.categories[0]!.name).toBe("Tiere");

@@ -12,6 +12,10 @@ export const MapCategoryTypeSchema = z.enum([
   'custom',
 ])
 export const MarkerStyleSchema = z.enum(['image', 'circle', 'pin'])
+export const EventFrequencySchema = z.enum(['once', 'daily', 'weekly', 'monthly'])
+export const WeekdaySchema = z.enum(['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'])
+const calendarDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
+const clockTimeSchema = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/)
 
 export const PublishedAssetSchema = z
   .object({
@@ -106,6 +110,29 @@ export const PublishedMapItemSchema = z
   })
   .strict()
 
+export const PublishedEventRecurrenceSchema = z.object({
+  frequency: EventFrequencySchema,
+  interval: z.number().int().min(1).max(52),
+  weekdays: z.array(WeekdaySchema),
+  monthDays: z.array(z.number().int().min(1).max(31)),
+  endsOn: calendarDateSchema.nullable(),
+}).strict()
+
+export const PublishedEventSchema = z.object({
+  id: idSchema,
+  title: z.string().trim().min(1),
+  description: z.string(),
+  location: z.string(),
+  relatedItemId: idSchema.nullable(),
+  startDate: calendarDateSchema,
+  startTime: clockTimeSchema,
+  endTime: clockTimeSchema.nullable(),
+  recurrence: PublishedEventRecurrenceSchema,
+  visible: z.boolean(),
+  createdAt: dateTimeSchema,
+  updatedAt: dateTimeSchema,
+}).strict()
+
 export const PublishedZooMapSchema = z
   .object({
     schemaVersion: z.number().int().positive(),
@@ -115,6 +142,7 @@ export const PublishedZooMapSchema = z
     background: PublishedBackgroundSchema,
     categories: z.array(PublishedCategorySchema),
     items: z.array(PublishedMapItemSchema),
+    events: z.array(PublishedEventSchema).default([]),
   })
   .strict()
   .superRefine((snapshot, context) => {
@@ -150,10 +178,23 @@ export const PublishedZooMapSchema = z
         })
       }
     }
+
+    const eventIds = new Set<string>()
+    for (const [index, event] of snapshot.events.entries()) {
+      if (eventIds.has(event.id)) {
+        context.addIssue({ code: z.ZodIssueCode.custom, message: `Duplicate event id: ${event.id}`, path: ['events', index, 'id'] })
+      }
+      eventIds.add(event.id)
+      if (event.relatedItemId && !itemIds.has(event.relatedItemId)) {
+        context.addIssue({ code: z.ZodIssueCode.custom, message: `Unknown item id: ${event.relatedItemId}`, path: ['events', index, 'relatedItemId'] })
+      }
+    }
   })
 
 export type MapCategoryType = z.infer<typeof MapCategoryTypeSchema>
 export type MarkerStyle = z.infer<typeof MarkerStyleSchema>
+export type EventFrequency = z.infer<typeof EventFrequencySchema>
+export type Weekday = z.infer<typeof WeekdaySchema>
 export type PublishedAsset = z.infer<typeof PublishedAssetSchema>
 export type PublishedBackground = z.infer<typeof PublishedBackgroundSchema>
 export type NormalizedPosition = z.infer<typeof NormalizedPositionSchema>
@@ -161,6 +202,8 @@ export type PublishedCategory = z.infer<typeof PublishedCategorySchema>
 export type PublishedFact = z.infer<typeof PublishedFactSchema>
 export type PublishedMarkerOverrides = z.infer<typeof PublishedMarkerOverridesSchema>
 export type PublishedMapItem = z.infer<typeof PublishedMapItemSchema>
+export type PublishedEventRecurrence = z.infer<typeof PublishedEventRecurrenceSchema>
+export type PublishedEvent = z.infer<typeof PublishedEventSchema>
 export type PublishedZooMap = z.infer<typeof PublishedZooMapSchema>
 
 /**

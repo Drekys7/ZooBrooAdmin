@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import type { MapCategory, MapEvent, MapItem } from '../domain/models';
 import {
   canDragMarker,
   denormalizePosition,
@@ -93,6 +94,10 @@ describe('MapCanvas rendering', () => {
     fireEvent.click(phoneButton)
 
     expect(container.querySelector('.map-canvas')).toHaveClass('is-phone-preview')
+    expect(renderedMap.getByRole('button', { name: 'Veranstaltungen anzeigen' })).toBeInTheDocument()
+    fireEvent.click(renderedMap.getByRole('button', { name: 'Veranstaltungen anzeigen' }))
+    expect(renderedMap.getByRole('dialog', { name: 'Veranstaltungen' })).toBeInTheDocument()
+    fireEvent.click(renderedMap.getByRole('button', { name: 'Veranstaltungen schließen' }))
     expect(renderedMap.getByRole('button', { name: 'Desktopansicht anzeigen' })).toHaveAttribute(
       'aria-pressed',
       'true',
@@ -100,6 +105,45 @@ describe('MapCanvas rendering', () => {
 
     fireEvent.click(renderedMap.getByRole('button', { name: 'Desktopansicht anzeigen' }))
     expect(container.querySelector('.map-canvas')).not.toHaveClass('is-phone-preview')
+  })
+
+  it('focuses a linked map item from the phone event programme', () => {
+    const category: MapCategory = {
+      id: 'animals', name: 'Tiere', type: 'animal', color: '#4F8F64', defaultIconAssetId: null, visible: true, sortOrder: 0,
+    }
+    const item: MapItem = {
+      id: 'penguins', categoryId: 'animals', type: 'animal', title: 'Pinguine', subtitle: '', description: '', iconAssetId: null,
+      imageAssetId: null, colorOverride: null, markerOverrides: null, position: { x: 0.3, y: 0.4 }, facts: [], visible: true,
+      createdAt: '2026-08-12T08:00:00.000Z', updatedAt: '2026-08-12T08:00:00.000Z',
+    }
+    const zooEvent: MapEvent = {
+      id: 'feeding', title: 'Pinguinfütterung', description: '', location: 'Pinguinanlage', relatedItemId: item.id,
+      startDate: '2099-08-15', startTime: '11:00', endTime: null,
+      recurrence: { frequency: 'weekly', interval: 1, weekdays: ['saturday'], monthDays: [], endsOn: null }, visible: true,
+      createdAt: '2026-08-12T08:00:00.000Z', updatedAt: '2026-08-12T08:00:00.000Z',
+    }
+    const onSelect = vi.fn()
+    const { container } = render(
+      <MapCanvas
+        backgroundUrl={null}
+        backgroundWidth={1000}
+        backgroundHeight={600}
+        items={[item]}
+        categories={[category]}
+        events={[zooEvent]}
+        onSelect={onSelect}
+      />,
+    )
+    const renderedMap = within(container)
+
+    fireEvent.click(renderedMap.getByRole('button', { name: 'Handy-Vorschau anzeigen' }))
+    expect(renderedMap.getByRole('button', { name: 'Veranstaltungen anzeigen' })).toHaveTextContent('11:00Pinguinfütterung')
+    fireEvent.click(renderedMap.getByRole('button', { name: 'Veranstaltungen anzeigen' }))
+    fireEvent.click(renderedMap.getByRole('button', { name: 'Auf der Karte zeigen' }))
+
+    expect(onSelect).toHaveBeenCalledWith('penguins')
+    expect(renderedMap.queryByRole('dialog', { name: 'Veranstaltungen' })).not.toBeInTheDocument()
+    expect(renderedMap.getByLabelText('Pinguine Vorschau')).toBeInTheDocument()
   })
 
   it('applies and reports the configured map background color', () => {

@@ -18,7 +18,7 @@ function entryIcon(type: string) {
 
 const operationLabels: Record<string, string> = {
   createItem: 'Punkt hinzugefügt', updateItem: 'Punkt geändert', moveItem: 'Punkt verschoben', duplicateItem: 'Punkt dupliziert', deleteItem: 'Punkt gelöscht',
-  createCategory: 'Kategorie hinzugefügt', updateCategory: 'Kategorie geändert', deleteCategory: 'Kategorie gelöscht', setBackground: 'Karte ersetzt', publishProject: 'Projekt veröffentlicht', undo: 'Aktion rückgängig gemacht', redo: 'Aktion wiederholt',
+  createCategory: 'Kategorie hinzugefügt', updateCategory: 'Kategorie geändert', deleteCategory: 'Kategorie gelöscht', createEvent: 'Veranstaltung hinzugefügt', updateEvent: 'Veranstaltung geändert', deleteEvent: 'Veranstaltung gelöscht', setBackground: 'Karte ersetzt', publishProject: 'Projekt veröffentlicht', undo: 'Aktion rückgängig gemacht', redo: 'Aktion wiederholt',
 }
 
 export function ActivityPanel({ open, entries, onClose }: { open: boolean; entries: ActivityEntry[]; onClose: () => void }) {

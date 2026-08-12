@@ -1,6 +1,8 @@
 export {
   MapCategoryTypeSchema,
   MarkerStyleSchema,
+  EventFrequencySchema,
+  WeekdaySchema,
   NormalizedPositionSchema,
   PublishedAssetSchema,
   PublishedBackgroundSchema,
@@ -8,6 +10,8 @@ export {
   PublishedFactSchema,
   PublishedMarkerOverridesSchema,
   PublishedMapItemSchema,
+  PublishedEventRecurrenceSchema,
+  PublishedEventSchema,
   PublishedZooMapSchema,
   validatePublishedZooMap,
 } from './published-zoo-map'
@@ -15,6 +19,8 @@ export {
 export type {
   MapCategoryType,
   MarkerStyle,
+  EventFrequency,
+  Weekday,
   NormalizedPosition,
   PublishedAsset,
   PublishedBackground,
@@ -22,5 +28,7 @@ export type {
   PublishedFact,
   PublishedMarkerOverrides,
   PublishedMapItem,
+  PublishedEventRecurrence,
+  PublishedEvent,
   PublishedZooMap,
 } from './published-zoo-map'

@@ -2,8 +2,10 @@ import { create } from 'zustand'
 import {
   CommandHistory,
   createCategory,
+  createEvent,
   createItem,
   deleteCategory,
+  deleteEvent,
   deleteItem,
   duplicateItem,
   exportProjectToJson,
@@ -13,11 +15,13 @@ import {
   setBackground,
   setBackgroundColor,
   updateCategory,
+  updateEvent,
   updateItem,
+  type CreateEventInput,
   type OperationRecord,
   type OperationType,
 } from '../application'
-import { createEmptyProject, type Asset, type MapCategory, type MapItem, type MapProject, type NormalizedPosition } from '../domain'
+import { createEmptyProject, type Asset, type MapCategory, type MapEvent, type MapItem, type MapProject, type NormalizedPosition } from '../domain'
 import { createLocalApplication } from '../infrastructure'
 
 type SaveStatus = 'saved' | 'dirty' | 'saving'
@@ -59,6 +63,11 @@ interface EditorState {
   createCategory: () => void
   updateCategory: (id: string, patch: Partial<MapCategory>) => void
   updateAllCategories: (patch: Partial<MapCategory>) => void
+  createEvent: (input: Omit<CreateEventInput, 'id' | 'now'>) => string
+  updateEvent: (id: string, patch: Partial<MapEvent>) => void
+  deleteEvent: (id: string) => void
+  beginContinuousEdit: () => void
+  endContinuousEdit: () => void
   deleteSelectedCategory: () => void
   undo: () => void
   redo: () => void
@@ -222,7 +231,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
     }, 550)
   }
 
-  const commit = (type: OperationType, entityType: 'project' | 'item' | 'category' | 'asset', entityId: string, command: (project: MapProject) => MapProject) => {
+  const commit = (type: OperationType, entityType: 'project' | 'item' | 'category' | 'event' | 'asset', entityId: string, command: (project: MapProject) => MapProject) => {
     const project = get().project
     if (!project) return
     try {
@@ -341,6 +350,27 @@ export const useEditorStore = create<EditorState>((set, get) => {
         ),
       )
     },
+    createEvent: (input) => {
+      const id = crypto.randomUUID()
+      commit('createEvent', 'event', id, (project) => createEvent(project, { ...input, id }))
+      return id
+    },
+    updateEvent: (id, patch) => {
+      const { id: _id, createdAt: _createdAt, updatedAt: _updatedAt, ...allowed } = patch
+      void _id; void _createdAt; void _updatedAt
+      if (Object.keys(allowed).length) commit('updateEvent', 'event', id, (project) => updateEvent(project, { eventId: id, patch: allowed }))
+    },
+    deleteEvent: (id) => commit('deleteEvent', 'event', id, (project) => deleteEvent(project, { eventId: id })),
+    beginContinuousEdit: () => {
+      const project = get().project
+      if (project) history.beginTransaction(project)
+    },
+    endContinuousEdit: () => {
+      const project = get().project
+      if (!project) return
+      history.endTransaction(project)
+      syncHistory()
+    },
     deleteSelectedCategory: () => {
       const categoryId = get().inspectedCategoryId
       if (!categoryId || !get().project?.categories.some((category) => category.id === categoryId)) return
@@ -350,6 +380,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
     undo: () => {
       const project = get().project
       if (!project) return
+      history.endTransaction(project)
       const change = history.undo(project)
       if (!change) return
       set({ project: change.project, dragPreview: null })
@@ -359,6 +390,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
     redo: () => {
       const project = get().project
       if (!project) return
+      history.endTransaction(project)
       const change = history.redo(project)
       if (!change) return
       set({ project: change.project, dragPreview: null })

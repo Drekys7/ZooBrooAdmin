@@ -7,6 +7,9 @@ export const OperationTypeSchema = z.enum([
   "moveItem",
   "duplicateItem",
   "deleteItem",
+  "createEvent",
+  "updateEvent",
+  "deleteEvent",
   "createCategory",
   "updateCategory",
   "deleteCategory",
@@ -18,7 +21,7 @@ export const OperationTypeSchema = z.enum([
   "redo",
 ]);
 
-export const AffectedEntityTypeSchema = z.enum(["project", "item", "category", "asset"]);
+export const AffectedEntityTypeSchema = z.enum(["project", "item", "category", "event", "asset"]);
 
 export const OperationRecordSchema = z.object({
   id: EntityIdSchema,
@@ -44,6 +47,7 @@ export class CommandHistory {
   private readonly undoStack: HistoryEntry[] = [];
   private readonly redoStack: HistoryEntry[] = [];
   private readonly journal: OperationRecord[] = [];
+  private transaction: { before: MapProject; descriptor: OperationDescriptor | null } | null = null;
 
   constructor(private readonly maxEntries = 100) {}
 
@@ -68,7 +72,24 @@ export class CommandHistory {
     descriptor: OperationDescriptor,
     command: (current: MapProject) => MapProject,
   ): MapProject {
-    return this.record(project, command(clone(project)), descriptor);
+    const next = command(clone(project));
+    if (this.transaction) {
+      this.transaction.descriptor ??= descriptor;
+      return next;
+    }
+    return this.record(project, next, descriptor);
+  }
+
+  beginTransaction(currentValue: MapProject): void {
+    if (this.transaction) return;
+    this.transaction = { before: clone(currentValue), descriptor: null };
+  }
+
+  endTransaction(currentValue: MapProject): MapProject {
+    const transaction = this.transaction;
+    this.transaction = null;
+    if (!transaction?.descriptor) return currentValue;
+    return this.record(transaction.before, currentValue, transaction.descriptor);
   }
 
   undo(currentValue: MapProject): HistoryChange | undefined {
@@ -102,6 +123,7 @@ export class CommandHistory {
   }
 
   clear(): void {
+    this.transaction = null;
     this.undoStack.length = 0;
     this.redoStack.length = 0;
     this.journal.length = 0;

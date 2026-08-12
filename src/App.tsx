@@ -1,5 +1,6 @@
 import {
   Archive,
+  CalendarDays,
   ChevronDown,
   Clock3,
   Download,
@@ -15,6 +16,7 @@ import { ActivityPanel } from './components/ActivityPanel'
 import { AssetManager, type AssetView } from './components/AssetManager'
 import { ConfirmDialog } from './components/ConfirmDialog'
 import { CategoryInspector } from './components/CategoryInspector'
+import { EventManager } from './components/EventManager'
 import { InspectorPanel } from './components/InspectorPanel'
 import { ALL_CATEGORIES_ID, LeftSidebar } from './components/LeftSidebar'
 import { MapCanvas, type MapFocusRequest } from './components/MapCanvas'
@@ -32,6 +34,7 @@ function formatDate(value: string | null) {
 function App() {
   const editor = useEditorStore()
   const [assetManagerOpen, setAssetManagerOpen] = useState(false)
+  const [eventManagerOpen, setEventManagerOpen] = useState(false)
   const [assetSelectionField, setAssetSelectionField] = useState<AssetSelectionField | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleteCategoryDialogOpen, setDeleteCategoryDialogOpen] = useState(false)
@@ -42,6 +45,19 @@ function App() {
   const backgroundRef = useRef<HTMLInputElement>(null)
   const lastError = useRef<string | null>(null)
   const mapFocusRequestId = useRef(0)
+  const sliderInteractionActive = useRef(false)
+
+  const beginSliderInteraction = (target: EventTarget) => {
+    if (!(target instanceof HTMLInputElement) || target.type !== 'range' || sliderInteractionActive.current) return
+    sliderInteractionActive.current = true
+    editor.beginContinuousEdit()
+  }
+
+  const endSliderInteraction = () => {
+    if (!sliderInteractionActive.current) return
+    sliderInteractionActive.current = false
+    editor.endContinuousEdit()
+  }
 
   const toast = useCallback((message: string, tone: ToastData['tone'] = 'success') => {
     const id = crypto.randomUUID()
@@ -62,7 +78,8 @@ function App() {
     const handleKeyDown = (event: KeyboardEvent) => {
       const editable = event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.target instanceof HTMLSelectElement
       if (event.key === 'Escape') {
-        if (assetManagerOpen) { setAssetManagerOpen(false); setAssetSelectionField(null) }
+        if (eventManagerOpen) setEventManagerOpen(false)
+        else if (assetManagerOpen) { setAssetManagerOpen(false); setAssetSelectionField(null) }
         else if (deleteDialogOpen) setDeleteDialogOpen(false)
         else if (deleteCategoryDialogOpen) setDeleteCategoryDialogOpen(false)
         else if (editor.activeTool === 'add') editor.setActiveTool('select')
@@ -79,7 +96,7 @@ function App() {
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [assetManagerOpen, deleteCategoryDialogOpen, deleteDialogOpen, editor])
+  }, [assetManagerOpen, deleteCategoryDialogOpen, deleteDialogOpen, editor, eventManagerOpen])
 
   const project = editor.project
   const selectedItem = useMemo(() => {
@@ -159,7 +176,21 @@ function App() {
   const saveLabel = editor.saveStatus === 'saved' ? 'Gespeichert' : editor.saveStatus === 'saving' ? 'Wird gespeichert …' : 'Ungespeicherte Änderungen'
 
   return (
-    <div className="app-shell">
+    <div
+      className="app-shell"
+      onPointerDownCapture={(event) => beginSliderInteraction(event.target)}
+      onPointerUpCapture={endSliderInteraction}
+      onPointerCancelCapture={endSliderInteraction}
+      onKeyDownCapture={(event) => {
+        if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End'].includes(event.key)) {
+          beginSliderInteraction(event.target)
+        }
+      }}
+      onKeyUpCapture={endSliderInteraction}
+      onBlurCapture={(event) => {
+        if (event.target instanceof HTMLInputElement && event.target.type === 'range') endSliderInteraction()
+      }}
+    >
       <header className="topbar">
         <div className="brand"><span className="brand-mark"><img src="/zooweb/icons/paw.png" alt=""/></span><div className="brand-copy"><span>ZooWeb · Karteneditor</span><strong>{project.title}</strong></div></div>
         <div className={`save-state ${editor.saveStatus}`}><i/><span>{saveLabel}</span></div>
@@ -172,6 +203,7 @@ function App() {
           <button className="button topbar-plain" onClick={editor.exportProject}><Download size={15}/><span className="optional-label">Exportieren</span></button>
           <button className="button topbar-plain" onClick={() => backgroundRef.current?.click()}><ImageIcon size={15}/><span className="optional-label">Karte</span></button>
           <input ref={backgroundRef} hidden type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadBackground(file); event.target.value = '' }}/>
+          <button className="button topbar-plain" aria-label="Veranstaltungen" title="Veranstaltungen" onClick={() => setEventManagerOpen(true)}><CalendarDays size={15}/><span className="optional-label">Veranstaltungen</span>{project.events.length > 0 && <em className="topbar-count">{project.events.length}</em>}</button>
           <button className="button topbar-plain" onClick={() => { setAssetSelectionField(null); setAssetManagerOpen(true) }}><Archive size={15}/><span className="optional-label">Ressourcen</span></button>
         </div>
         <div className="topbar-actions"><button className="button publish" onClick={async () => { try { const version = await editor.publish(); toast(`Version ${version} wurde veröffentlicht`) } catch (error) { toast(error instanceof Error ? error.message : 'Veröffentlichungsfehler', 'error') } }}><UploadCloud size={16}/>Veröffentlichen<ChevronDown size={12}/></button></div>
@@ -205,6 +237,7 @@ function App() {
             backgroundColor={project.backgroundColor}
             items={project.items}
             categories={project.categories}
+            events={project.events}
             selectedItemId={editor.selectedItemId}
             addMode={editor.activeTool === 'add'}
             focusRequest={mapFocusRequest}
@@ -272,6 +305,25 @@ function App() {
         onDelete={(id) => void editor.deleteAsset(id).then(() => toast('Ressource gelöscht')).catch((error) => toast(error instanceof Error ? error.message : 'Fehler beim Löschen', 'error'))}
         onSelect={selectAsset}
         onClose={() => { setAssetManagerOpen(false); setAssetSelectionField(null) }}
+      />
+      <EventManager
+        open={eventManagerOpen}
+        events={project.events}
+        items={project.items}
+        onCreate={(input) => {
+          const id = editor.createEvent(input)
+          toast('Veranstaltung erstellt')
+          return id
+        }}
+        onUpdate={(id, patch) => {
+          editor.updateEvent(id, patch)
+          toast('Veranstaltung gespeichert')
+        }}
+        onDelete={(id) => {
+          editor.deleteEvent(id)
+          toast('Veranstaltung gelöscht', 'info')
+        }}
+        onClose={() => setEventManagerOpen(false)}
       />
       <ConfirmDialog open={deleteDialogOpen} title={`„${selectedItem?.title ?? 'Punkt'}“ löschen?`} description="Der Punkt wird aus dem Entwurf gelöscht. Die Aktion kann mit Strg+Z rückgängig gemacht werden." onConfirm={() => { editor.deleteSelected(); toast('Punkt gelöscht', 'info') }} onClose={() => setDeleteDialogOpen(false)}/>
       <ConfirmDialog open={deleteCategoryDialogOpen} title={`„${selectedCategory?.name ?? 'Kategorie'}“ löschen?`} description="Die Kategorie und alle zugehörigen Punkte werden aus dem Entwurf gelöscht. Die Aktion kann mit Strg+Z rückgängig gemacht werden." onConfirm={() => { editor.deleteSelectedCategory(); toast('Kategorie gelöscht', 'info') }} onClose={() => setDeleteCategoryDialogOpen(false)}/>

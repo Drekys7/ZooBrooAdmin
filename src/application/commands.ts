@@ -6,6 +6,7 @@ import {
   MapCategorySchema,
   MapFactSchema,
   MapItemSchema,
+  MapEventSchema,
   MarkerOverridesSchema,
   MapProjectSchema,
   normalizePosition,
@@ -71,6 +72,19 @@ export const DuplicateItemInputSchema = z.object({
 
 export const DeleteItemInputSchema = z.object({ itemId: EntityIdSchema, now: z.string().datetime().optional() });
 
+export const CreateEventInputSchema = MapEventSchema.omit({ id: true, createdAt: true, updatedAt: true }).extend({
+  id: EntityIdSchema.optional(),
+  now: z.string().datetime().optional(),
+});
+
+export const UpdateEventInputSchema = z.object({
+  eventId: EntityIdSchema,
+  patch: MapEventSchema.omit({ id: true, createdAt: true, updatedAt: true }).partial().refine((patch) => Object.keys(patch).length > 0),
+  now: z.string().datetime().optional(),
+});
+
+export const DeleteEventInputSchema = z.object({ eventId: EntityIdSchema, now: z.string().datetime().optional() });
+
 export const CreateCategoryInputSchema = MapCategorySchema.omit({ id: true, sortOrder: true }).extend({
   id: EntityIdSchema.optional(),
   sortOrder: z.number().int().nonnegative().optional(),
@@ -109,6 +123,9 @@ export type UpdateItemInput = z.input<typeof UpdateItemInputSchema>;
 export type MoveItemInput = z.input<typeof MoveItemInputSchema>;
 export type DuplicateItemInput = z.input<typeof DuplicateItemInputSchema>;
 export type DeleteItemInput = z.input<typeof DeleteItemInputSchema>;
+export type CreateEventInput = z.input<typeof CreateEventInputSchema>;
+export type UpdateEventInput = z.input<typeof UpdateEventInputSchema>;
+export type DeleteEventInput = z.input<typeof DeleteEventInputSchema>;
 export type CreateCategoryInput = z.input<typeof CreateCategoryInputSchema>;
 export type UpdateCategoryInput = z.input<typeof UpdateCategoryInputSchema>;
 export type DeleteCategoryInput = z.input<typeof DeleteCategoryInputSchema>;
@@ -135,6 +152,12 @@ function requireItem(project: MapProject, id: string) {
   const item = project.items.find((candidate) => candidate.id === id);
   if (!item) throw new Error(`Item not found: ${id}`);
   return item;
+}
+
+function requireEvent(project: MapProject, id: string) {
+  const event = project.events.find((candidate) => candidate.id === id);
+  if (!event) throw new Error(`Event not found: ${id}`);
+  return event;
 }
 
 export function createItem(projectValue: MapProject, inputValue: CreateItemInput): MapProject {
@@ -196,7 +219,41 @@ export function deleteItem(projectValue: MapProject, inputValue: DeleteItemInput
   const input = DeleteItemInputSchema.parse(inputValue);
   requireItem(project, input.itemId);
   const now = timestamp(input.now);
-  return finish({ ...project, items: project.items.filter((item) => item.id !== input.itemId), updatedAt: now });
+  return finish({
+    ...project,
+    items: project.items.filter((item) => item.id !== input.itemId),
+    events: project.events.map((event) => event.relatedItemId === input.itemId ? { ...event, relatedItemId: null, updatedAt: now } : event),
+    updatedAt: now,
+  });
+}
+
+export function createEvent(projectValue: MapProject, inputValue: CreateEventInput): MapProject {
+  const project = checkedProject(projectValue);
+  const input = CreateEventInputSchema.parse(inputValue);
+  if (input.relatedItemId) requireItem(project, input.relatedItemId);
+  const id = input.id ?? createId();
+  if (project.events.some((event) => event.id === id)) throw new Error(`Event already exists: ${id}`);
+  const now = timestamp(input.now);
+  const event = MapEventSchema.parse({ ...input, id, createdAt: now, updatedAt: now });
+  return finish({ ...project, events: [...project.events, event], updatedAt: now });
+}
+
+export function updateEvent(projectValue: MapProject, inputValue: UpdateEventInput): MapProject {
+  const project = checkedProject(projectValue);
+  const input = UpdateEventInputSchema.parse(inputValue);
+  const existing = requireEvent(project, input.eventId);
+  if (input.patch.relatedItemId) requireItem(project, input.patch.relatedItemId);
+  const now = timestamp(input.now);
+  const event = MapEventSchema.parse({ ...existing, ...input.patch, updatedAt: now });
+  return finish({ ...project, events: project.events.map((value) => value.id === event.id ? event : value), updatedAt: now });
+}
+
+export function deleteEvent(projectValue: MapProject, inputValue: DeleteEventInput): MapProject {
+  const project = checkedProject(projectValue);
+  const input = DeleteEventInputSchema.parse(inputValue);
+  requireEvent(project, input.eventId);
+  const now = timestamp(input.now);
+  return finish({ ...project, events: project.events.filter((event) => event.id !== input.eventId), updatedAt: now });
 }
 
 export function createCategory(projectValue: MapProject, inputValue: CreateCategoryInput): MapProject {
@@ -228,10 +285,12 @@ export function deleteCategory(projectValue: MapProject, inputValue: DeleteCateg
   const hasItems = project.items.some((item) => item.categoryId === input.categoryId);
   if (hasItems && !input.deleteItems) throw new Error(`Category ${input.categoryId} is not empty`);
   const now = timestamp(input.now);
+  const deletedItemIds = new Set(project.items.filter((item) => item.categoryId === input.categoryId).map((item) => item.id));
   return finish({
     ...project,
     categories: project.categories.filter((category) => category.id !== input.categoryId),
     items: project.items.filter((item) => item.categoryId !== input.categoryId),
+    events: project.events.map((event) => event.relatedItemId && deletedItemIds.has(event.relatedItemId) ? { ...event, relatedItemId: null, updatedAt: now } : event),
     updatedAt: now,
   });
 }

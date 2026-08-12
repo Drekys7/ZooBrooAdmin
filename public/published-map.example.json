@@ -116,5 +116,27 @@
       "createdAt": "2026-07-11T12:00:00.000Z",
       "updatedAt": "2026-07-12T15:45:00.000Z"
     }
+  ],
+  "events": [
+    {
+      "id": "event-red-panda-feeding",
+      "title": "Fütterung der Roten Pandas",
+      "description": "Das Tierpflege-Team erzählt Wissenswertes über die Tiere und beantwortet Fragen.",
+      "location": "Bambusallee",
+      "relatedItemId": "item-red-panda",
+      "startDate": "2026-08-15",
+      "startTime": "11:00",
+      "endTime": "11:20",
+      "recurrence": {
+        "frequency": "weekly",
+        "interval": 1,
+        "weekdays": ["tuesday", "thursday", "saturday"],
+        "monthDays": [],
+        "endsOn": null
+      },
+      "visible": true,
+      "createdAt": "2026-08-12T08:00:00.000Z",
+      "updatedAt": "2026-08-12T08:00:00.000Z"
+    }
   ]
 }

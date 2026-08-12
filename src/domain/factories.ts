@@ -29,6 +29,7 @@ export function createEmptyProject(options: CreateEmptyProjectOptions = {}): Map
     backgroundColor: DEFAULT_MAP_BACKGROUND_COLOR,
     categories: [],
     items: [],
+    events: [],
     createdAt: now,
     updatedAt: now,
   });
