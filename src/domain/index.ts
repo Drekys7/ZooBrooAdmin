@@ -1,4 +1,5 @@
 export * from "./coordinates";
+export * from "./eventSchedule";
 export * from "./factories";
 export * from "./models";
 

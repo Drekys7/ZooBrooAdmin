@@ -84,6 +84,10 @@ export const UpdateEventInputSchema = z.object({
 });
 
 export const DeleteEventInputSchema = z.object({ eventId: EntityIdSchema, now: z.string().datetime().optional() });
+export const DeleteEventsInputSchema = z.object({
+  eventIds: z.array(EntityIdSchema).min(1),
+  now: z.string().datetime().optional(),
+});
 
 export const CreateCategoryInputSchema = MapCategorySchema.omit({ id: true, sortOrder: true }).extend({
   id: EntityIdSchema.optional(),
@@ -126,6 +130,7 @@ export type DeleteItemInput = z.input<typeof DeleteItemInputSchema>;
 export type CreateEventInput = z.input<typeof CreateEventInputSchema>;
 export type UpdateEventInput = z.input<typeof UpdateEventInputSchema>;
 export type DeleteEventInput = z.input<typeof DeleteEventInputSchema>;
+export type DeleteEventsInput = z.input<typeof DeleteEventsInputSchema>;
 export type CreateCategoryInput = z.input<typeof CreateCategoryInputSchema>;
 export type UpdateCategoryInput = z.input<typeof UpdateCategoryInputSchema>;
 export type DeleteCategoryInput = z.input<typeof DeleteCategoryInputSchema>;
@@ -254,6 +259,15 @@ export function deleteEvent(projectValue: MapProject, inputValue: DeleteEventInp
   requireEvent(project, input.eventId);
   const now = timestamp(input.now);
   return finish({ ...project, events: project.events.filter((event) => event.id !== input.eventId), updatedAt: now });
+}
+
+export function deleteEvents(projectValue: MapProject, inputValue: DeleteEventsInput): MapProject {
+  const project = checkedProject(projectValue);
+  const input = DeleteEventsInputSchema.parse(inputValue);
+  const ids = new Set(input.eventIds);
+  for (const id of ids) requireEvent(project, id);
+  const now = timestamp(input.now);
+  return finish({ ...project, events: project.events.filter((event) => !ids.has(event.id)), updatedAt: now });
 }
 
 export function createCategory(projectValue: MapProject, inputValue: CreateCategoryInput): MapProject {

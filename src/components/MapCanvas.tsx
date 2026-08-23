@@ -54,6 +54,7 @@ export interface MapCanvasProps {
   addMode?: boolean;
   disabled?: boolean;
   focusRequest?: MapFocusRequest | null;
+  phonePreviewRequest?: number;
   className?: string;
   ariaLabel?: string;
   getItemIconUrl?: (item: MapItem, category: MapCategory | undefined) => string | null | undefined;
@@ -349,6 +350,7 @@ export function MapCanvas({
   addMode = false,
   disabled = false,
   focusRequest = null,
+  phonePreviewRequest = 0,
   className,
   ariaLabel = 'Interaktive Zoo-Karte',
   getItemIconUrl,
@@ -371,6 +373,15 @@ export function MapCanvas({
   const boundsRef = useRef<L.LatLngBounds | null>(null);
   const markersRef = useRef(new Map<string, L.Marker>());
   const markerSignaturesRef = useRef(new Map<string, string>());
+
+  useEffect(() => {
+    if (phonePreviewRequest <= 0) return;
+    setPhonePreview(true);
+    setClientPreviewItemId(null);
+    setClientDetailsOpen(false);
+    setClientEventsOpen(true);
+    setEventClock(new Date());
+  }, [phonePreviewRequest]);
   const draggingItemRef = useRef<string | null>(null);
   const callbacksRef = useRef({ onSelect, onAdd, onMove, onDragPreview });
   const stateRef = useRef({
@@ -866,6 +877,7 @@ export function MapCanvas({
           <PhoneEventPanel
             events={events}
             items={items}
+            now={eventClock}
             onFocusItem={focusClientEventItem}
             onClose={() => setClientEventsOpen(false)}
           />

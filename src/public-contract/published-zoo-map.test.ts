@@ -19,7 +19,11 @@ describe('PublishedZooMap public contract', () => {
     expect(snapshot.events[0]).toMatchObject({
       id: 'event-red-panda-feeding',
       relatedItemId: 'item-red-panda',
-      recurrence: { frequency: 'weekly', weekdays: ['tuesday', 'thursday', 'saturday'] },
+      recurrence: {
+        frequency: 'weekly',
+        weekdays: ['tuesday', 'thursday', 'saturday'],
+        excludedDates: [],
+      },
     })
     expect(snapshot.background.color).toBe('#DDE7D3')
     expect(snapshot.categories.map((category) => category.markerStyle)).toEqual(['image', 'circle'])

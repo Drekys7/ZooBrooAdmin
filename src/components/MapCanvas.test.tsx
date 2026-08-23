@@ -107,6 +107,34 @@ describe('MapCanvas rendering', () => {
     expect(container.querySelector('.map-canvas')).not.toHaveClass('is-phone-preview')
   })
 
+  it('opens the phone event preview when requested by the event editor', () => {
+    const { container, rerender } = render(
+      <MapCanvas
+        backgroundUrl={null}
+        backgroundWidth={1}
+        backgroundHeight={1}
+        items={[]}
+        categories={[]}
+        phonePreviewRequest={0}
+      />,
+    )
+
+    rerender(
+      <MapCanvas
+        backgroundUrl={null}
+        backgroundWidth={1}
+        backgroundHeight={1}
+        items={[]}
+        categories={[]}
+        phonePreviewRequest={1}
+      />,
+    )
+
+    const renderedMap = within(container)
+    expect(container.querySelector('.map-canvas')).toHaveClass('is-phone-preview')
+    expect(renderedMap.getByRole('dialog', { name: 'Veranstaltungen' })).toBeInTheDocument()
+  })
+
   it('focuses a linked map item from the phone event programme', () => {
     const category: MapCategory = {
       id: 'animals', name: 'Tiere', type: 'animal', color: '#4F8F64', defaultIconAssetId: null, visible: true, sortOrder: 0,
@@ -119,7 +147,7 @@ describe('MapCanvas rendering', () => {
     const zooEvent: MapEvent = {
       id: 'feeding', title: 'Pinguinfütterung', description: '', location: 'Pinguinanlage', relatedItemId: item.id,
       startDate: '2099-08-15', startTime: '11:00', endTime: null,
-      recurrence: { frequency: 'weekly', interval: 1, weekdays: ['saturday'], monthDays: [], endsOn: null }, visible: true,
+      recurrence: { frequency: 'weekly', interval: 1, weekdays: ['saturday'], monthDays: [], endsOn: null, excludedDates: [] }, visible: true,
       createdAt: '2026-08-12T08:00:00.000Z', updatedAt: '2026-08-12T08:00:00.000Z',
     }
     const onSelect = vi.fn()

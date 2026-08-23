@@ -10,6 +10,7 @@ export const OperationTypeSchema = z.enum([
   "createEvent",
   "updateEvent",
   "deleteEvent",
+  "deletePastEvents",
   "createCategory",
   "updateCategory",
   "deleteCategory",

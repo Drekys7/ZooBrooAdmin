@@ -6,6 +6,7 @@ import {
   createItem,
   deleteCategory,
   deleteEvent,
+  deleteEvents,
   deleteItem,
   duplicateItem,
   exportProjectToJson,
@@ -66,6 +67,7 @@ interface EditorState {
   createEvent: (input: Omit<CreateEventInput, 'id' | 'now'>) => string
   updateEvent: (id: string, patch: Partial<MapEvent>) => void
   deleteEvent: (id: string) => void
+  deleteEvents: (ids: string[]) => void
   beginContinuousEdit: () => void
   endContinuousEdit: () => void
   deleteSelectedCategory: () => void
@@ -361,6 +363,11 @@ export const useEditorStore = create<EditorState>((set, get) => {
       if (Object.keys(allowed).length) commit('updateEvent', 'event', id, (project) => updateEvent(project, { eventId: id, patch: allowed }))
     },
     deleteEvent: (id) => commit('deleteEvent', 'event', id, (project) => deleteEvent(project, { eventId: id })),
+    deleteEvents: (ids) => {
+      const uniqueIds = [...new Set(ids)]
+      if (uniqueIds.length === 0) return
+      commit('deletePastEvents', 'event', 'past-events', (project) => deleteEvents(project, { eventIds: uniqueIds }))
+    },
     beginContinuousEdit: () => {
       const project = get().project
       if (project) history.beginTransaction(project)

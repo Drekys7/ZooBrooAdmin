@@ -41,6 +41,7 @@ function App() {
   const [activityOpen, setActivityOpen] = useState(false)
   const [toasts, setToasts] = useState<ToastData[]>([])
   const [mapFocusRequest, setMapFocusRequest] = useState<MapFocusRequest | null>(null)
+  const [phonePreviewRequest, setPhonePreviewRequest] = useState(0)
   const importRef = useRef<HTMLInputElement>(null)
   const backgroundRef = useRef<HTMLInputElement>(null)
   const lastError = useRef<string | null>(null)
@@ -78,7 +79,7 @@ function App() {
     const handleKeyDown = (event: KeyboardEvent) => {
       const editable = event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.target instanceof HTMLSelectElement
       if (event.key === 'Escape') {
-        if (eventManagerOpen) setEventManagerOpen(false)
+        if (eventManagerOpen) return
         else if (assetManagerOpen) { setAssetManagerOpen(false); setAssetSelectionField(null) }
         else if (deleteDialogOpen) setDeleteDialogOpen(false)
         else if (deleteCategoryDialogOpen) setDeleteCategoryDialogOpen(false)
@@ -241,6 +242,7 @@ function App() {
             selectedItemId={editor.selectedItemId}
             addMode={editor.activeTool === 'add'}
             focusRequest={mapFocusRequest}
+            phonePreviewRequest={phonePreviewRequest}
             getItemIconUrl={(item, category) => {
               const assetId = item.iconAssetId ?? category?.defaultIconAssetId
               return assetId ? editor.assetUrls[assetId] : null
@@ -322,6 +324,15 @@ function App() {
         onDelete={(id) => {
           editor.deleteEvent(id)
           toast('Veranstaltung gelöscht', 'info')
+        }}
+        onDeletePast={(ids) => {
+          editor.deleteEvents(ids)
+          toast(`${ids.length} vergangene Veranstaltungen gelöscht`, 'info')
+        }}
+        onPreview={(event) => {
+          if (event.relatedItemId) focusItemOnMap(event.relatedItemId)
+          setEventManagerOpen(false)
+          setPhonePreviewRequest((request) => request + 1)
         }}
         onClose={() => setEventManagerOpen(false)}
       />

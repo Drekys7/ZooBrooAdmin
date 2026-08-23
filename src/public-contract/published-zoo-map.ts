@@ -116,6 +116,7 @@ export const PublishedEventRecurrenceSchema = z.object({
   weekdays: z.array(WeekdaySchema),
   monthDays: z.array(z.number().int().min(1).max(31)),
   endsOn: calendarDateSchema.nullable(),
+  excludedDates: z.array(calendarDateSchema).default([]),
 }).strict()
 
 export const PublishedEventSchema = z.object({

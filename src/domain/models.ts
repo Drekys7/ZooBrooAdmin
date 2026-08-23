@@ -101,6 +101,7 @@ export const EventRecurrenceSchema = z
     weekdays: z.array(WeekdaySchema).default([]),
     monthDays: z.array(z.number().int().min(1).max(31)).default([]),
     endsOn: CalendarDateSchema.nullable().default(null),
+    excludedDates: z.array(CalendarDateSchema).default([]),
   })
   .superRefine((recurrence, context) => {
     if (recurrence.frequency === "weekly" && recurrence.weekdays.length === 0) {

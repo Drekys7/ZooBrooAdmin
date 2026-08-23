@@ -13,6 +13,7 @@ import {
   categoryShadowColor,
   categoryShadowEnabled,
   categoryShadowOpacity,
+  eventLifecycleStatus,
   type MapProject,
 } from "../domain";
 import {
@@ -55,6 +56,7 @@ export function buildPublishedSnapshot(
 
   const backgroundAsset = publishedAsset(project.backgroundAssetId, resolveAssetUrl);
   if (!backgroundAsset) throw new Error("Unable to resolve the project background");
+  const publishedClock = new Date(publishedAt);
 
   return PublishedZooMapSchema.parse({
     schemaVersion: project.schemaVersion,
@@ -111,7 +113,9 @@ export function buildPublishedSnapshot(
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
     })),
-    events: project.events.map((event) => ({
+    events: project.events
+      .filter((event) => eventLifecycleStatus(event, publishedClock) === 'upcoming')
+      .map((event) => ({
       id: event.id,
       title: event.title,
       description: event.description,
@@ -124,7 +128,7 @@ export function buildPublishedSnapshot(
       visible: event.visible,
       createdAt: event.createdAt,
       updatedAt: event.updatedAt,
-    })),
+      })),
   });
 }
 

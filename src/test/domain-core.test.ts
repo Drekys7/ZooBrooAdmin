@@ -7,6 +7,7 @@ import {
   createItem,
   deleteCategory,
   deleteEvent,
+  deleteEvents,
   duplicateItem,
   exportProjectToJson,
   importProjectFromJson,
@@ -107,6 +108,32 @@ describe("history and serialization", () => {
     expect(history.getJournal()).toHaveLength(3);
   });
 
+  it("restores a bulk event deletion with one undo step", () => {
+    const eventDefaults = {
+      description: "",
+      location: "",
+      relatedItemId: null,
+      startDate: "2026-07-12",
+      startTime: "10:00",
+      endTime: null,
+      recurrence: { frequency: "once" as const, interval: 1, weekdays: [], monthDays: [], endsOn: null },
+      visible: true,
+      now,
+    };
+    let project = createEvent(projectWithCategory(), { ...eventDefaults, id: "past-1", title: "Gestern" });
+    project = createEvent(project, { ...eventDefaults, id: "past-2", title: "Vorgestern", startDate: "2026-07-11" });
+    const history = new CommandHistory();
+    const deleted = history.execute(
+      project,
+      { type: "deletePastEvents", affectedEntityType: "event", affectedEntityId: "past-events" },
+      (current) => deleteEvents(current, { eventIds: ["past-1", "past-2"], now }),
+    );
+
+    expect(deleted.events).toHaveLength(0);
+    expect(history.undo(deleted)?.project.events.map((event) => event.id)).toEqual(["past-1", "past-2"]);
+    expect(history.canUndo()).toBe(false);
+  });
+
   it("groups continuous slider updates into one undo step", () => {
     const history = new CommandHistory();
     const original = createEmptyProject({ id: "slider-project", title: "Slider" });
@@ -170,6 +197,26 @@ describe("history and serialization", () => {
     });
     project.categories[0]!.name = "Changed after publish";
     expect(snapshot.categories[0]!.name).toBe("Tiere");
+  });
+
+  it("publishes only visitor-visible events that still have an upcoming occurrence", () => {
+    let project = setBackground(projectWithCategory(), { assetId: "map", width: 2000, height: 1000, now });
+    const eventDefaults = {
+      description: "",
+      location: "",
+      relatedItemId: null,
+      startTime: "10:00",
+      endTime: null,
+      recurrence: { frequency: "once" as const, interval: 1, weekdays: [], monthDays: [], endsOn: null },
+      now,
+    };
+    project = createEvent(project, { ...eventDefaults, id: "future", title: "Morgen", startDate: "2026-07-14", visible: true });
+    project = createEvent(project, { ...eventDefaults, id: "past", title: "Gestern", startDate: "2026-07-12", visible: true });
+    project = createEvent(project, { ...eventDefaults, id: "draft", title: "Entwurf", startDate: "2026-07-14", visible: false });
+
+    const snapshot = buildPublishedSnapshot(project, 1, now);
+
+    expect(snapshot.events.map((event) => event.id)).toEqual(["future"]);
   });
 
   it("refuses to publish a draft without a background", () => {
