@@ -69,6 +69,7 @@ export function buildPublishedSnapshot(
       height: project.backgroundHeight,
       color: project.backgroundColor,
     },
+    mapSettings: project.mapSettings,
     categories: project.categories.map((category) => ({
       id: category.id,
       name: category.name,

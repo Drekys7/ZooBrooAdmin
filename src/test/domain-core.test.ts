@@ -15,6 +15,7 @@ import {
   setBackground,
   setBackgroundColor,
   updateItem,
+  updateMapSettings,
   updateEvent,
 } from "../application";
 import { createEmptyProject, denormalizePosition, normalizePosition } from "../domain";
@@ -170,6 +171,29 @@ describe("history and serialization", () => {
     expect(importProjectFromJson(JSON.stringify(legacy)).backgroundColor).toBe("#DDDDDD");
   });
 
+  it("stores map navigation settings and supplies defaults for legacy projects", () => {
+    const project = projectWithCategory();
+    const updated = updateMapSettings(project, {
+      patch: { minZoomScale: 2, maxZoomScale: 15, navigationPaddingX: 0.2, navigationPaddingY: 0.6 },
+      now,
+    });
+    expect(updated.mapSettings).toEqual({
+      minZoomScale: 2,
+      maxZoomScale: 15,
+      navigationPaddingX: 0.2,
+      navigationPaddingY: 0.6,
+    });
+
+    const legacy = JSON.parse(exportProjectToJson(project)) as Record<string, unknown>;
+    delete legacy.mapSettings;
+    expect(importProjectFromJson(JSON.stringify(legacy)).mapSettings).toEqual({
+      minZoomScale: 0.5,
+      maxZoomScale: 4,
+      navigationPaddingX: 0.45,
+      navigationPaddingY: 0.45,
+    });
+  });
+
   it("creates a detached published snapshot", () => {
     const project = createEvent(
       setBackground(projectWithCategory(), { assetId: "map", width: 2000, height: 1000, now }),
@@ -193,6 +217,7 @@ describe("history and serialization", () => {
       version: 3,
       publishedAt: now,
       background: { assetId: "map", url: "/assets/map", width: 2000, height: 1000, color: "#DDDDDD" },
+      mapSettings: { minZoomScale: 0.5, maxZoomScale: 4, navigationPaddingX: 0.45, navigationPaddingY: 0.45 },
       events: [{ id: "daily-talk", recurrence: { frequency: "daily", interval: 1 } }],
     });
     project.categories[0]!.name = "Changed after publish";

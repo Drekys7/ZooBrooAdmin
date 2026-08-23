@@ -1,6 +1,7 @@
 import {
   CURRENT_SCHEMA_VERSION,
   DEFAULT_MAP_BACKGROUND_COLOR,
+  DEFAULT_MAP_SETTINGS,
   MapProjectSchema,
   type MapProject,
 } from "./models";
@@ -27,6 +28,7 @@ export function createEmptyProject(options: CreateEmptyProjectOptions = {}): Map
     backgroundWidth: null,
     backgroundHeight: null,
     backgroundColor: DEFAULT_MAP_BACKGROUND_COLOR,
+    mapSettings: DEFAULT_MAP_SETTINGS,
     categories: [],
     items: [],
     events: [],

@@ -10,6 +10,12 @@
     "height": 2731,
     "color": "#DDE7D3"
   },
+  "mapSettings": {
+    "minZoomScale": 0.5,
+    "maxZoomScale": 4,
+    "navigationPaddingX": 0.45,
+    "navigationPaddingY": 0.45
+  },
   "categories": [
     {
       "id": "category-animals",

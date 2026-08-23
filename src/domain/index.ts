@@ -13,6 +13,7 @@ export {
   PublishedEventSchema,
   PublishedFactSchema,
   PublishedMapItemSchema,
+  PublishedMapSettingsSchema,
   PublishedZooMapSchema,
   validatePublishedZooMap,
 } from "../public-contract";
@@ -24,5 +25,6 @@ export type {
   PublishedEventRecurrence,
   PublishedFact,
   PublishedMapItem,
+  PublishedMapSettings,
   PublishedZooMap,
 } from "../public-contract";

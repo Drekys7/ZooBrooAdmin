@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
+import L from 'leaflet';
 import { describe, expect, it, vi } from 'vitest';
 import type { MapCategory, MapEvent, MapItem } from '../domain/models';
 import {
@@ -9,10 +10,18 @@ import {
   markerIconAnchor,
   markerShadowColor,
   markerVisualMetrics,
+  mapViewSettingsForMode,
+  navigationLimitPoints,
+  navigationPreviewPoint,
   imageMaskRadiusToCssRadius,
   normalizePoint,
   positionToLatLng,
+  previewMapSetting,
+  relativeZoomScale,
   resolveMarkerIconUrl,
+  unconstrainedFitZoom,
+  zoomForRelativeScale,
+  zoomLimitsForFit,
 } from './MapCanvas';
 
 describe('MapCanvas coordinate helpers', () => {
@@ -36,6 +45,65 @@ describe('MapCanvas coordinate helpers', () => {
   it('clamps coordinates dragged beyond the background bounds', () => {
     expect(normalizePoint({ x: -20, y: 1200 }, 1000, 1000)).toEqual({ x: 0, y: 1 });
   });
+
+  it('derives zoom and navigation limits relative to the fitted map', () => {
+    const configuredSettings = { minZoomScale: 2, maxZoomScale: 15, navigationPaddingX: 0.1, navigationPaddingY: 0.2 }
+    expect(mapViewSettingsForMode(true, configuredSettings)).toBe(configuredSettings)
+    expect(mapViewSettingsForMode(false, configuredSettings)).toEqual({
+      minZoomScale: 0.5,
+      maxZoomScale: 4,
+      navigationPaddingX: 0.45,
+      navigationPaddingY: 0.45,
+    })
+    expect(zoomLimitsForFit(-2, { minZoomScale: 0.5, maxZoomScale: 4 })).toEqual({ minZoom: -3, maxZoom: 0 })
+    expect(navigationLimitPoints(1000, 500, { navigationPaddingX: 0.2, navigationPaddingY: 0.4 })).toEqual({
+      southWest: [-200, -200],
+      northEast: [700, 1200],
+    })
+    expect(navigationPreviewPoint(1000, 500, { navigationPaddingX: 0.2, navigationPaddingY: 0.4 }, 'horizontal')).toEqual({
+      lat: 250,
+      lng: 1200,
+    })
+    expect(navigationPreviewPoint(1000, 500, { navigationPaddingX: 0.2, navigationPaddingY: 0.4 }, 'vertical')).toEqual({
+      lat: 700,
+      lng: 500,
+    })
+    expect(relativeZoomScale(1, -1)).toBe(4)
+    expect(zoomForRelativeScale(-1, 4)).toBe(1)
+  })
+
+  it('moves the live preview to the edited zoom and navigation limits', () => {
+    const settings = { minZoomScale: 0.5, maxZoomScale: 4, navigationPaddingX: 0.2, navigationPaddingY: 0.4 }
+    const imageBounds = L.latLngBounds([0, 0], [500, 1000])
+    const createMap = (currentZoom = -2) => ({
+      setMaxBounds: vi.fn(),
+      project: vi.fn((point: L.LatLng, zoom: number) => L.point(point.lng * (2 ** zoom), point.lat * (2 ** zoom))),
+      getSize: vi.fn(() => L.point(280, 155)),
+      getScaleZoom: vi.fn((scale: number, zoom: number) => zoom + Math.log2(scale)),
+      setMinZoom: vi.fn(),
+      setMaxZoom: vi.fn(),
+      getZoom: vi.fn(() => currentZoom),
+      setZoom: vi.fn(),
+      setView: vi.fn(),
+    }) as unknown as L.Map
+
+    const minZoomMap = createMap()
+    previewMapSetting(minZoomMap, imageBounds, 1000, 500, settings, [30, 30], 'minZoom')
+    expect(minZoomMap.setView).toHaveBeenLastCalledWith(imageBounds.getCenter(), -3, { animate: false })
+
+    const maxZoomMap = createMap()
+    previewMapSetting(maxZoomMap, imageBounds, 1000, 500, settings, [30, 30], 'maxZoom')
+    expect(maxZoomMap.setView).toHaveBeenLastCalledWith(imageBounds.getCenter(), 0, { animate: false })
+
+    const horizontalMap = createMap(2)
+    expect(unconstrainedFitZoom(horizontalMap, imageBounds, [30, 30])).toBeCloseTo(-2)
+    previewMapSetting(horizontalMap, imageBounds, 1000, 500, settings, [30, 30], 'horizontal')
+    expect(horizontalMap.setView).toHaveBeenLastCalledWith([250, 1200], -2, { animate: false })
+
+    const verticalMap = createMap(2)
+    previewMapSetting(verticalMap, imageBounds, 1000, 500, settings, [30, 30], 'vertical')
+    expect(verticalMap.setView).toHaveBeenLastCalledWith([700, 500], -2, { animate: false })
+  })
 });
 
 describe('MapCanvas marker interaction', () => {
@@ -176,6 +244,7 @@ describe('MapCanvas rendering', () => {
 
   it('applies and reports the configured map background color', () => {
     const onBackgroundColorChange = vi.fn();
+    const onMapSettingsChange = vi.fn();
     const { container } = render(
       <MapCanvas
         backgroundUrl={null}
@@ -185,6 +254,7 @@ describe('MapCanvas rendering', () => {
         items={[]}
         categories={[]}
         onBackgroundColorChange={onBackgroundColorChange}
+        onMapSettingsChange={onMapSettingsChange}
       />,
     );
 
@@ -195,14 +265,44 @@ describe('MapCanvas rendering', () => {
       backgroundColor: '#B8D8C0',
     });
 
-    const colorInput = container.querySelector(
-      'input[aria-label="Hintergrundfarbe der Karte"]',
-    );
+    const renderedMap = within(container)
+    fireEvent.click(renderedMap.getByRole('button', { name: 'Globale Einstellungen öffnen' }))
+    expect(renderedMap.getByRole('dialog', { name: 'Karteneinstellungen' })).toBeInTheDocument()
+    const colorInput = container.querySelector('input[aria-label="Hintergrundfarbe der Karte"]');
     expect(colorInput).toBeInstanceOf(HTMLInputElement);
     fireEvent.change(colorInput!, {
       target: { value: '#a1b2c3' },
     });
     expect(onBackgroundColorChange).toHaveBeenCalledWith('#a1b2c3');
+    const horizontalBoundary = renderedMap.getByLabelText('Horizontaler Rand')
+    fireEvent.pointerDown(horizontalBoundary)
+    expect(container.querySelector('.map-canvas')).toHaveClass('is-phone-preview')
+    fireEvent.change(horizontalBoundary, { target: { value: '30' } })
+    fireEvent.pointerUp(horizontalBoundary)
+    expect(onMapSettingsChange).toHaveBeenCalledWith({ navigationPaddingX: 0.3 })
+    fireEvent.click(renderedMap.getByRole('button', { name: 'Desktopansicht anzeigen' }))
+    const zoomLimit = renderedMap.getByLabelText('Maximale Vergrößerung')
+    fireEvent.pointerDown(zoomLimit)
+    expect(container.querySelector('.map-canvas')).toHaveClass('is-phone-preview')
+    fireEvent.pointerUp(zoomLimit)
+    expect(renderedMap.getByLabelText('Maximale Verkleinerung')).toHaveAttribute('max', '200')
+    fireEvent.change(renderedMap.getByLabelText('Maximale Verkleinerung'), { target: { value: '200' } })
+    expect(onMapSettingsChange).toHaveBeenCalledWith({ minZoomScale: 2 })
+    const manualZoomOut = renderedMap.getByLabelText('Maximale Verkleinerung: Prozentwert')
+    fireEvent.focus(manualZoomOut)
+    fireEvent.change(manualZoomOut, { target: { value: '275' } })
+    fireEvent.blur(manualZoomOut)
+    expect(onMapSettingsChange).toHaveBeenCalledWith({ minZoomScale: 2.75 })
+    expect(manualZoomOut).not.toHaveAttribute('max')
+    expect(renderedMap.getByLabelText('Maximale Vergrößerung')).toHaveAttribute('max', '1500')
+    fireEvent.change(renderedMap.getByLabelText('Maximale Vergrößerung'), { target: { value: '1500' } })
+    expect(onMapSettingsChange).toHaveBeenCalledWith({ maxZoomScale: 15 })
+    const manualZoomIn = renderedMap.getByLabelText('Maximale Vergrößerung: Prozentwert')
+    fireEvent.focus(manualZoomIn)
+    fireEvent.change(manualZoomIn, { target: { value: '2000' } })
+    fireEvent.blur(manualZoomIn)
+    expect(onMapSettingsChange).toHaveBeenCalledWith({ maxZoomScale: 20 })
+    expect(manualZoomIn).not.toHaveAttribute('max')
   });
 
   it('scales image, circle and upright pin marker dimensions', () => {

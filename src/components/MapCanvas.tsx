@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
-import { CalendarClock, LocateFixed, Minus, Monitor, Palette, Plus, Smartphone } from 'lucide-react';
+import { CalendarClock, LocateFixed, Minus, Monitor, Palette, Plus, Settings2, Smartphone, X } from 'lucide-react';
 import {
+  DEFAULT_MAP_SETTINGS,
   categoryIconScale,
   categoryIconContentScale,
   categoryIconBackgroundColor,
@@ -19,6 +20,7 @@ import {
   type MapEvent,
   type MapFact,
   type MapItem,
+  type MapSettings,
   type MarkerStyle,
 } from '../domain/models';
 import { getCategoryIconUrl } from './CategoryIcon';
@@ -47,6 +49,7 @@ export interface MapCanvasProps {
   backgroundWidth: number;
   backgroundHeight: number;
   backgroundColor?: string;
+  mapSettings?: MapSettings;
   items: readonly MapItem[];
   categories: readonly MapCategory[];
   events?: readonly MapEvent[];
@@ -65,10 +68,202 @@ export interface MapCanvasProps {
   onMove?: (itemId: string, position: NormalizedPosition) => void;
   onDragPreview?: (itemId: string, position: NormalizedPosition) => void;
   onBackgroundColorChange?: (color: string) => void;
+  onMapSettingsChange?: (patch: Partial<MapSettings>) => void;
+  onSettingsEditStart?: () => void;
+  onSettingsEditEnd?: () => void;
 }
 
 const DEFAULT_MARKER_COLOR = '#315f4b';
 const DEFAULT_DIMENSION = 1;
+const DEFAULT_VIEW_SETTINGS: MapSettings = { ...DEFAULT_MAP_SETTINGS };
+
+export function mapViewSettingsForMode(phonePreview: boolean, settings: MapSettings): MapSettings {
+  return phonePreview ? settings : DEFAULT_VIEW_SETTINGS;
+}
+
+export function zoomLimitsForFit(fitZoom: number, settings: Pick<MapSettings, 'minZoomScale' | 'maxZoomScale'>): { minZoom: number; maxZoom: number } {
+  const minZoom = fitZoom + Math.log2(settings.minZoomScale);
+  const maxZoom = fitZoom + Math.log2(settings.maxZoomScale);
+  return { minZoom, maxZoom: Math.max(minZoom, maxZoom) };
+}
+
+export function relativeZoomScale(zoom: number, fitZoom: number): number {
+  return 2 ** (zoom - fitZoom);
+}
+
+export function zoomForRelativeScale(fitZoom: number, scale: number): number {
+  return fitZoom + Math.log2(scale);
+}
+
+export function unconstrainedFitZoom(
+  map: L.Map,
+  imageBounds: L.LatLngBounds,
+  padding: [number, number],
+): number {
+  const currentZoom = map.getZoom();
+  const referenceZoom = Number.isFinite(currentZoom) ? currentZoom : 0;
+  const projectedBounds = L.bounds(
+    map.project(imageBounds.getNorthWest(), referenceZoom),
+    map.project(imageBounds.getSouthEast(), referenceZoom),
+  );
+  const boundsSize = projectedBounds.getSize();
+  const viewportSize = map.getSize().subtract(L.point(padding[0], padding[1]));
+  if (boundsSize.x <= 0 || boundsSize.y <= 0 || viewportSize.x <= 0 || viewportSize.y <= 0) {
+    return referenceZoom;
+  }
+  const scale = Math.min(viewportSize.x / boundsSize.x, viewportSize.y / boundsSize.y);
+  return map.getScaleZoom(scale, referenceZoom);
+}
+
+export function navigationLimitPoints(
+  width: number,
+  height: number,
+  settings: Pick<MapSettings, 'navigationPaddingX' | 'navigationPaddingY'>,
+): { southWest: [number, number]; northEast: [number, number] } {
+  const horizontal = width * settings.navigationPaddingX;
+  const vertical = height * settings.navigationPaddingY;
+  return {
+    southWest: [-vertical, -horizontal],
+    northEast: [height + vertical, width + horizontal],
+  };
+}
+
+export function navigationPreviewPoint(
+  width: number,
+  height: number,
+  settings: Pick<MapSettings, 'navigationPaddingX' | 'navigationPaddingY'>,
+  axis: 'horizontal' | 'vertical',
+): { lat: number; lng: number } {
+  const limits = navigationLimitPoints(width, height, settings);
+  return axis === 'horizontal'
+    ? { lat: height / 2, lng: limits.northEast[1] }
+    : { lat: limits.northEast[0], lng: width / 2 };
+}
+
+function applyMapViewSettings(
+  map: L.Map,
+  imageBounds: L.LatLngBounds,
+  width: number,
+  height: number,
+  settings: MapSettings,
+  padding: [number, number],
+): void {
+  const limits = navigationLimitPoints(width, height, settings);
+  map.setMaxBounds(L.latLngBounds(limits.southWest, limits.northEast));
+  const fitZoom = unconstrainedFitZoom(map, imageBounds, padding);
+  const { minZoom, maxZoom } = zoomLimitsForFit(fitZoom, settings);
+  map.setMinZoom(minZoom);
+  map.setMaxZoom(maxZoom);
+  const currentZoom = map.getZoom();
+  if (Number.isFinite(currentZoom) && (currentZoom < minZoom || currentZoom > maxZoom)) {
+    map.setZoom(Math.min(maxZoom, Math.max(minZoom, currentZoom)), { animate: false });
+  }
+}
+
+type MapSettingsPreview = 'minZoom' | 'maxZoom' | 'horizontal' | 'vertical';
+
+export function previewMapSetting(
+  map: L.Map,
+  imageBounds: L.LatLngBounds,
+  width: number,
+  height: number,
+  settings: MapSettings,
+  padding: [number, number],
+  preview: MapSettingsPreview,
+): void {
+  applyMapViewSettings(map, imageBounds, width, height, settings, padding);
+  const fitZoom = unconstrainedFitZoom(map, imageBounds, padding);
+  const { minZoom, maxZoom } = zoomLimitsForFit(fitZoom, settings);
+
+  if (preview === 'minZoom' || preview === 'maxZoom') {
+    map.setView(imageBounds.getCenter(), preview === 'minZoom' ? minZoom : maxZoom, { animate: false });
+    return;
+  }
+
+  const previewZoom = Math.min(maxZoom, Math.max(minZoom, fitZoom));
+  const target = navigationPreviewPoint(width, height, settings, preview);
+  map.setView([target.lat, target.lng], previewZoom, { animate: false });
+}
+
+interface MapSettingsSliderProps {
+  label: string;
+  description: string;
+  value: number;
+  displayValue: string;
+  min: number;
+  max: number;
+  step: number;
+  manualInput?: boolean;
+  onChange: (value: number) => void;
+  onEditStart?: () => void;
+  onEditEnd?: () => void;
+}
+
+function MapSettingsSlider({ label, description, value, displayValue, min, max, step, manualInput = false, onChange, onEditStart, onEditEnd }: MapSettingsSliderProps) {
+  const [draftValue, setDraftValue] = useState(String(value));
+  const manualEditingRef = useRef(false);
+
+  useEffect(() => {
+    if (!manualEditingRef.current) setDraftValue(String(value));
+  }, [value]);
+
+  const startManualEdit = () => {
+    manualEditingRef.current = true;
+    setDraftValue(String(value));
+    onEditStart?.();
+  };
+
+  const finishManualEdit = () => {
+    const parsedValue = Number(draftValue);
+    const nextValue = Number.isFinite(parsedValue) && parsedValue > 0 ? parsedValue : value;
+    manualEditingRef.current = false;
+    setDraftValue(String(nextValue));
+    if (nextValue !== value) onChange(nextValue);
+    onEditEnd?.();
+  };
+
+  return (
+    <label className="map-global-settings__slider">
+      <span>
+        <strong>{label}</strong>
+        {manualInput ? (
+          <span className="map-global-settings__manual-value">
+            <input
+              type="number"
+              aria-label={`${label}: Prozentwert`}
+              step="any"
+              value={draftValue}
+              onFocus={startManualEdit}
+              onChange={(event) => setDraftValue(event.target.value)}
+              onBlur={finishManualEdit}
+              onKeyDown={(event) => {
+                if (event.key !== 'Enter') return;
+                event.preventDefault();
+                event.currentTarget.blur();
+              }}
+            />
+            <span>%</span>
+          </span>
+        ) : <output>{displayValue}</output>}
+      </span>
+      <small>{description}</small>
+      <input
+        type="range"
+        aria-label={label}
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(event) => onChange(Number(event.target.value))}
+        onPointerDown={onEditStart}
+        onPointerUp={onEditEnd}
+        onPointerCancel={onEditEnd}
+        onKeyDown={onEditStart}
+        onKeyUp={onEditEnd}
+      />
+    </label>
+  );
+}
 
 export function clampNormalized(value: number): number {
   if (!Number.isFinite(value)) return 0;
@@ -343,6 +538,7 @@ export function MapCanvas({
   backgroundWidth,
   backgroundHeight,
   backgroundColor = '#DDDDDD',
+  mapSettings = DEFAULT_VIEW_SETTINGS,
   items,
   categories,
   events = [],
@@ -361,21 +557,46 @@ export function MapCanvas({
   onMove,
   onDragPreview,
   onBackgroundColorChange,
+  onMapSettingsChange,
+  onSettingsEditStart,
+  onSettingsEditEnd,
 }: MapCanvasProps) {
   const [phonePreview, setPhonePreview] = useState(false);
   const [clientPreviewItemId, setClientPreviewItemId] = useState<string | null>(null);
   const [clientDetailsOpen, setClientDetailsOpen] = useState(false);
   const [clientEventsOpen, setClientEventsOpen] = useState(false);
   const [eventClock, setEventClock] = useState(() => new Date());
+  const [globalSettingsOpen, setGlobalSettingsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const globalSettingsRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const overlayRef = useRef<L.ImageOverlay | null>(null);
   const boundsRef = useRef<L.LatLngBounds | null>(null);
   const markersRef = useRef(new Map<string, L.Marker>());
   const markerSignaturesRef = useRef(new Map<string, string>());
+  const navigationPreviewOriginRef = useRef<{ center: L.LatLng; zoom: number } | null>(null);
+  const viewportTransitionRef = useRef<{ center: L.LatLng; zoomScale: number } | null>(null);
+  const settingsPreviewRef = useRef<MapSettingsPreview | null>(null);
+
+  const captureViewportTransition = () => {
+    const map = mapRef.current;
+    const bounds = boundsRef.current;
+    if (!map || !bounds) return;
+    const currentZoom = map.getZoom();
+    if (!Number.isFinite(currentZoom)) {
+      viewportTransitionRef.current = null;
+      return;
+    }
+    const fitZoom = unconstrainedFitZoom(map, bounds, phonePreview ? [14, 14] : [30, 30]);
+    viewportTransitionRef.current = {
+      center: map.getCenter(),
+      zoomScale: relativeZoomScale(currentZoom, fitZoom),
+    };
+  };
 
   useEffect(() => {
     if (phonePreviewRequest <= 0) return;
+    if (!phonePreview) captureViewportTransition();
     setPhonePreview(true);
     setClientPreviewItemId(null);
     setClientDetailsOpen(false);
@@ -391,6 +612,7 @@ export function MapCanvas({
     hasBackground: Boolean(backgroundUrl),
     width: safeDimension(backgroundWidth),
     height: safeDimension(backgroundHeight),
+    mapSettings,
   });
 
   callbacksRef.current = { onSelect, onAdd, onMove, onDragPreview };
@@ -401,7 +623,24 @@ export function MapCanvas({
     hasBackground: Boolean(backgroundUrl),
     width: safeDimension(backgroundWidth),
     height: safeDimension(backgroundHeight),
+    mapSettings,
   };
+
+  useEffect(() => {
+    if (!globalSettingsOpen) return;
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!globalSettingsRef.current?.contains(event.target as Node)) setGlobalSettingsOpen(false);
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setGlobalSettingsOpen(false);
+    };
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [globalSettingsOpen]);
 
   const categoriesById = useMemo(
     () => new Map(categories.map((category) => [category.id, category])),
@@ -417,12 +656,12 @@ export function MapCanvas({
       zoomControl: false,
       doubleClickZoom: false,
       attributionControl: false,
-      minZoom: -6,
-      maxZoom: 5,
+      minZoom: -10,
+      maxZoom: 10,
       zoomSnap: 0.25,
       zoomDelta: 0.5,
       wheelPxPerZoomLevel: 90,
-      maxBoundsViscosity: 0.72,
+      maxBoundsViscosity: 1,
     });
     mapRef.current = map;
 
@@ -456,6 +695,18 @@ export function MapCanvas({
         ? null
         : new ResizeObserver(() => {
             map.invalidateSize({ pan: false });
+            const bounds = boundsRef.current;
+            const current = stateRef.current;
+            if (bounds) {
+              applyMapViewSettings(
+                map,
+                bounds,
+                current.width,
+                current.height,
+                mapViewSettingsForMode(current.phonePreview, current.mapSettings),
+                current.phonePreview ? [14, 14] : [30, 30],
+              );
+            }
           });
     resizeObserver?.observe(container);
 
@@ -483,7 +734,15 @@ export function MapCanvas({
     const height = safeDimension(backgroundHeight);
     const bounds = L.latLngBounds([0, 0], [height, width]);
     boundsRef.current = bounds;
-    map.setMaxBounds(bounds.pad(0.45));
+    const current = stateRef.current;
+    applyMapViewSettings(
+      map,
+      bounds,
+      width,
+      height,
+      mapViewSettingsForMode(current.phonePreview, current.mapSettings),
+      current.phonePreview ? [14, 14] : [30, 30],
+    );
 
     if (backgroundUrl) {
       overlayRef.current = L.imageOverlay(backgroundUrl, bounds, {
@@ -494,10 +753,46 @@ export function MapCanvas({
 
     const frame = requestAnimationFrame(() => {
       map.invalidateSize({ pan: false });
-      map.fitBounds(bounds, { animate: false, padding: [30, 30] });
+      const next = stateRef.current;
+      applyMapViewSettings(
+        map,
+        bounds,
+        width,
+        height,
+        mapViewSettingsForMode(next.phonePreview, next.mapSettings),
+        next.phonePreview ? [14, 14] : [30, 30],
+      );
+      map.fitBounds(bounds, { animate: false, padding: next.phonePreview ? [14, 14] : [30, 30] });
     });
     return () => cancelAnimationFrame(frame);
   }, [backgroundHeight, backgroundUrl, backgroundWidth]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    const bounds = boundsRef.current;
+    if (!map || !bounds) return;
+    map.invalidateSize({ pan: false });
+    applyMapViewSettings(
+      map,
+      bounds,
+      safeDimension(backgroundWidth),
+      safeDimension(backgroundHeight),
+      mapViewSettingsForMode(phonePreview, mapSettings),
+      phonePreview ? [14, 14] : [30, 30],
+    );
+    const settingsPreview = settingsPreviewRef.current;
+    if (phonePreview && settingsPreview) {
+      previewMapSetting(
+        map,
+        bounds,
+        safeDimension(backgroundWidth),
+        safeDimension(backgroundHeight),
+        mapSettings,
+        [14, 14],
+        settingsPreview,
+      );
+    }
+  }, [backgroundHeight, backgroundWidth, mapSettings, phonePreview]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -646,14 +941,46 @@ export function MapCanvas({
       if (!map) return;
       map.invalidateSize({ pan: false });
       if (bounds) {
-        map.fitBounds(bounds, {
-          animate: false,
-          padding: phonePreview ? [14, 14] : [30, 30],
-        });
+        applyMapViewSettings(
+          map,
+          bounds,
+          safeDimension(backgroundWidth),
+          safeDimension(backgroundHeight),
+          mapViewSettingsForMode(phonePreview, mapSettings),
+          phonePreview ? [14, 14] : [30, 30],
+        );
+        const settingsPreview = settingsPreviewRef.current;
+        const transition = viewportTransitionRef.current;
+        if (phonePreview && settingsPreview) {
+          previewMapSetting(
+            map,
+            bounds,
+            safeDimension(backgroundWidth),
+            safeDimension(backgroundHeight),
+            mapSettings,
+            [14, 14],
+            settingsPreview,
+          );
+          viewportTransitionRef.current = null;
+        } else if (transition) {
+          const fitZoom = unconstrainedFitZoom(map, bounds, phonePreview ? [14, 14] : [30, 30]);
+          const targetZoom = zoomForRelativeScale(fitZoom, transition.zoomScale);
+          map.setView(
+            transition.center,
+            Math.min(map.getMaxZoom(), Math.max(map.getMinZoom(), targetZoom)),
+            { animate: false },
+          );
+          viewportTransitionRef.current = null;
+        } else {
+          map.fitBounds(bounds, {
+            animate: false,
+            padding: phonePreview ? [14, 14] : [30, 30],
+          });
+        }
       }
     });
     return () => cancelAnimationFrame(frame);
-  }, [phonePreview]);
+  }, [backgroundHeight, backgroundWidth, phonePreview]);
 
   useEffect(() => {
     if (phonePreview) return;
@@ -672,7 +999,80 @@ export function MapCanvas({
   const resetView = () => {
     const map = mapRef.current;
     const bounds = boundsRef.current;
-    if (map && bounds) map.fitBounds(bounds, { animate: true, padding: [30, 30] });
+    if (map && bounds) map.fitBounds(bounds, { animate: true, padding: phonePreview ? [14, 14] : [30, 30] });
+  };
+
+  const updateMapSettingWithPreview = (
+    patch: Partial<MapSettings>,
+    preview: MapSettingsPreview,
+  ) => {
+    settingsPreviewRef.current = preview;
+    const nextSettings = { ...mapSettings, ...patch };
+    onMapSettingsChange?.(patch);
+
+    if (!phonePreview) {
+      viewportTransitionRef.current = null;
+      setPhonePreview(true);
+      return;
+    }
+
+    const map = mapRef.current;
+    const bounds = boundsRef.current;
+    if (!map || !bounds) return;
+    previewMapSetting(
+      map,
+      bounds,
+      safeDimension(backgroundWidth),
+      safeDimension(backgroundHeight),
+      nextSettings,
+      [14, 14],
+      preview,
+    );
+  };
+
+  const beginMapSettingsEdit = (preview: MapSettingsPreview) => {
+    settingsPreviewRef.current = preview;
+    if (!phonePreview) {
+      viewportTransitionRef.current = null;
+      setPhonePreview(true);
+    }
+    onSettingsEditStart?.();
+  };
+
+  const endMapSettingsEdit = () => {
+    settingsPreviewRef.current = null;
+    onSettingsEditEnd?.();
+  };
+
+  const beginNavigationSettingsEdit = (preview: 'horizontal' | 'vertical') => {
+    settingsPreviewRef.current = preview;
+    const map = mapRef.current;
+    const currentZoom = map?.getZoom();
+    if (phonePreview && map && Number.isFinite(currentZoom) && !navigationPreviewOriginRef.current) {
+      navigationPreviewOriginRef.current = {
+        center: map.getCenter(),
+        zoom: currentZoom!,
+      };
+    }
+    if (!phonePreview) {
+      viewportTransitionRef.current = null;
+      navigationPreviewOriginRef.current = null;
+      setPhonePreview(true);
+    }
+    onSettingsEditStart?.();
+  };
+
+  const endNavigationSettingsEdit = () => {
+    settingsPreviewRef.current = null;
+    const map = mapRef.current;
+    const origin = navigationPreviewOriginRef.current;
+    navigationPreviewOriginRef.current = null;
+
+    if (map && origin) {
+      const restoredZoom = Math.min(map.getMaxZoom(), Math.max(map.getMinZoom(), origin.zoom));
+      map.setView(origin.center, restoredZoom, { animate: false });
+    }
+    onSettingsEditEnd?.();
   };
 
   const rootClassName = [
@@ -890,7 +1290,12 @@ export function MapCanvas({
         aria-label={phonePreview ? 'Desktopansicht anzeigen' : 'Handy-Vorschau anzeigen'}
         title={phonePreview ? 'Desktopansicht anzeigen' : 'Handy-Vorschau anzeigen'}
         aria-pressed={phonePreview}
-        onClick={() => setPhonePreview((active) => !active)}
+        onClick={() => {
+          settingsPreviewRef.current = null;
+          navigationPreviewOriginRef.current = null;
+          captureViewportTransition();
+          setPhonePreview((active) => !active);
+        }}
       >
         {phonePreview ? (
           <Monitor size={19} strokeWidth={1.8} aria-hidden="true" />
@@ -930,17 +1335,105 @@ export function MapCanvas({
         </button>
       </div>
 
-      <label className="map-canvas__background-color-control">
-        <Palette size={16} strokeWidth={1.8} aria-hidden="true" />
-        <span>Hintergrund</span>
-        <input
-          type="color"
-          value={backgroundColor}
-          aria-label="Hintergrundfarbe der Karte"
-          title="Hintergrundfarbe der Karte"
-          onChange={(event) => onBackgroundColorChange?.(event.target.value)}
-        />
-      </label>
+      <div className="map-global-settings" ref={globalSettingsRef}>
+        {globalSettingsOpen ? (
+          <section className="map-global-settings__panel" role="dialog" aria-labelledby="map-global-settings-title">
+            <header>
+              <div><span>Globale Konfiguration</span><h2 id="map-global-settings-title">Karteneinstellungen</h2></div>
+              <button type="button" aria-label="Globale Einstellungen schließen" onClick={() => setGlobalSettingsOpen(false)}><X size={16} /></button>
+            </header>
+
+            <div className="map-global-settings__section">
+              <strong>Darstellung</strong>
+              <label className="map-global-settings__color">
+                <span><Palette size={15} />Hintergrundfarbe</span>
+                <div>
+                  <input
+                    type="color"
+                    value={backgroundColor}
+                    aria-label="Hintergrundfarbe der Karte"
+                    onFocus={onSettingsEditStart}
+                    onBlur={onSettingsEditEnd}
+                    onChange={(event) => onBackgroundColorChange?.(event.target.value)}
+                  />
+                  <code>{backgroundColor.toUpperCase()}</code>
+                </div>
+              </label>
+            </div>
+
+            <div className="map-global-settings__section">
+              <strong>Zoomgrenzen</strong>
+              <p>Gilt für den Telefon-Simulator und die Besucheransicht.</p>
+              <MapSettingsSlider
+                label="Maximale Vergrößerung"
+                description="Größte Ansicht relativ zur Gesamtansicht"
+                value={Math.round(mapSettings.maxZoomScale * 100)}
+                displayValue={`${Math.round(mapSettings.maxZoomScale * 100)}%`}
+                min={100}
+                max={1500}
+                step={25}
+                manualInput
+                onChange={(value) => updateMapSettingWithPreview({ maxZoomScale: value / 100 }, 'maxZoom')}
+                onEditStart={() => beginMapSettingsEdit('maxZoom')}
+                onEditEnd={endMapSettingsEdit}
+              />
+              <MapSettingsSlider
+                label="Maximale Verkleinerung"
+                description="Mindestgröße der Karte in der kleinsten Ansicht"
+                value={Math.round(mapSettings.minZoomScale * 100)}
+                displayValue={`${Math.round(mapSettings.minZoomScale * 100)}%`}
+                min={25}
+                max={200}
+                step={5}
+                manualInput
+                onChange={(value) => updateMapSettingWithPreview({ minZoomScale: value / 100 }, 'minZoom')}
+                onEditStart={() => beginMapSettingsEdit('minZoom')}
+                onEditEnd={endMapSettingsEdit}
+              />
+            </div>
+
+            <div className="map-global-settings__section">
+              <strong>Navigationsgrenzen</strong>
+              <p>Gilt für den Telefon-Simulator; erlaubter Bereich außerhalb der Kartenränder.</p>
+              <MapSettingsSlider
+                label="Horizontaler Rand"
+                description="Zusätzlicher Bewegungsraum links und rechts"
+                value={Math.round(mapSettings.navigationPaddingX * 100)}
+                displayValue={`${Math.round(mapSettings.navigationPaddingX * 100)}%`}
+                min={0}
+                max={100}
+                step={5}
+                onChange={(value) => updateMapSettingWithPreview({ navigationPaddingX: value / 100 }, 'horizontal')}
+                onEditStart={() => beginNavigationSettingsEdit('horizontal')}
+                onEditEnd={endNavigationSettingsEdit}
+              />
+              <MapSettingsSlider
+                label="Vertikaler Rand"
+                description="Zusätzlicher Bewegungsraum oben und unten"
+                value={Math.round(mapSettings.navigationPaddingY * 100)}
+                displayValue={`${Math.round(mapSettings.navigationPaddingY * 100)}%`}
+                min={0}
+                max={100}
+                step={5}
+                onChange={(value) => updateMapSettingWithPreview({ navigationPaddingY: value / 100 }, 'vertical')}
+                onEditStart={() => beginNavigationSettingsEdit('vertical')}
+                onEditEnd={endNavigationSettingsEdit}
+              />
+            </div>
+          </section>
+        ) : null}
+
+        <button
+          type="button"
+          className="map-global-settings__toggle"
+          aria-label="Globale Einstellungen öffnen"
+          aria-expanded={globalSettingsOpen}
+          onClick={() => setGlobalSettingsOpen((current) => !current)}
+        >
+          <Settings2 size={17} strokeWidth={1.8} aria-hidden="true" />
+          <span>Globale Einstellungen</span>
+        </button>
+      </div>
 
       {addMode && backgroundUrl ? (
         <div className="map-canvas__mode-hint" aria-live="polite">

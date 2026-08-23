@@ -18,11 +18,12 @@ import {
   updateCategory,
   updateEvent,
   updateItem,
+  updateMapSettings,
   type CreateEventInput,
   type OperationRecord,
   type OperationType,
 } from '../application'
-import { createEmptyProject, type Asset, type MapCategory, type MapEvent, type MapItem, type MapProject, type NormalizedPosition } from '../domain'
+import { createEmptyProject, type Asset, type MapCategory, type MapEvent, type MapItem, type MapProject, type MapSettings, type NormalizedPosition } from '../domain'
 import { createLocalApplication } from '../infrastructure'
 
 type SaveStatus = 'saved' | 'dirty' | 'saving'
@@ -77,6 +78,7 @@ interface EditorState {
   deleteAsset: (id: string) => Promise<void>
   setBackgroundFile: (file: File) => Promise<void>
   setBackgroundColor: (color: string) => void
+  updateMapSettings: (patch: Partial<MapSettings>) => void
   importProjectFile: (file: File) => Promise<void>
   exportProject: () => void
   publish: () => Promise<number>
@@ -432,6 +434,15 @@ export const useEditorStore = create<EditorState>((set, get) => {
         'project',
         get().project?.id ?? 'project',
         (project) => setBackgroundColor(project, { color }),
+      )
+    },
+    updateMapSettings: (patch) => {
+      if (!Object.keys(patch).length) return
+      commit(
+        'updateMapSettings',
+        'project',
+        get().project?.id ?? 'project',
+        (project) => updateMapSettings(project, { patch }),
       )
     },
     importProjectFile: async (file) => {

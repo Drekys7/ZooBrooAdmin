@@ -2,6 +2,12 @@ import { z } from "zod";
 
 export const CURRENT_SCHEMA_VERSION = 1 as const;
 export const DEFAULT_MAP_BACKGROUND_COLOR = "#DDDDDD";
+export const DEFAULT_MAP_SETTINGS = {
+  minZoomScale: 0.5,
+  maxZoomScale: 4,
+  navigationPaddingX: 0.45,
+  navigationPaddingY: 0.45,
+} as const;
 
 export const EntityIdSchema = z.string().trim().min(1);
 export const IsoDateSchema = z.string().datetime();
@@ -28,6 +34,13 @@ export const MapBackgroundColorSchema = z
   .string()
   .regex(/^#[0-9a-f]{6}$/i)
   .default(DEFAULT_MAP_BACKGROUND_COLOR);
+
+export const MapSettingsSchema = z.object({
+  minZoomScale: z.number().finite().positive().default(DEFAULT_MAP_SETTINGS.minZoomScale),
+  maxZoomScale: z.number().finite().positive().default(DEFAULT_MAP_SETTINGS.maxZoomScale),
+  navigationPaddingX: z.number().finite().min(0).max(1).default(DEFAULT_MAP_SETTINGS.navigationPaddingX),
+  navigationPaddingY: z.number().finite().min(0).max(1).default(DEFAULT_MAP_SETTINGS.navigationPaddingY),
+});
 
 export const MapFactSchema = z.object({
   id: EntityIdSchema,
@@ -136,6 +149,7 @@ export const MapProjectSchema = z
     backgroundWidth: z.number().int().positive().nullable(),
     backgroundHeight: z.number().int().positive().nullable(),
     backgroundColor: MapBackgroundColorSchema,
+    mapSettings: MapSettingsSchema.default(DEFAULT_MAP_SETTINGS),
     categories: z.array(MapCategorySchema),
     items: z.array(MapItemSchema),
     events: z.array(MapEventSchema).default([]),
@@ -201,6 +215,7 @@ export const AssetSchema = z.object({
 export type CategoryType = z.infer<typeof CategoryTypeSchema>;
 export type MarkerStyle = z.infer<typeof MarkerStyleSchema>;
 export type NormalizedPosition = z.infer<typeof NormalizedPositionSchema>;
+export type MapSettings = z.infer<typeof MapSettingsSchema>;
 export type MapFact = z.infer<typeof MapFactSchema>;
 export type MapCategory = z.infer<typeof MapCategorySchema>;
 export type MarkerOverrides = z.infer<typeof MarkerOverridesSchema>;

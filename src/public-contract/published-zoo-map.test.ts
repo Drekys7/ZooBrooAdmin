@@ -26,6 +26,7 @@ describe('PublishedZooMap public contract', () => {
       },
     })
     expect(snapshot.background.color).toBe('#DDE7D3')
+    expect(snapshot.mapSettings).toEqual({ minZoomScale: 0.5, maxZoomScale: 4, navigationPaddingX: 0.45, navigationPaddingY: 0.45 })
     expect(snapshot.categories.map((category) => category.markerStyle)).toEqual(['image', 'circle'])
     expect(snapshot.categories.map((category) => category.iconScale)).toEqual([1, 1.2])
     expect(snapshot.categories.map((category) => category.iconContentScale)).toEqual([1, 0.9])
@@ -57,6 +58,31 @@ describe('PublishedZooMap public contract', () => {
     delete example.events
 
     expect(validatePublishedZooMap(example).events).toEqual([])
+  })
+
+  it('keeps older published snapshots compatible when they have no map settings', () => {
+    const example = readExample() as { mapSettings?: unknown }
+    delete example.mapSettings
+
+    expect(validatePublishedZooMap(example).mapSettings).toEqual({
+      minZoomScale: 0.5,
+      maxZoomScale: 4,
+      navigationPaddingX: 0.45,
+      navigationPaddingY: 0.45,
+    })
+  })
+
+  it('accepts manually entered zoom values outside the slider ranges', () => {
+    const example = readExample() as {
+      mapSettings: { minZoomScale: number; maxZoomScale: number }
+    }
+    example.mapSettings.minZoomScale = 2.75
+    example.mapSettings.maxZoomScale = 20
+
+    expect(validatePublishedZooMap(example).mapSettings).toMatchObject({
+      minZoomScale: 2.75,
+      maxZoomScale: 20,
+    })
   })
 
   it('rejects coordinates outside the normalized range', () => {

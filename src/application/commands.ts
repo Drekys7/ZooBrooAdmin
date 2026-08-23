@@ -7,6 +7,7 @@ import {
   MapFactSchema,
   MapItemSchema,
   MapEventSchema,
+  MapSettingsSchema,
   MarkerOverridesSchema,
   MapProjectSchema,
   normalizePosition,
@@ -122,6 +123,11 @@ export const SetBackgroundColorInputSchema = z.object({
   now: z.string().datetime().optional(),
 });
 
+export const UpdateMapSettingsInputSchema = z.object({
+  patch: MapSettingsSchema.partial().refine((patch) => Object.keys(patch).length > 0, "Patch cannot be empty"),
+  now: z.string().datetime().optional(),
+});
+
 export type CreateItemInput = z.input<typeof CreateItemInputSchema>;
 export type UpdateItemInput = z.input<typeof UpdateItemInputSchema>;
 export type MoveItemInput = z.input<typeof MoveItemInputSchema>;
@@ -136,6 +142,7 @@ export type UpdateCategoryInput = z.input<typeof UpdateCategoryInputSchema>;
 export type DeleteCategoryInput = z.input<typeof DeleteCategoryInputSchema>;
 export type SetBackgroundInput = z.input<typeof SetBackgroundInputSchema>;
 export type SetBackgroundColorInput = z.input<typeof SetBackgroundColorInputSchema>;
+export type UpdateMapSettingsInput = z.input<typeof UpdateMapSettingsInputSchema>;
 
 const timestamp = (now?: string) => now ?? new Date().toISOString();
 
@@ -332,6 +339,20 @@ export function setBackgroundColor(
   return finish({
     ...project,
     backgroundColor: input.color.toUpperCase(),
+    updatedAt: now,
+  });
+}
+
+export function updateMapSettings(
+  projectValue: MapProject,
+  inputValue: UpdateMapSettingsInput,
+): MapProject {
+  const project = checkedProject(projectValue);
+  const input = UpdateMapSettingsInputSchema.parse(inputValue);
+  const now = timestamp(input.now);
+  return finish({
+    ...project,
+    mapSettings: { ...project.mapSettings, ...input.patch },
     updatedAt: now,
   });
 }

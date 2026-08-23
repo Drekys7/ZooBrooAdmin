@@ -236,6 +236,7 @@ function App() {
             backgroundWidth={project.backgroundWidth ?? 1}
             backgroundHeight={project.backgroundHeight ?? 1}
             backgroundColor={project.backgroundColor}
+            mapSettings={project.mapSettings}
             items={project.items}
             categories={project.categories}
             events={project.events}
@@ -254,6 +255,9 @@ function App() {
             onMove={editor.moveItem}
             onDragPreview={editor.previewMoveItem}
             onBackgroundColorChange={editor.setBackgroundColor}
+            onMapSettingsChange={editor.updateMapSettings}
+            onSettingsEditStart={editor.beginContinuousEdit}
+            onSettingsEditEnd={editor.endContinuousEdit}
           />
         </section>
         {selectedItem ? <InspectorPanel

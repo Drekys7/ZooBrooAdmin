@@ -16,6 +16,12 @@ export const EventFrequencySchema = z.enum(['once', 'daily', 'weekly', 'monthly'
 export const WeekdaySchema = z.enum(['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'])
 const calendarDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
 const clockTimeSchema = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/)
+const defaultMapSettings = {
+  minZoomScale: 0.5,
+  maxZoomScale: 4,
+  navigationPaddingX: 0.45,
+  navigationPaddingY: 0.45,
+}
 
 export const PublishedAssetSchema = z
   .object({
@@ -28,6 +34,13 @@ export const PublishedBackgroundSchema = PublishedAssetSchema.extend({
   width: z.number().int().positive(),
   height: z.number().int().positive(),
   color: z.string().regex(/^#[0-9a-f]{6}$/i).default('#DDDDDD'),
+}).strict()
+
+export const PublishedMapSettingsSchema = z.object({
+  minZoomScale: z.number().finite().positive().default(defaultMapSettings.minZoomScale),
+  maxZoomScale: z.number().finite().positive().default(defaultMapSettings.maxZoomScale),
+  navigationPaddingX: z.number().finite().min(0).max(1).default(defaultMapSettings.navigationPaddingX),
+  navigationPaddingY: z.number().finite().min(0).max(1).default(defaultMapSettings.navigationPaddingY),
 }).strict()
 
 export const NormalizedPositionSchema = z
@@ -141,6 +154,7 @@ export const PublishedZooMapSchema = z
     version: z.number().int().positive(),
     publishedAt: dateTimeSchema,
     background: PublishedBackgroundSchema,
+    mapSettings: PublishedMapSettingsSchema.default(defaultMapSettings),
     categories: z.array(PublishedCategorySchema),
     items: z.array(PublishedMapItemSchema),
     events: z.array(PublishedEventSchema).default([]),
@@ -198,6 +212,7 @@ export type EventFrequency = z.infer<typeof EventFrequencySchema>
 export type Weekday = z.infer<typeof WeekdaySchema>
 export type PublishedAsset = z.infer<typeof PublishedAssetSchema>
 export type PublishedBackground = z.infer<typeof PublishedBackgroundSchema>
+export type PublishedMapSettings = z.infer<typeof PublishedMapSettingsSchema>
 export type NormalizedPosition = z.infer<typeof NormalizedPositionSchema>
 export type PublishedCategory = z.infer<typeof PublishedCategorySchema>
 export type PublishedFact = z.infer<typeof PublishedFactSchema>
