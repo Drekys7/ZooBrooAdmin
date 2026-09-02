@@ -21,6 +21,9 @@ const defaultMapSettings = {
   maxZoomScale: 4,
   navigationPaddingX: 0.45,
   navigationPaddingY: 0.45,
+  mapOutlineEnabled: false,
+  mapOutlineWidth: 4,
+  mapOutlineColor: '#FFFFFF',
 }
 
 export const PublishedAssetSchema = z
@@ -41,6 +44,15 @@ export const PublishedMapSettingsSchema = z.object({
   maxZoomScale: z.number().finite().positive().default(defaultMapSettings.maxZoomScale),
   navigationPaddingX: z.number().finite().min(0).max(1).default(defaultMapSettings.navigationPaddingX),
   navigationPaddingY: z.number().finite().min(0).max(1).default(defaultMapSettings.navigationPaddingY),
+  mapOutlineEnabled: z.boolean().default(defaultMapSettings.mapOutlineEnabled),
+  mapOutlineWidth: z.number().finite().min(0.5).max(30).default(defaultMapSettings.mapOutlineWidth),
+  mapOutlineColor: z.string().regex(/^#[0-9a-f]{6}$/i).default(defaultMapSettings.mapOutlineColor),
+  // Deprecated background-shadow fields stay readable so already published
+  // snapshots remain valid. New admin exports no longer emit them.
+  mapShadowEnabled: z.boolean().optional(),
+  mapShadowBlur: z.number().finite().min(0).max(60).optional(),
+  mapShadowOpacity: z.number().finite().min(0).max(100).optional(),
+  mapShadowColor: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
 }).strict()
 
 export const NormalizedPositionSchema = z

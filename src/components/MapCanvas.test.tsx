@@ -1,15 +1,18 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import L from 'leaflet';
 import { describe, expect, it, vi } from 'vitest';
-import type { MapCategory, MapEvent, MapItem } from '../domain/models';
+import { DEFAULT_MAP_SETTINGS, type MapCategory, type MapEvent, type MapItem } from '../domain/models';
 import {
   canDragMarker,
   denormalizePosition,
   latLngToPosition,
   MapCanvas,
   markerIconAnchor,
+  markerTooltipAnchor,
   markerShadowColor,
   markerVisualMetrics,
+  mapBackgroundEffectsEnabled,
+  mapBackgroundClassName,
   mapViewSettingsForMode,
   navigationLimitPoints,
   navigationPreviewPoint,
@@ -19,6 +22,7 @@ import {
   previewMapSetting,
   relativeZoomScale,
   resolveMarkerIconUrl,
+  scaledMapEffectValue,
   unconstrainedFitZoom,
   zoomForRelativeScale,
   zoomLimitsForFit,
@@ -47,13 +51,16 @@ describe('MapCanvas coordinate helpers', () => {
   });
 
   it('derives zoom and navigation limits relative to the fitted map', () => {
-    const configuredSettings = { minZoomScale: 2, maxZoomScale: 15, navigationPaddingX: 0.1, navigationPaddingY: 0.2 }
+    const configuredSettings = { ...DEFAULT_MAP_SETTINGS, minZoomScale: 2, maxZoomScale: 15, navigationPaddingX: 0.1, navigationPaddingY: 0.2 }
     expect(mapViewSettingsForMode(true, configuredSettings)).toBe(configuredSettings)
     expect(mapViewSettingsForMode(false, configuredSettings)).toEqual({
       minZoomScale: 0.5,
       maxZoomScale: 4,
       navigationPaddingX: 0.45,
       navigationPaddingY: 0.45,
+      mapOutlineEnabled: false,
+      mapOutlineWidth: 4,
+      mapOutlineColor: '#FFFFFF',
     })
     expect(zoomLimitsForFit(-2, { minZoomScale: 0.5, maxZoomScale: 4 })).toEqual({ minZoom: -3, maxZoom: 0 })
     expect(navigationLimitPoints(1000, 500, { navigationPaddingX: 0.2, navigationPaddingY: 0.4 })).toEqual({
@@ -73,7 +80,7 @@ describe('MapCanvas coordinate helpers', () => {
   })
 
   it('moves the live preview to the edited zoom and navigation limits', () => {
-    const settings = { minZoomScale: 0.5, maxZoomScale: 4, navigationPaddingX: 0.2, navigationPaddingY: 0.4 }
+    const settings = { ...DEFAULT_MAP_SETTINGS, navigationPaddingX: 0.2, navigationPaddingY: 0.4 }
     const imageBounds = L.latLngBounds([0, 0], [500, 1000])
     const createMap = (currentZoom = -2) => ({
       setMaxBounds: vi.fn(),
@@ -126,6 +133,39 @@ describe('MapCanvas rendering', () => {
   it('converts category shadow settings to a browser color', () => {
     expect(markerShadowColor('#123456', 40)).toBe('rgba(18, 52, 86, 0.4)')
     expect(markerShadowColor('#123456', 40, false)).toBe('rgba(18, 52, 86, 0)')
+  })
+
+  it('enables the alpha-aware background filter only for the map outline', () => {
+    expect(mapBackgroundEffectsEnabled(DEFAULT_MAP_SETTINGS)).toBe(false)
+    expect(mapBackgroundEffectsEnabled({ ...DEFAULT_MAP_SETTINGS, mapOutlineEnabled: true })).toBe(true)
+    expect(mapBackgroundClassName(DEFAULT_MAP_SETTINGS)).toBe('map-canvas__background')
+    expect(mapBackgroundClassName({ ...DEFAULT_MAP_SETTINGS, mapOutlineEnabled: true })).toBe(
+      'map-canvas__background has-alpha-effects',
+    )
+  })
+
+  it('scales the map outline together with the map zoom', () => {
+    expect(scaledMapEffectValue(4, 1)).toBe(4)
+    expect(scaledMapEffectValue(4, 2.5)).toBe(10)
+    expect(scaledMapEffectValue(16, 0.5)).toBe(8)
+  })
+
+  it('builds the map outline from image alpha instead of its rectangular box', () => {
+    const { container, unmount } = render(
+      <MapCanvas
+        backgroundUrl={null}
+        backgroundWidth={1}
+        backgroundHeight={1}
+        mapSettings={{ ...DEFAULT_MAP_SETTINGS, mapOutlineEnabled: true }}
+        items={[]}
+        categories={[]}
+      />,
+    )
+
+    const filter = container.querySelector('#map-canvas-background-alpha-effects')
+    expect(filter?.querySelector('feMorphology')?.getAttribute('in')).toBe('SourceAlpha')
+    expect(filter?.querySelector('feComposite[operator="out"]')).toBeInTheDocument()
+    unmount()
   })
 
   it('renders its empty state and map controls without a background', () => {
@@ -329,6 +369,9 @@ describe('MapCanvas rendering', () => {
     expect(markerIconAnchor('pin', 52, 68)).toEqual([26, 68])
     expect(markerIconAnchor('circle', 50, 50)).toEqual([25, 25])
     expect(markerIconAnchor('image', 72, 72)).toEqual([36, 36])
+    expect(markerTooltipAnchor('pin', 68)).toEqual([0, -68])
+    expect(markerTooltipAnchor('circle', 50)).toEqual([0, -25])
+    expect(markerTooltipAnchor('image', 72)).toEqual([0, -36])
   })
 
   it('uses the built-in category symbol instead of an item title initial', () => {

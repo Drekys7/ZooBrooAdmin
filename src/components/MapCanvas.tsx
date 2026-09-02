@@ -360,6 +360,10 @@ export function markerIconAnchor(
     : [iconWidth / 2, iconHeight / 2]
 }
 
+export function markerTooltipAnchor(markerStyle: MarkerStyle, iconHeight: number): [number, number] {
+  return [0, markerStyle === 'pin' ? -iconHeight : -(iconHeight / 2)]
+}
+
 export function imageMaskRadiusToCssRadius(value: number): string {
   const normalized = Number.isFinite(value) ? Math.min(100, Math.max(0, value)) : 100
   return `${normalized / 2}%`
@@ -372,6 +376,23 @@ export function markerShadowColor(color: string, opacity: number, enabled = true
     : [0, 0, 0]
   const alpha = enabled ? Math.min(100, Math.max(0, opacity)) / 100 : 0
   return `rgba(${red}, ${green}, ${blue}, ${alpha})`
+}
+
+export function mapBackgroundEffectsEnabled(
+  settings: Pick<MapSettings, 'mapOutlineEnabled'>,
+): boolean {
+  return settings.mapOutlineEnabled
+}
+
+export function mapBackgroundClassName(
+  settings: Pick<MapSettings, 'mapOutlineEnabled'>,
+): string {
+  return `map-canvas__background${mapBackgroundEffectsEnabled(settings) ? ' has-alpha-effects' : ''}`
+}
+
+export function scaledMapEffectValue(value: number, zoomScale: number): number {
+  const safeScale = Number.isFinite(zoomScale) && zoomScale > 0 ? zoomScale : 1
+  return value * safeScale
 }
 
 export function resolveMarkerIconUrl(iconUrl: string | null | undefined, categoryType: string): string {
@@ -502,7 +523,7 @@ function createMarkerIcon(
     html: body,
     iconSize: [iconWidth, iconHeight],
     iconAnchor: markerIconAnchor(markerStyle, iconWidth, iconHeight),
-    tooltipAnchor: [0, -(iconHeight * 0.64)],
+    tooltipAnchor: markerTooltipAnchor(markerStyle, iconHeight),
   });
 }
 
@@ -567,6 +588,7 @@ export function MapCanvas({
   const [clientEventsOpen, setClientEventsOpen] = useState(false);
   const [eventClock, setEventClock] = useState(() => new Date());
   const [globalSettingsOpen, setGlobalSettingsOpen] = useState(false);
+  const [mapEffectZoomScale, setMapEffectZoomScale] = useState(() => mapSettings.minZoomScale);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const globalSettingsRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -577,6 +599,20 @@ export function MapCanvas({
   const navigationPreviewOriginRef = useRef<{ center: L.LatLng; zoom: number } | null>(null);
   const viewportTransitionRef = useRef<{ center: L.LatLng; zoomScale: number } | null>(null);
   const settingsPreviewRef = useRef<MapSettingsPreview | null>(null);
+  const mapEffectZoomRef = useRef<number | null>(null);
+
+  const syncMapEffectZoomScale = () => {
+    const map = mapRef.current
+    if (!map) return
+    const nextZoom = map.getZoom()
+    const previousZoom = mapEffectZoomRef.current
+    mapEffectZoomRef.current = nextZoom
+    if (previousZoom === null || !Number.isFinite(previousZoom) || !Number.isFinite(nextZoom)) return
+    const zoomDeltaScale = 2 ** (nextZoom - previousZoom)
+    setMapEffectZoomScale((currentScale) => (
+      Math.abs(zoomDeltaScale - 1) < 0.001 ? currentScale : currentScale * zoomDeltaScale
+    ))
+  }
 
   const captureViewportTransition = () => {
     const map = mapRef.current;
@@ -661,7 +697,9 @@ export function MapCanvas({
       zoomSnap: 0.25,
       zoomDelta: 0.5,
       wheelPxPerZoomLevel: 90,
-      maxBoundsViscosity: 1,
+      // Keep navigation limits resistant but elastic so the map gently returns
+      // to the allowed area instead of stopping abruptly at the boundary.
+      maxBoundsViscosity: 0.65,
     });
     mapRef.current = map;
 
@@ -689,6 +727,7 @@ export function MapCanvas({
         latLngToPosition(event.latlng, current.width, current.height),
       );
     });
+    map.on('zoomend resize', syncMapEffectZoomScale)
 
     const resizeObserver =
       typeof ResizeObserver === 'undefined'
@@ -711,6 +750,7 @@ export function MapCanvas({
     resizeObserver?.observe(container);
 
     return () => {
+      map.off('zoomend resize', syncMapEffectZoomScale)
       resizeObserver?.disconnect();
       markersRef.current.clear();
       markerSignaturesRef.current.clear();
@@ -747,7 +787,7 @@ export function MapCanvas({
     if (backgroundUrl) {
       overlayRef.current = L.imageOverlay(backgroundUrl, bounds, {
         interactive: false,
-        className: 'map-canvas__background',
+        className: mapBackgroundClassName(current.mapSettings),
       }).addTo(map);
     }
 
@@ -763,9 +803,25 @@ export function MapCanvas({
         next.phonePreview ? [14, 14] : [30, 30],
       );
       map.fitBounds(bounds, { animate: false, padding: next.phonePreview ? [14, 14] : [30, 30] });
+      mapEffectZoomRef.current = map.getZoom()
+      setMapEffectZoomScale(next.mapSettings.minZoomScale)
     });
     return () => cancelAnimationFrame(frame);
   }, [backgroundHeight, backgroundUrl, backgroundWidth]);
+
+  useEffect(() => {
+    const backgroundElement = overlayRef.current?.getElement()
+    if (!backgroundElement) return
+    backgroundElement.classList.toggle(
+      'has-alpha-effects',
+      mapBackgroundEffectsEnabled(mapSettings),
+    )
+  }, [
+    backgroundHeight,
+    backgroundUrl,
+    backgroundWidth,
+    mapSettings.mapOutlineEnabled,
+  ])
 
   useEffect(() => {
     const map = mapRef.current;
@@ -832,8 +888,9 @@ export function MapCanvas({
           icon: createMarkerIcon(item, category, isSelected, iconUrl, phonePreview),
         })
           .bindTooltip(createTooltipContent(item.title), {
+            className: 'map-canvas__point-tooltip',
             direction: 'top',
-            offset: [0, -6],
+            offset: [0, 0],
             opacity: 0.92,
           })
           .addTo(map);
@@ -935,6 +992,8 @@ export function MapCanvas({
   }, [backgroundHeight, backgroundWidth, focusRequest]);
 
   useEffect(() => {
+    mapEffectZoomRef.current = null
+    setMapEffectZoomScale(mapSettings.minZoomScale)
     const frame = requestAnimationFrame(() => {
       const map = mapRef.current;
       const bounds = boundsRef.current;
@@ -977,6 +1036,8 @@ export function MapCanvas({
             padding: phonePreview ? [14, 14] : [30, 30],
           });
         }
+        mapEffectZoomRef.current = map.getZoom()
+        setMapEffectZoomScale(mapSettings.minZoomScale)
       }
     });
     return () => cancelAnimationFrame(frame);
@@ -1135,6 +1196,38 @@ export function MapCanvas({
         focusable="false"
       >
         <defs>
+          <filter
+            id="map-canvas-background-alpha-effects"
+            x="-50%"
+            y="-50%"
+            width="200%"
+            height="200%"
+            colorInterpolationFilters="sRGB"
+          >
+            <feMorphology
+              in="SourceAlpha"
+              operator="dilate"
+              radius={scaledMapEffectValue(mapSettings.mapOutlineWidth, mapEffectZoomScale)}
+              result="mapExpandedAlpha"
+            />
+            <feComposite
+              in="mapExpandedAlpha"
+              in2="SourceAlpha"
+              operator="out"
+              result="mapOutlineAlpha"
+            />
+            <feFlood floodColor={mapSettings.mapOutlineColor} result="mapOutlineColor" />
+            <feComposite
+              in="mapOutlineColor"
+              in2="mapOutlineAlpha"
+              operator="in"
+              result="mapOutline"
+            />
+            <feMerge>
+              {mapSettings.mapOutlineEnabled ? <feMergeNode in="mapOutline" /> : null}
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
           <filter
             id="map-canvas-marker-selection-outline"
             x="-25%"
@@ -1357,6 +1450,50 @@ export function MapCanvas({
                     onChange={(event) => onBackgroundColorChange?.(event.target.value)}
                   />
                   <code>{backgroundColor.toUpperCase()}</code>
+                </div>
+              </label>
+            </div>
+
+            <div className="map-global-settings__section">
+              <strong>Kartenform</strong>
+              <p>Die Kontur folgt dem Alphakanal der Kartengrafik – auch bei unregelmäßigen PNG-Formen.</p>
+
+              <label className="switch-row map-global-settings__switch">
+                <span>
+                  <strong>Kartenkontur anzeigen</strong>
+                  <small>Zeichnet die Außenlinie um alle sichtbaren Bereiche</small>
+                </span>
+                <input
+                  type="checkbox"
+                  checked={mapSettings.mapOutlineEnabled}
+                  onChange={(event) => onMapSettingsChange?.({ mapOutlineEnabled: event.target.checked })}
+                />
+                <i />
+              </label>
+              <MapSettingsSlider
+                label="Konturstärke der Karte"
+                description="Breite in der Gesamtansicht; zoomt zusammen mit der Karte"
+                value={mapSettings.mapOutlineWidth}
+                displayValue={`${mapSettings.mapOutlineWidth}px`}
+                min={0.5}
+                max={30}
+                step={0.5}
+                onChange={(value) => onMapSettingsChange?.({ mapOutlineWidth: value })}
+                onEditStart={onSettingsEditStart}
+                onEditEnd={onSettingsEditEnd}
+              />
+              <label className="map-global-settings__color">
+                <span><Palette size={15} />Konturfarbe</span>
+                <div>
+                  <input
+                    type="color"
+                    value={mapSettings.mapOutlineColor}
+                    aria-label="Konturfarbe der Karte"
+                    onFocus={onSettingsEditStart}
+                    onBlur={onSettingsEditEnd}
+                    onChange={(event) => onMapSettingsChange?.({ mapOutlineColor: event.target.value })}
+                  />
+                  <code>{mapSettings.mapOutlineColor.toUpperCase()}</code>
                 </div>
               </label>
             </div>

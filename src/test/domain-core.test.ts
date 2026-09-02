@@ -174,7 +174,15 @@ describe("history and serialization", () => {
   it("stores map navigation settings and supplies defaults for legacy projects", () => {
     const project = projectWithCategory();
     const updated = updateMapSettings(project, {
-      patch: { minZoomScale: 2, maxZoomScale: 15, navigationPaddingX: 0.2, navigationPaddingY: 0.6 },
+      patch: {
+        minZoomScale: 2,
+        maxZoomScale: 15,
+        navigationPaddingX: 0.2,
+        navigationPaddingY: 0.6,
+        mapOutlineEnabled: true,
+        mapOutlineWidth: 7,
+        mapOutlineColor: "#AABBCC",
+      },
       now,
     });
     expect(updated.mapSettings).toEqual({
@@ -182,6 +190,9 @@ describe("history and serialization", () => {
       maxZoomScale: 15,
       navigationPaddingX: 0.2,
       navigationPaddingY: 0.6,
+      mapOutlineEnabled: true,
+      mapOutlineWidth: 7,
+      mapOutlineColor: "#AABBCC",
     });
 
     const legacy = JSON.parse(exportProjectToJson(project)) as Record<string, unknown>;
@@ -191,7 +202,28 @@ describe("history and serialization", () => {
       maxZoomScale: 4,
       navigationPaddingX: 0.45,
       navigationPaddingY: 0.45,
+      mapOutlineEnabled: false,
+      mapOutlineWidth: 4,
+      mapOutlineColor: "#FFFFFF",
     });
+
+    const legacyWithZoomSettings = JSON.parse(exportProjectToJson(project)) as {
+      mapSettings: Record<string, unknown>;
+    };
+    delete legacyWithZoomSettings.mapSettings.mapOutlineEnabled;
+    delete legacyWithZoomSettings.mapSettings.mapOutlineWidth;
+    delete legacyWithZoomSettings.mapSettings.mapOutlineColor;
+    legacyWithZoomSettings.mapSettings.mapShadowEnabled = true;
+    legacyWithZoomSettings.mapSettings.mapShadowBlur = 24;
+    legacyWithZoomSettings.mapSettings.mapShadowOpacity = 45;
+    legacyWithZoomSettings.mapSettings.mapShadowColor = "#112233";
+    const importedLegacySettings = importProjectFromJson(JSON.stringify(legacyWithZoomSettings)).mapSettings;
+    expect(importedLegacySettings).toMatchObject({
+      mapOutlineEnabled: false,
+      mapOutlineWidth: 4,
+      mapOutlineColor: "#FFFFFF",
+    });
+    expect(importedLegacySettings).not.toHaveProperty("mapShadowEnabled");
   });
 
   it("creates a detached published snapshot", () => {
@@ -217,7 +249,13 @@ describe("history and serialization", () => {
       version: 3,
       publishedAt: now,
       background: { assetId: "map", url: "/assets/map", width: 2000, height: 1000, color: "#DDDDDD" },
-      mapSettings: { minZoomScale: 0.5, maxZoomScale: 4, navigationPaddingX: 0.45, navigationPaddingY: 0.45 },
+      mapSettings: {
+        minZoomScale: 0.5,
+        maxZoomScale: 4,
+        navigationPaddingX: 0.45,
+        navigationPaddingY: 0.45,
+        mapOutlineEnabled: false,
+      },
       events: [{ id: "daily-talk", recurrence: { frequency: "daily", interval: 1 } }],
     });
     project.categories[0]!.name = "Changed after publish";

@@ -26,7 +26,15 @@ describe('PublishedZooMap public contract', () => {
       },
     })
     expect(snapshot.background.color).toBe('#DDE7D3')
-    expect(snapshot.mapSettings).toEqual({ minZoomScale: 0.5, maxZoomScale: 4, navigationPaddingX: 0.45, navigationPaddingY: 0.45 })
+    expect(snapshot.mapSettings).toEqual({
+      minZoomScale: 0.5,
+      maxZoomScale: 4,
+      navigationPaddingX: 0.45,
+      navigationPaddingY: 0.45,
+      mapOutlineEnabled: false,
+      mapOutlineWidth: 4,
+      mapOutlineColor: '#FFFFFF',
+    })
     expect(snapshot.categories.map((category) => category.markerStyle)).toEqual(['image', 'circle'])
     expect(snapshot.categories.map((category) => category.iconScale)).toEqual([1, 1.2])
     expect(snapshot.categories.map((category) => category.iconContentScale)).toEqual([1, 0.9])
@@ -69,7 +77,32 @@ describe('PublishedZooMap public contract', () => {
       maxZoomScale: 4,
       navigationPaddingX: 0.45,
       navigationPaddingY: 0.45,
+      mapOutlineEnabled: false,
+      mapOutlineWidth: 4,
+      mapOutlineColor: '#FFFFFF',
     })
+  })
+
+  it('adds map appearance defaults to snapshots that only contain legacy zoom settings', () => {
+    const example = readExample() as { mapSettings: Record<string, unknown> }
+    delete example.mapSettings.mapOutlineEnabled
+    delete example.mapSettings.mapOutlineWidth
+    delete example.mapSettings.mapOutlineColor
+    expect(validatePublishedZooMap(example).mapSettings).toMatchObject({
+      mapOutlineEnabled: false,
+      mapOutlineWidth: 4,
+      mapOutlineColor: '#FFFFFF',
+    })
+  })
+
+  it('still accepts deprecated background shadow fields in an older published snapshot', () => {
+    const example = readExample() as { mapSettings: Record<string, unknown> }
+    example.mapSettings.mapShadowEnabled = true
+    example.mapSettings.mapShadowBlur = 16
+    example.mapSettings.mapShadowOpacity = 30
+    example.mapSettings.mapShadowColor = '#17251F'
+
+    expect(validatePublishedZooMap(example).mapSettings).toMatchObject({ mapShadowEnabled: true })
   })
 
   it('accepts manually entered zoom values outside the slider ranges', () => {

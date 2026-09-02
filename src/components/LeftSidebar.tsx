@@ -27,9 +27,11 @@ interface LeftSidebarProps {
 
 export function LeftSidebar(props: LeftSidebarProps) {
   const query = props.search.trim().toLocaleLowerCase('de-DE')
+  const categoriesById = new Map(props.categories.map((category) => [category.id, category]))
+  const isEffectivelyVisible = (item: MapItem) => item.visible && (categoriesById.get(item.categoryId)?.visible ?? true)
   const visibleItems = props.items
     .filter((item) => !props.selectedCategoryId || props.selectedCategoryId === ALL_CATEGORIES_ID || item.categoryId === props.selectedCategoryId)
-    .filter((item) => props.visibility === 'all' || (props.visibility === 'visible' ? item.visible : !item.visible))
+    .filter((item) => props.visibility === 'all' || (props.visibility === 'visible' ? isEffectivelyVisible(item) : !isEffectivelyVisible(item)))
     .filter((item) => !query || `${item.title} ${item.subtitle}`.toLocaleLowerCase('de-DE').includes(query))
     .sort((a, b) => a.title.localeCompare(b.title, 'de-DE'))
   const allCategoriesVisible = props.categories.every((category) => category.visible)
@@ -92,9 +94,10 @@ export function LeftSidebar(props: LeftSidebarProps) {
       <div className="panel-section items-section">
         <div className="item-list">
           {visibleItems.map((item) => {
-            const category = props.categories.find((entry) => entry.id === item.categoryId)
+            const category = categoriesById.get(item.categoryId)
             const isSelected = props.selectedItemId === item.id
-            return <div key={item.id} className={`item-row ${isSelected ? 'selected' : ''} ${!item.visible ? 'muted' : ''}`}>
+            const effectivelyVisible = isEffectivelyVisible(item)
+            return <div key={item.id} className={`item-row ${isSelected ? 'selected' : ''} ${!effectivelyVisible ? 'muted' : ''}`}>
               <button
                 className="item-select"
                 onClick={() => props.onSelectItem(item.id)}
@@ -102,7 +105,7 @@ export function LeftSidebar(props: LeftSidebarProps) {
               >
                 <span className="item-dot" style={{ background: category?.color ?? '#60756d' }} />
                 <span className="item-copy"><strong>{item.title}</strong><small>{category?.name ?? 'Ohne Kategorie'}{item.subtitle ? ` · ${item.subtitle}` : ''}</small></span>
-                {!item.visible && <EyeOff size={13} />}
+                {!effectivelyVisible && <EyeOff size={13} />}
               </button>
               {isSelected && <button
                 className="item-focus-button"

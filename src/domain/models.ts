@@ -7,6 +7,9 @@ export const DEFAULT_MAP_SETTINGS = {
   maxZoomScale: 4,
   navigationPaddingX: 0.45,
   navigationPaddingY: 0.45,
+  mapOutlineEnabled: false,
+  mapOutlineWidth: 4,
+  mapOutlineColor: "#FFFFFF",
 } as const;
 
 export const EntityIdSchema = z.string().trim().min(1);
@@ -40,6 +43,9 @@ export const MapSettingsSchema = z.object({
   maxZoomScale: z.number().finite().positive().default(DEFAULT_MAP_SETTINGS.maxZoomScale),
   navigationPaddingX: z.number().finite().min(0).max(1).default(DEFAULT_MAP_SETTINGS.navigationPaddingX),
   navigationPaddingY: z.number().finite().min(0).max(1).default(DEFAULT_MAP_SETTINGS.navigationPaddingY),
+  mapOutlineEnabled: z.boolean().default(DEFAULT_MAP_SETTINGS.mapOutlineEnabled),
+  mapOutlineWidth: z.number().finite().min(0.5).max(30).default(DEFAULT_MAP_SETTINGS.mapOutlineWidth),
+  mapOutlineColor: z.string().regex(/^#[0-9a-f]{6}$/i).default(DEFAULT_MAP_SETTINGS.mapOutlineColor),
 });
 
 export const MapFactSchema = z.object({
