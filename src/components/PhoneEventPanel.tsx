@@ -1,6 +1,7 @@
 import { CalendarDays, Clock3, LocateFixed, MapPin, Repeat2, X } from 'lucide-react'
 import type { MapEvent, MapItem, Weekday } from '../domain/models'
 import { nextEventOccurrence, nextVisibleEventOccurrence, type EventOccurrence } from '../domain/eventSchedule'
+import { visitorCopy } from './visitor-i18n'
 
 interface PhoneEventPanelProps {
   events: readonly MapEvent[]
@@ -8,6 +9,7 @@ interface PhoneEventPanelProps {
   onFocusItem: (itemId: string) => void
   onClose: () => void
   now?: Date
+  locale?: string
 }
 
 export { nextEventOccurrence, nextVisibleEventOccurrence, type EventOccurrence }
@@ -22,8 +24,18 @@ const weekdayLabels: Record<Weekday, string> = {
   sunday: 'So',
 }
 
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat('de-DE', {
+const localizedRecurrence = {
+  en: { daily: 'Daily', everyDays: 'Every {n} days', weekly: 'Weekly', everyWeeks: 'Every {n} weeks', monthly: 'Monthly', everyMonths: 'Every {n} months' },
+  nl: { daily: 'Dagelijks', everyDays: 'Elke {n} dagen', weekly: 'Wekelijks', everyWeeks: 'Elke {n} weken', monthly: 'Maandelijks', everyMonths: 'Elke {n} maanden' },
+  pl: { daily: 'Codziennie', everyDays: 'Co {n} dni', weekly: 'Co tydzień', everyWeeks: 'Co {n} tygodni', monthly: 'Co miesiąc', everyMonths: 'Co {n} miesięcy' },
+  fr: { daily: 'Tous les jours', everyDays: 'Tous les {n} jours', weekly: 'Chaque semaine', everyWeeks: 'Toutes les {n} semaines', monthly: 'Chaque mois', everyMonths: 'Tous les {n} mois' },
+  es: { daily: 'Diariamente', everyDays: 'Cada {n} días', weekly: 'Semanalmente', everyWeeks: 'Cada {n} semanas', monthly: 'Mensualmente', everyMonths: 'Cada {n} meses' },
+  it: { daily: 'Ogni giorno', everyDays: 'Ogni {n} giorni', weekly: 'Ogni settimana', everyWeeks: 'Ogni {n} settimane', monthly: 'Ogni mese', everyMonths: 'Ogni {n} mesi' },
+  da: { daily: 'Dagligt', everyDays: 'Hver {n}. dag', weekly: 'Ugentligt', everyWeeks: 'Hver {n}. uge', monthly: 'Månedligt', everyMonths: 'Hver {n}. måned' },
+} as const
+
+function formatDate(value: string, locale = 'de'): string {
+  return new Intl.DateTimeFormat(locale, {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
@@ -31,9 +43,19 @@ function formatDate(value: string): string {
   }).format(new Date(`${value}T12:00:00Z`))
 }
 
-export function eventRecurrenceLabel(event: MapEvent): string {
+export function eventRecurrenceLabel(event: MapEvent, locale = 'de'): string {
   const { recurrence } = event
-  if (recurrence.frequency === 'once') return formatDate(event.startDate)
+  if (recurrence.frequency === 'once') return formatDate(event.startDate, locale)
+  const translated = localizedRecurrence[locale as keyof typeof localizedRecurrence]
+  if (translated) {
+    if (recurrence.frequency === 'daily') return recurrence.interval === 1 ? translated.daily : translated.everyDays.replace('{n}', String(recurrence.interval))
+    if (recurrence.frequency === 'weekly') {
+      const days = recurrence.weekdays.map((day) => new Intl.DateTimeFormat(locale, { weekday: 'short', timeZone: 'UTC' }).format(new Date(Date.UTC(2024, 0, 1 + Object.keys(weekdayLabels).indexOf(day))))).join(', ')
+      return `${recurrence.interval === 1 ? translated.weekly : translated.everyWeeks.replace('{n}', String(recurrence.interval))} · ${days}`
+    }
+    const days = recurrence.monthDays.map((day) => `${day}.`).join(', ')
+    return `${recurrence.interval === 1 ? translated.monthly : translated.everyMonths.replace('{n}', String(recurrence.interval))} · ${days}`
+  }
   if (recurrence.frequency === 'daily') return recurrence.interval === 1 ? 'Täglich' : `Alle ${recurrence.interval} Tage`
   if (recurrence.frequency === 'weekly') {
     const days = recurrence.weekdays.map((day) => weekdayLabels[day]).join(', ')
@@ -43,7 +65,8 @@ export function eventRecurrenceLabel(event: MapEvent): string {
   return recurrence.interval === 1 ? `Monatlich · ${days}` : `Alle ${recurrence.interval} Monate · ${days}`
 }
 
-export function PhoneEventPanel({ events, items, onFocusItem, onClose, now = new Date() }: PhoneEventPanelProps) {
+export function PhoneEventPanel({ events, items, onFocusItem, onClose, now = new Date(), locale = 'de' }: PhoneEventPanelProps) {
+  const copy = visitorCopy(locale)
   const visibleOccurrences = events
     .map((event) => nextEventOccurrence(event, now))
     .filter((occurrence): occurrence is EventOccurrence => Boolean(occurrence))
@@ -62,10 +85,10 @@ export function PhoneEventPanel({ events, items, onFocusItem, onClose, now = new
         <header className="map-client-events__header">
           <span className="map-client-events__header-icon" aria-hidden="true"><CalendarDays size={19} strokeWidth={1.9} /></span>
           <div>
-            <span>Zoo-Programm</span>
-            <h2 id="map-client-events-title">Veranstaltungen</h2>
+            <span>{copy.programme}</span>
+            <h2 id="map-client-events-title">{copy.events}</h2>
           </div>
-          <button type="button" aria-label="Veranstaltungen schließen" onClick={onClose}><X size={15} strokeWidth={2} /></button>
+          <button type="button" aria-label={locale === 'de' ? 'Veranstaltungen schließen' : copy.close} onClick={onClose}><X size={15} strokeWidth={2} /></button>
         </header>
 
         <div className="map-client-events__scroll">
@@ -78,12 +101,12 @@ export function PhoneEventPanel({ events, items, onFocusItem, onClose, now = new
                   <article className="map-client-events__card" key={event.id}>
                     <div className="map-client-events__date">
                       <strong>{date.slice(-2)}</strong>
-                      <span>{new Intl.DateTimeFormat('de-DE', { month: 'short', timeZone: 'UTC' }).format(new Date(`${date}T12:00:00Z`))}</span>
+                      <span>{new Intl.DateTimeFormat(locale, { month: 'short', timeZone: 'UTC' }).format(new Date(`${date}T12:00:00Z`))}</span>
                     </div>
                     <div className="map-client-events__card-content">
                       <h3>{event.title}</h3>
-                      <div className="map-client-events__time"><Clock3 size={12} />{event.startTime}{event.endTime ? `–${event.endTime}` : ''} Uhr</div>
-                      <div className="map-client-events__repeat"><Repeat2 size={11} />{eventRecurrenceLabel(event)}</div>
+                      <div className="map-client-events__time"><Clock3 size={12} />{event.startTime}{event.endTime ? `–${event.endTime}` : ''} {copy.clock}</div>
+                      <div className="map-client-events__repeat"><Repeat2 size={11} />{eventRecurrenceLabel(event, locale)}</div>
                       {location ? <div className="map-client-events__location"><MapPin size={12} />{location}</div> : null}
                       {event.description ? <p>{event.description}</p> : null}
                       {relatedItem ? (
@@ -93,7 +116,7 @@ export function PhoneEventPanel({ events, items, onFocusItem, onClose, now = new
                           onClick={() => onFocusItem(relatedItem.id)}
                         >
                           <LocateFixed size={14} strokeWidth={1.9} />
-                          Auf der Karte zeigen
+                          {copy.showOnMap}
                         </button>
                       ) : null}
                     </div>
@@ -104,8 +127,8 @@ export function PhoneEventPanel({ events, items, onFocusItem, onClose, now = new
           ) : (
             <div className="map-client-events__empty">
               <span aria-hidden="true"><CalendarDays size={28} strokeWidth={1.6} /></span>
-              <strong>Keine Veranstaltungen</strong>
-              <p>Zurzeit sind keine Termine für Besucher veröffentlicht.</p>
+              <strong>{copy.noEvents}</strong>
+              <p>{copy.noEventsText}</p>
             </div>
           )}
         </div>

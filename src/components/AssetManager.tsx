@@ -10,12 +10,14 @@ export interface AssetView {
   height?: number
   url?: string
   used: boolean
+  kind: 'background' | 'image' | 'icon'
 }
 
 interface AssetManagerProps {
   open: boolean
   assets: AssetView[]
   selectionMode?: boolean
+  selectionKind?: AssetView['kind']
   accept?: string
   onUpload: (files: File[]) => void
   onDelete: (id: string) => void
@@ -25,16 +27,66 @@ interface AssetManagerProps {
 
 const formatBytes = (bytes: number) => bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / 1024 / 1024).toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} MB`
 
-export function AssetManager({ open, assets, selectionMode, accept = 'image/png,image/jpeg,image/webp,image/svg+xml', onUpload, onDelete, onSelect, onClose }: AssetManagerProps) {
+function acceptsFile(file: File, accept: string) {
+  const acceptedTypes = accept.split(',').map((value) => value.trim().toLocaleLowerCase()).filter(Boolean)
+  if (!acceptedTypes.length) return true
+  const mimeType = file.type.toLocaleLowerCase()
+  const fileName = file.name.toLocaleLowerCase()
+  return acceptedTypes.some((type) => type.startsWith('.') ? fileName.endsWith(type) : type.endsWith('/*') ? mimeType.startsWith(type.slice(0, -1)) : mimeType === type)
+}
+
+export function AssetManager({ open, assets, selectionMode, selectionKind, accept = 'image/png,image/jpeg,image/webp,image/svg+xml', onUpload, onDelete, onSelect, onClose }: AssetManagerProps) {
   const [query, setQuery] = useState('')
   const [view, setView] = useState<'grid' | 'list'>('grid')
+  const [draggingFiles, setDraggingFiles] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
-  const filteredAssets = useMemo(() => assets.filter((asset) => asset.name.toLocaleLowerCase('de-DE').includes(query.toLocaleLowerCase('de-DE'))), [assets, query])
+  const dragDepth = useRef(0)
+  const selectableAssets = useMemo(() => selectionKind === 'background'
+    ? assets.filter((asset) => asset.kind !== 'icon' && asset.mimeType.startsWith('image/'))
+    : selectionKind
+      ? assets.filter((asset) => asset.kind === selectionKind)
+      : assets, [assets, selectionKind])
+  const filteredAssets = useMemo(() => selectableAssets.filter((asset) => asset.name.toLocaleLowerCase('de-DE').includes(query.toLocaleLowerCase('de-DE'))), [query, selectableAssets])
   if (!open) return null
   const totalSize = assets.reduce((sum, asset) => sum + asset.size, 0)
+  const isFileDrag = (types: DOMStringList | readonly string[]) => Array.from(types).includes('Files')
+  const handleDragEnter = (event: React.DragEvent<HTMLElement>) => {
+    if (!isFileDrag(event.dataTransfer.types)) return
+    event.preventDefault()
+    dragDepth.current += 1
+    setDraggingFiles(true)
+  }
+  const handleDragOver = (event: React.DragEvent<HTMLElement>) => {
+    if (!isFileDrag(event.dataTransfer.types)) return
+    event.preventDefault()
+    event.dataTransfer.dropEffect = 'copy'
+  }
+  const handleDragLeave = (event: React.DragEvent<HTMLElement>) => {
+    if (!isFileDrag(event.dataTransfer.types)) return
+    event.preventDefault()
+    dragDepth.current = Math.max(0, dragDepth.current - 1)
+    if (dragDepth.current === 0) setDraggingFiles(false)
+  }
+  const handleDrop = (event: React.DragEvent<HTMLElement>) => {
+    event.preventDefault()
+    dragDepth.current = 0
+    setDraggingFiles(false)
+    const files = Array.from(event.dataTransfer.files).filter((file) => acceptsFile(file, accept))
+    const uploadFiles = selectionKind === 'background' ? files.slice(0, 1) : files
+    if (uploadFiles.length) onUpload(uploadFiles)
+  }
   return (
     <div className="modal-backdrop asset-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-      <section className="modal asset-manager" role="dialog" aria-modal="true" aria-labelledby="assets-title">
+      <section
+        className={`modal asset-manager${draggingFiles ? ' is-dragging' : ''}`}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="assets-title"
+        onDragEnter={handleDragEnter}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
         <header className="asset-header">
           <div><span className="eyebrow">Projektmediathek</span><h2 id="assets-title">Medienverwaltung</h2></div>
           <button className="icon-button" onClick={onClose} aria-label="Schließen"><X size={18}/></button>
@@ -43,7 +95,7 @@ export function AssetManager({ open, assets, selectionMode, accept = 'image/png,
           <label className="search-field asset-search"><Search size={15}/><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Dateien durchsuchen…"/></label>
           <div className="view-toggle"><button className={view === 'grid' ? 'active' : ''} onClick={() => setView('grid')} aria-label="Rasteransicht"><Grid2X2 size={15}/></button><button className={view === 'list' ? 'active' : ''} onClick={() => setView('list')} aria-label="Listenansicht"><List size={16}/></button></div>
           <button className="button primary" onClick={() => inputRef.current?.click()}><Upload size={15}/>Hochladen</button>
-          <input ref={inputRef} hidden multiple type="file" accept={accept} onChange={(event) => { onUpload(Array.from(event.target.files ?? [])); event.target.value = '' }}/>
+          <input ref={inputRef} hidden multiple={selectionKind !== 'background'} type="file" accept={accept} onChange={(event) => { onUpload(Array.from(event.target.files ?? [])); event.target.value = '' }}/>
         </div>
         <div className="asset-summary"><span><HardDrive size={14}/>{assets.length} {assets.length === 1 ? 'Datei' : 'Dateien'} · {formatBytes(totalSize)}</span><span>{assets.filter((asset) => asset.used).length} verwendet</span></div>
         <div className={`asset-collection ${view}`}>
@@ -52,9 +104,10 @@ export function AssetManager({ open, assets, selectionMode, accept = 'image/png,
             <div className="asset-meta"><strong title={asset.name}>{asset.name}</strong><span>{asset.width && asset.height ? `${asset.width} × ${asset.height} · ` : ''}{formatBytes(asset.size)}</span></div>
             <div className="asset-tile-actions">{selectionMode && <button className="text-button" onClick={() => onSelect(asset.id)}>Auswählen</button>}<button className="icon-button subtle" disabled={asset.used} title={asset.used ? 'Datei wird verwendet' : 'Löschen'} onClick={() => onDelete(asset.id)}><Trash2 size={14}/></button></div>
           </article>)}
-          {filteredAssets.length === 0 && <div className="asset-empty"><Image size={28}/><h3>{assets.length ? 'Keine Ergebnisse' : 'Die Mediathek ist noch leer'}</h3><p>{assets.length ? 'Versuchen Sie es mit einem anderen Suchbegriff.' : 'Laden Sie eine Karte, Fotos oder Symbole hoch.'}</p><button className="button primary" onClick={() => inputRef.current?.click()}><Upload size={15}/>Dateien hinzufügen</button></div>}
+          {filteredAssets.length === 0 && <div className="asset-empty"><Image size={28}/><h3>{selectableAssets.length ? 'Keine Ergebnisse' : selectionKind === 'background' ? 'Noch keine Karte in den Ressourcen' : 'Die Mediathek ist noch leer'}</h3><p>{selectableAssets.length ? 'Versuchen Sie es mit einem anderen Suchbegriff.' : selectionKind === 'background' ? 'Laden Sie eine Karte hoch. Sie wird in den Ressourcen gespeichert und direkt ausgewählt.' : 'Laden Sie eine Karte, Fotos oder Symbole hoch.'}</p><button className="button primary" onClick={() => inputRef.current?.click()}><Upload size={15}/>Dateien hinzufügen</button></div>}
         </div>
-        <footer className="asset-footer"><p>{selectionMode ? 'Wählen Sie eine Datei für dieses Feld aus.' : 'Nur Dateien, die im Projekt nicht verwendet werden, können gelöscht werden.'}</p><button className="button ghost" onClick={onClose}>Fertig</button></footer>
+        <footer className="asset-footer"><p>{selectionKind === 'background' ? 'Wählen Sie eine gespeicherte Karte aus oder laden Sie eine neue hoch.' : selectionMode ? 'Wählen Sie eine Datei für dieses Feld aus.' : 'Nur Dateien, die im Projekt nicht verwendet werden, können gelöscht werden.'}</p><button className="button ghost" onClick={onClose}>Fertig</button></footer>
+        {draggingFiles && <div className="asset-drop-overlay" aria-live="polite"><div><Upload size={30}/><strong>{selectionKind === 'background' ? 'Karte hier ablegen' : 'Dateien hier ablegen'}</strong><span>{selectionKind === 'background' ? 'Die Karte wird gespeichert und direkt ausgewählt' : 'Die Dateien werden den Ressourcen hinzugefügt'}</span></div></div>}
       </section>
     </div>
   )

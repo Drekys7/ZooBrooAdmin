@@ -70,6 +70,8 @@ export function buildPublishedSnapshot(
       color: project.backgroundColor,
     },
     mapSettings: project.mapSettings,
+    defaultLocale: project.defaultLocale,
+    enabledLocales: project.enabledLocales,
     categories: project.categories.map((category) => ({
       id: category.id,
       name: category.name,
@@ -91,6 +93,7 @@ export function buildPublishedSnapshot(
       shadowColor: categoryShadowColor(category),
       visible: category.visible,
       sortOrder: category.sortOrder,
+      translations: category.translations,
     })),
     items: project.items.map((item) => ({
       id: item.id,
@@ -109,10 +112,12 @@ export function buildPublishedSnapshot(
         label: fact.label,
         value: fact.value,
         icon: publishedAsset(fact.iconAssetId, resolveAssetUrl),
+        translations: fact.translations,
       })),
       visible: item.visible,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
+      translations: item.translations,
     })),
     events: project.events
       .filter((event) => eventLifecycleStatus(event, publishedClock) === 'upcoming')
@@ -129,6 +134,7 @@ export function buildPublishedSnapshot(
       visible: event.visible,
       createdAt: event.createdAt,
       updatedAt: event.updatedAt,
+      translations: event.translations,
       })),
   });
 }

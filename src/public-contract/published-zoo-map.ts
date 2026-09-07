@@ -16,6 +16,7 @@ export const EventFrequencySchema = z.enum(['once', 'daily', 'weekly', 'monthly'
 export const WeekdaySchema = z.enum(['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'])
 const calendarDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
 const clockTimeSchema = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/)
+const localeCodeSchema = z.string().regex(/^[a-z]{2}(?:-[A-Z]{2})?$/)
 const defaultMapSettings = {
   minZoomScale: 0.5,
   maxZoomScale: 4,
@@ -84,6 +85,7 @@ export const PublishedCategorySchema = z
     shadowColor: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
     visible: z.boolean(),
     sortOrder: z.number().int(),
+    translations: z.record(localeCodeSchema, z.object({ name: z.string().optional() })).optional(),
   })
   .strict()
 
@@ -93,6 +95,7 @@ export const PublishedFactSchema = z
     label: z.string().trim().min(1),
     value: z.string(),
     icon: PublishedAssetSchema.nullable(),
+    translations: z.record(localeCodeSchema, z.object({ label: z.string().optional(), value: z.string().optional() })).optional(),
   })
   .strict()
 
@@ -132,6 +135,7 @@ export const PublishedMapItemSchema = z
     visible: z.boolean(),
     createdAt: dateTimeSchema,
     updatedAt: dateTimeSchema,
+    translations: z.record(localeCodeSchema, z.object({ title: z.string().optional(), subtitle: z.string().optional(), description: z.string().optional() })).optional(),
   })
   .strict()
 
@@ -157,6 +161,7 @@ export const PublishedEventSchema = z.object({
   visible: z.boolean(),
   createdAt: dateTimeSchema,
   updatedAt: dateTimeSchema,
+  translations: z.record(localeCodeSchema, z.object({ title: z.string().optional(), description: z.string().optional(), location: z.string().optional() })).optional(),
 }).strict()
 
 export const PublishedZooMapSchema = z
@@ -167,12 +172,20 @@ export const PublishedZooMapSchema = z
     publishedAt: dateTimeSchema,
     background: PublishedBackgroundSchema,
     mapSettings: PublishedMapSettingsSchema.default(defaultMapSettings),
+    defaultLocale: localeCodeSchema.default('de'),
+    enabledLocales: z.array(localeCodeSchema).min(1).default(['de']),
     categories: z.array(PublishedCategorySchema),
     items: z.array(PublishedMapItemSchema),
     events: z.array(PublishedEventSchema).default([]),
   })
   .strict()
   .superRefine((snapshot, context) => {
+    if (!snapshot.enabledLocales.includes(snapshot.defaultLocale)) {
+      context.addIssue({ code: z.ZodIssueCode.custom, message: 'Default locale must be enabled', path: ['defaultLocale'] })
+    }
+    if (new Set(snapshot.enabledLocales).size !== snapshot.enabledLocales.length) {
+      context.addIssue({ code: z.ZodIssueCode.custom, message: 'Enabled locales must be unique', path: ['enabledLocales'] })
+    }
     const categoryIds = new Set<string>()
 
     for (const [index, category] of snapshot.categories.entries()) {

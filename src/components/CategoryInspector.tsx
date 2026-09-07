@@ -1,5 +1,6 @@
 import { Shapes, Trash2, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import { hasTranslationValue } from '../domain/localization'
 import {
   categoryIconScale,
   categoryIconContentScale,
@@ -28,6 +29,8 @@ interface CategoryInspectorProps {
   onChooseIcon: () => void
   onDelete: () => void
   onDeselect: () => void
+  contentLocale?: string
+  defaultLocale?: string
 }
 
 const styleLabels: Record<MarkerStyle, string> = {
@@ -39,10 +42,14 @@ const styleLabels: Record<MarkerStyle, string> = {
 function CategoryNameField({
   value,
   placeholder,
+  fallback,
+  missing = false,
   onCommit,
 }: {
   value: string
   placeholder?: string
+  fallback?: string
+  missing?: boolean
   onCommit: (value: string) => void
 }) {
   const [draft, setDraft] = useState(value)
@@ -51,7 +58,7 @@ function CategoryNameField({
     const next = draft.trim()
     if (next && next !== value) onCommit(next)
   }
-  return <label className="field"><span>Name</span><input value={draft} placeholder={placeholder} onChange={(event) => setDraft(event.target.value)} onBlur={commit} onKeyDown={(event) => event.key === 'Enter' && event.currentTarget.blur()} /></label>
+  return <div className={`field localized-field${missing ? ' is-missing' : ''}`}><span><span>Name</span>{missing && <><em>Übersetzung fehlt</em>{fallback && <button type="button" onClick={() => { setDraft(fallback); onCommit(fallback) }}>Hauptsprache übernehmen</button>}</>}</span><input aria-label="Name" value={draft} placeholder={missing ? fallback : placeholder} onChange={(event) => setDraft(event.target.value)} onBlur={commit} onKeyDown={(event) => event.key === 'Enter' && event.currentTarget.blur()} /></div>
 }
 
 function IconScaleField({
@@ -240,6 +247,8 @@ export function CategoryInspector({
   onChooseIcon,
   onDelete,
   onDeselect,
+  contentLocale = 'de',
+  defaultLocale = 'de',
 }: CategoryInspectorProps) {
   const selectedCategories = editAll ? categories : category ? [category] : []
   const commonName = selectedCategories.every((entry) => entry.name === selectedCategories[0]?.name) ? selectedCategories[0]?.name ?? '' : ''
@@ -282,6 +291,8 @@ export function CategoryInspector({
     WebkitMaskImage: `url(${iconUrl})`,
     maskImage: `url(${iconUrl})`,
   } : undefined, [commonColor, iconUrl])
+  const categoryNameMissing = Boolean(!editAll && category && contentLocale !== defaultLocale && !hasTranslationValue(category.translations?.[contentLocale], 'name'))
+  const categoryNameValue = categoryNameMissing ? '' : commonName
 
   return (
     <aside className="sidebar inspector category-inspector" aria-label="Kategorieinspektor">
@@ -293,7 +304,8 @@ export function CategoryInspector({
       <div className="inspector-scroll">
         <section className="inspector-section">
           <h3>{editAll ? 'Gemeinsame Einstellungen' : 'Allgemein'}</h3>
-          <CategoryNameField value={commonName} placeholder={editAll ? 'Mehrere Namen' : undefined} onCommit={(name) => update({ name })} />
+          {!editAll && category ? <div className={`translation-status${contentLocale === defaultLocale || hasTranslationValue(category.translations?.[contentLocale], 'name') ? ' is-complete' : ''}`}><strong>{contentLocale.toUpperCase()}</strong><span>{contentLocale === defaultLocale ? 'Hauptsprache' : hasTranslationValue(category.translations?.[contentLocale], 'name') ? 'Übersetzung vollständig' : '1 Textfeld noch nicht übersetzt'}</span></div> : null}
+          <CategoryNameField value={categoryNameValue} fallback={category?.name} missing={categoryNameMissing} placeholder={editAll ? 'Mehrere Namen' : undefined} onCommit={(name) => update({ name })} />
           {editAll && <p className="category-bulk-hint">Änderungen in diesem Bereich werden auf alle Kategorien angewendet.</p>}
         </section>
 

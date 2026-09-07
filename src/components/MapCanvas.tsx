@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
-import { CalendarClock, LocateFixed, Minus, Monitor, Palette, Plus, Settings2, Smartphone, X } from 'lucide-react';
+import { CalendarClock, Languages, LocateFixed, Minus, Monitor, Palette, Plus, Settings2, Smartphone, X } from 'lucide-react';
 import {
   DEFAULT_MAP_SETTINGS,
   categoryIconScale,
@@ -23,9 +23,11 @@ import {
   type MapSettings,
   type MarkerStyle,
 } from '../domain/models';
+import { AVAILABLE_LOCALES, localizeCategory, localizeEvent, localizeItem, localeName, translationCompletion } from '../domain/localization';
 import { getCategoryIconUrl } from './CategoryIcon';
 import { PhoneClientPreview } from './PhoneClientPreview';
 import { nextVisibleEventOccurrence, PhoneEventPanel } from './PhoneEventPanel';
+import { visitorCopy } from './visitor-i18n';
 import 'leaflet/dist/leaflet.css';
 import './map-canvas.css';
 
@@ -53,6 +55,8 @@ export interface MapCanvasProps {
   items: readonly MapItem[];
   categories: readonly MapCategory[];
   events?: readonly MapEvent[];
+  defaultLocale?: string;
+  enabledLocales?: readonly string[];
   selectedItemId?: string | null;
   addMode?: boolean;
   disabled?: boolean;
@@ -69,6 +73,7 @@ export interface MapCanvasProps {
   onDragPreview?: (itemId: string, position: NormalizedPosition) => void;
   onBackgroundColorChange?: (color: string) => void;
   onMapSettingsChange?: (patch: Partial<MapSettings>) => void;
+  onLanguagesChange?: (defaultLocale: string, enabledLocales: string[]) => void;
   onSettingsEditStart?: () => void;
   onSettingsEditEnd?: () => void;
 }
@@ -560,9 +565,11 @@ export function MapCanvas({
   backgroundHeight,
   backgroundColor = '#DDDDDD',
   mapSettings = DEFAULT_VIEW_SETTINGS,
-  items,
-  categories,
-  events = [],
+  items: sourceItems,
+  categories: sourceCategories,
+  events: sourceEvents = [],
+  defaultLocale = 'de',
+  enabledLocales = ['de'],
   selectedItemId = null,
   addMode = false,
   disabled = false,
@@ -579,6 +586,7 @@ export function MapCanvas({
   onDragPreview,
   onBackgroundColorChange,
   onMapSettingsChange,
+  onLanguagesChange,
   onSettingsEditStart,
   onSettingsEditEnd,
 }: MapCanvasProps) {
@@ -588,6 +596,8 @@ export function MapCanvas({
   const [clientEventsOpen, setClientEventsOpen] = useState(false);
   const [eventClock, setEventClock] = useState(() => new Date());
   const [globalSettingsOpen, setGlobalSettingsOpen] = useState(false);
+  const [visitorLocale, setVisitorLocale] = useState(defaultLocale);
+  const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
   const [mapEffectZoomScale, setMapEffectZoomScale] = useState(() => mapSettings.minZoomScale);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const globalSettingsRef = useRef<HTMLDivElement | null>(null);
@@ -600,6 +610,31 @@ export function MapCanvas({
   const viewportTransitionRef = useRef<{ center: L.LatLng; zoomScale: number } | null>(null);
   const settingsPreviewRef = useRef<MapSettingsPreview | null>(null);
   const mapEffectZoomRef = useRef<number | null>(null);
+  const visitorLocaleInitializedRef = useRef(false);
+  const renderLocale = phonePreview ? visitorLocale : defaultLocale;
+  const categories = useMemo(() => sourceCategories.map((category) => localizeCategory(category, renderLocale, defaultLocale)), [defaultLocale, renderLocale, sourceCategories]);
+  const items = useMemo(() => sourceItems.map((item) => localizeItem(item, renderLocale, defaultLocale)), [defaultLocale, renderLocale, sourceItems]);
+  const events = useMemo(() => sourceEvents.map((event) => localizeEvent(event, renderLocale, defaultLocale)), [defaultLocale, renderLocale, sourceEvents]);
+  const clientCopy = visitorCopy(visitorLocale);
+
+  useEffect(() => {
+    if (!visitorLocaleInitializedRef.current) {
+      visitorLocaleInitializedRef.current = true;
+      const queryLocale = new URLSearchParams(window.location.search).get('lang');
+      const saved = window.localStorage.getItem('zooweb-map-locale');
+      const browserLocale = navigator.language.split('-')[0];
+      const detected = [queryLocale, saved, browserLocale, defaultLocale].find((locale) => locale && enabledLocales.includes(locale));
+      if (detected) setVisitorLocale(detected);
+      return;
+    }
+    if (!enabledLocales.includes(visitorLocale)) setVisitorLocale(defaultLocale);
+  }, [defaultLocale, enabledLocales, visitorLocale]);
+
+  const chooseVisitorLocale = (locale: string) => {
+    setVisitorLocale(locale);
+    window.localStorage.setItem('zooweb-map-locale', locale);
+    setLanguageMenuOpen(false);
+  };
 
   const syncMapEffectZoomScale = () => {
     const map = mapRef.current
@@ -1314,11 +1349,19 @@ export function MapCanvas({
           <>
             <span className="map-canvas__phone-island" aria-hidden="true" />
             <span className="map-canvas__phone-home-indicator" aria-hidden="true" />
+            <div className="map-client-language">
+              <button type="button" aria-label={clientCopy.language} title={clientCopy.language} aria-expanded={languageMenuOpen} onClick={() => setLanguageMenuOpen((open) => !open)}>
+                <Languages size={17} strokeWidth={1.9} /><span>{visitorLocale.toUpperCase()}</span>
+              </button>
+              {languageMenuOpen ? <div className="map-client-language__menu" role="menu">
+                {enabledLocales.map((locale) => <button type="button" role="menuitemradio" aria-checked={visitorLocale === locale} className={visitorLocale === locale ? 'is-active' : ''} key={locale} onClick={() => chooseVisitorLocale(locale)}><strong>{locale.toUpperCase()}</strong><span>{localeName(locale)}</span></button>)}
+              </div> : null}
+            </div>
             <button
               type="button"
               className={`map-client-events__toggle${clientPreviewItem ? ' is-raised' : ''}`}
-              aria-label="Veranstaltungen anzeigen"
-              title={nextEventOccurrence ? `Nächster Termin: ${nextEventOccurrence.time} Uhr` : 'Zoo-Programm'}
+              aria-label={visitorLocale === 'de' ? 'Veranstaltungen anzeigen' : clientCopy.events}
+              title={nextEventOccurrence ? `${clientCopy.nextEvent}: ${nextEventOccurrence.time}` : clientCopy.programme}
               aria-expanded={clientEventsOpen}
               onClick={() => {
                 setClientPreviewItemId(null);
@@ -1357,6 +1400,7 @@ export function MapCanvas({
             imageUrl={getItemImageUrl?.(clientPreviewItem)}
             iconUrl={clientPreviewIconUrl}
             expanded={clientDetailsOpen}
+            locale={visitorLocale}
             getFactIconUrl={getFactIconUrl}
             onExpand={() => setClientDetailsOpen(true)}
             onClose={() => {
@@ -1371,6 +1415,7 @@ export function MapCanvas({
             events={events}
             items={items}
             now={eventClock}
+            locale={visitorLocale}
             onFocusItem={focusClientEventItem}
             onClose={() => setClientEventsOpen(false)}
           />
@@ -1435,6 +1480,22 @@ export function MapCanvas({
               <div><span>Globale Konfiguration</span><h2 id="map-global-settings-title">Karteneinstellungen</h2></div>
               <button type="button" aria-label="Globale Einstellungen schließen" onClick={() => setGlobalSettingsOpen(false)}><X size={16} /></button>
             </header>
+
+            <div className="map-global-settings__section">
+              <strong>Sprachen</strong>
+              <p>Die Hauptsprache wird verwendet, wenn eine Übersetzung fehlt.</p>
+              <label className="field map-global-settings__locale-select"><span>Hauptsprache</span><select value={defaultLocale} onChange={(event) => onLanguagesChange?.(event.target.value, [...enabledLocales])}>{enabledLocales.map((locale) => <option key={locale} value={locale}>{locale.toUpperCase()} · {localeName(locale)}</option>)}</select></label>
+              <div className="map-global-settings__locales">
+                {AVAILABLE_LOCALES.map((locale) => {
+                  const checked = enabledLocales.includes(locale.code)
+                  const progress = translationCompletion(locale.code, defaultLocale, sourceCategories, sourceItems, sourceEvents)
+                  return <label key={locale.code}><input type="checkbox" checked={checked} disabled={locale.code === defaultLocale} onChange={(event) => {
+                    const next = event.target.checked ? [...enabledLocales, locale.code] : enabledLocales.filter((code) => code !== locale.code)
+                    onLanguagesChange?.(defaultLocale, next)
+                  }} /><span><strong>{locale.nativeLabel}</strong><small>{locale.code.toUpperCase()} · {progress}%</small></span></label>
+                })}
+              </div>
+            </div>
 
             <div className="map-global-settings__section">
               <strong>Darstellung</strong>

@@ -8,6 +8,7 @@ import {
   MapItemSchema,
   MapEventSchema,
   MapSettingsSchema,
+  LocaleCodeSchema,
   MarkerOverridesSchema,
   MapProjectSchema,
   normalizePosition,
@@ -32,6 +33,7 @@ export const CreateItemInputSchema = z.object({
   position: RawPositionSchema,
   facts: z.array(MapFactSchema).default([]),
   visible: z.boolean().default(true),
+  translations: MapItemSchema.shape.translations,
   now: z.string().datetime().optional(),
 });
 
@@ -51,6 +53,7 @@ export const UpdateItemInputSchema = z.object({
       position: RawPositionSchema,
       facts: z.array(MapFactSchema),
       visible: z.boolean(),
+      translations: MapItemSchema.shape.translations,
     })
     .partial()
     .refine((patch) => Object.keys(patch).length > 0, "Patch cannot be empty"),
@@ -128,6 +131,12 @@ export const UpdateMapSettingsInputSchema = z.object({
   now: z.string().datetime().optional(),
 });
 
+export const UpdateProjectLanguagesInputSchema = z.object({
+  defaultLocale: LocaleCodeSchema,
+  enabledLocales: z.array(LocaleCodeSchema).min(1),
+  now: z.string().datetime().optional(),
+});
+
 export type CreateItemInput = z.input<typeof CreateItemInputSchema>;
 export type UpdateItemInput = z.input<typeof UpdateItemInputSchema>;
 export type MoveItemInput = z.input<typeof MoveItemInputSchema>;
@@ -143,6 +152,7 @@ export type DeleteCategoryInput = z.input<typeof DeleteCategoryInputSchema>;
 export type SetBackgroundInput = z.input<typeof SetBackgroundInputSchema>;
 export type SetBackgroundColorInput = z.input<typeof SetBackgroundColorInputSchema>;
 export type UpdateMapSettingsInput = z.input<typeof UpdateMapSettingsInputSchema>;
+export type UpdateProjectLanguagesInput = z.input<typeof UpdateProjectLanguagesInputSchema>;
 
 const timestamp = (now?: string) => now ?? new Date().toISOString();
 
@@ -183,6 +193,8 @@ export function createItem(projectValue: MapProject, inputValue: CreateItemInput
     ...input,
     id,
     type: input.type ?? category.type,
+    translations: input.translations ?? { [project.defaultLocale]: { title: input.title, subtitle: input.subtitle, description: input.description } },
+    facts: input.facts.map((fact) => ({ ...fact, translations: fact.translations ?? { [project.defaultLocale]: { label: fact.label, value: fact.value } } })),
     position: normalizePosition(input.position),
     createdAt: now,
     updatedAt: now,
@@ -246,7 +258,13 @@ export function createEvent(projectValue: MapProject, inputValue: CreateEventInp
   const id = input.id ?? createId();
   if (project.events.some((event) => event.id === id)) throw new Error(`Event already exists: ${id}`);
   const now = timestamp(input.now);
-  const event = MapEventSchema.parse({ ...input, id, createdAt: now, updatedAt: now });
+  const event = MapEventSchema.parse({
+    ...input,
+    id,
+    translations: input.translations ?? { [project.defaultLocale]: { title: input.title, description: input.description, location: input.location } },
+    createdAt: now,
+    updatedAt: now,
+  });
   return finish({ ...project, events: [...project.events, event], updatedAt: now });
 }
 
@@ -282,7 +300,12 @@ export function createCategory(projectValue: MapProject, inputValue: CreateCateg
   const input = CreateCategoryInputSchema.parse(inputValue);
   const id = input.id ?? createId();
   if (project.categories.some((category) => category.id === id)) throw new Error(`Category already exists: ${id}`);
-  const category = MapCategorySchema.parse({ ...input, id, sortOrder: input.sortOrder ?? project.categories.length });
+  const category = MapCategorySchema.parse({
+    ...input,
+    id,
+    translations: input.translations ?? { [project.defaultLocale]: { name: input.name } },
+    sortOrder: input.sortOrder ?? project.categories.length,
+  });
   const now = timestamp(input.now);
   return finish({ ...project, categories: [...project.categories, category], updatedAt: now });
 }
@@ -354,5 +377,18 @@ export function updateMapSettings(
     ...project,
     mapSettings: { ...project.mapSettings, ...input.patch },
     updatedAt: now,
+  });
+}
+
+export function updateProjectLanguages(projectValue: MapProject, inputValue: UpdateProjectLanguagesInput): MapProject {
+  const project = checkedProject(projectValue);
+  const input = UpdateProjectLanguagesInputSchema.parse(inputValue);
+  const enabledLocales = [...new Set(input.enabledLocales)];
+  if (!enabledLocales.includes(input.defaultLocale)) enabledLocales.unshift(input.defaultLocale);
+  return finish({
+    ...project,
+    defaultLocale: input.defaultLocale,
+    enabledLocales,
+    updatedAt: timestamp(input.now),
   });
 }

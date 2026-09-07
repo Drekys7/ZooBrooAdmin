@@ -17,6 +17,7 @@ export const OperationTypeSchema = z.enum([
   "setBackground",
   "setBackgroundColor",
   "updateMapSettings",
+  "updateProject",
   "publishProject",
   "importProject",
   "undo",

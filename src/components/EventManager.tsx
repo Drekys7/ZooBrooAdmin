@@ -1,6 +1,6 @@
 import { CalendarDays, CalendarRange, ChevronLeft, ChevronRight, Clock3, Copy, List, MapPin, Plus, Repeat2, Trash2, X } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
-import { eventLifecycleStatus, eventOccursOnDate, nextEventOccurrence, type EventFrequency, type EventLifecycleStatus, type MapEvent, type MapItem, type Weekday } from '../domain'
+import { eventLifecycleStatus, eventOccursOnDate, hasTranslationValue, localeName, nextEventOccurrence, type EventFrequency, type EventLifecycleStatus, type MapEvent, type MapItem, type Weekday } from '../domain'
 import { ConfirmDialog } from './ConfirmDialog'
 
 export type EventInput = Omit<MapEvent, 'id' | 'createdAt' | 'updatedAt'>
@@ -16,6 +16,10 @@ interface EventManagerProps {
   onPreview: (event: MapEvent) => void
   onClose: () => void
   now?: Date
+  contentLocale?: string
+  defaultLocale?: string
+  enabledLocales?: readonly string[]
+  onContentLocaleChange?: (locale: string) => void
 }
 
 const filterLabels: Record<EventLifecycleStatus, string> = {
@@ -100,6 +104,18 @@ function eventToDraft(event: MapEvent): EventInput {
   return structuredClone(draft)
 }
 
+function eventToLocaleDraft(event: MapEvent, locale: string, defaultLocale: string): EventInput {
+  const draft = eventToDraft(event)
+  if (locale === defaultLocale) return draft
+  const translation = event.translations?.[locale]
+  return {
+    ...draft,
+    title: hasTranslationValue(translation, 'title') ? translation?.title ?? '' : '',
+    description: hasTranslationValue(translation, 'description') ? translation?.description ?? '' : '',
+    location: hasTranslationValue(translation, 'location') ? translation?.location ?? '' : '',
+  }
+}
+
 function recurrenceSummary(event: MapEvent): string {
   const { recurrence } = event
   if (recurrence.frequency === 'once') return 'Einmalig'
@@ -140,7 +156,7 @@ function calendarDays(month: string): Array<string | null> {
   ]
 }
 
-export function EventManager({ open, events, items, onCreate, onUpdate, onDelete, onDeletePast, onPreview, onClose, now }: EventManagerProps) {
+export function EventManager({ open, events, items, onCreate, onUpdate, onDelete, onDeletePast, onPreview, onClose, now, contentLocale = 'de', defaultLocale = 'de', enabledLocales = ['de'], onContentLocaleChange }: EventManagerProps) {
   const clock = useMemo(() => now ?? new Date(), [now, open])
   const sortedEvents = useMemo(() => [...events].sort((a, b) => {
     const leftOccurrence = nextEventOccurrence(a, clock)
@@ -172,7 +188,7 @@ export function EventManager({ open, events, items, onCreate, onUpdate, onDelete
   useEffect(() => {
     if (!open) return
     const nextId = selectedId && filteredEvents.some((event) => event.id === selectedId) ? selectedId : filteredEvents[0]?.id ?? null
-    const nextDraft = nextId ? eventToDraft(events.find((event) => event.id === nextId)!) : emptyEventDraft(clock)
+    const nextDraft = nextId ? eventToLocaleDraft(events.find((event) => event.id === nextId)!, contentLocale, defaultLocale) : emptyEventDraft(clock)
     setSelectedId(nextId)
     setDraft(nextDraft)
     setBaseline(nextDraft)
@@ -182,11 +198,11 @@ export function EventManager({ open, events, items, onCreate, onUpdate, onDelete
 
   useEffect(() => {
     if (!open || !selectedEvent) return
-    const nextDraft = eventToDraft(selectedEvent)
+    const nextDraft = eventToLocaleDraft(selectedEvent, contentLocale, defaultLocale)
     setDraft(nextDraft)
     setBaseline(nextDraft)
     setAdvancedRecurrence(recurrenceNeedsAdvancedOptions(nextDraft))
-  }, [open, selectedEvent?.updatedAt]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [contentLocale, open, selectedEvent?.updatedAt]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const requestClose = useCallback(() => {
     if (draftDirty) setCloseWarningOpen(true)
@@ -302,7 +318,7 @@ export function EventManager({ open, events, items, onCreate, onUpdate, onDelete
     if (!selectedEvent) return
     onDelete(selectedEvent.id)
     const next = filteredEvents.find((event) => event.id !== selectedEvent.id) ?? null
-    const nextDraft = next ? eventToDraft(next) : emptyEventDraft(clock)
+    const nextDraft = next ? eventToLocaleDraft(next, contentLocale, defaultLocale) : emptyEventDraft(clock)
     setSelectedId(next?.id ?? null)
     setDraft(nextDraft)
     setBaseline(nextDraft)
@@ -321,7 +337,7 @@ export function EventManager({ open, events, items, onCreate, onUpdate, onDelete
   const selectFilter = (filter: EventLifecycleStatus) => {
     setActiveFilter(filter)
     const next = sortedEvents.find((event) => eventLifecycleStatus(event, clock) === filter) ?? null
-    const nextDraft = next ? eventToDraft(next) : emptyEventDraft(clock)
+    const nextDraft = next ? eventToLocaleDraft(next, contentLocale, defaultLocale) : emptyEventDraft(clock)
     setSelectedId(next?.id ?? null)
     setDraft(nextDraft)
     setBaseline(nextDraft)
@@ -329,7 +345,7 @@ export function EventManager({ open, events, items, onCreate, onUpdate, onDelete
   }
 
   const selectEvent = (event: MapEvent) => {
-    const nextDraft = eventToDraft(event)
+    const nextDraft = eventToLocaleDraft(event, contentLocale, defaultLocale)
     setSelectedId(event.id)
     setDraft(nextDraft)
     setBaseline(nextDraft)
@@ -359,13 +375,24 @@ export function EventManager({ open, events, items, onCreate, onUpdate, onDelete
   }
 
   const repeatUnit = draft.recurrence.frequency === 'daily' ? 'Tage' : draft.recurrence.frequency === 'weekly' ? 'Wochen' : 'Monate'
+  const eventTranslation = selectedEvent?.translations?.[contentLocale]
+  const eventTranslationKeys = ['title', 'description', 'location'] as const
+  const eventTranslatedCount = contentLocale === defaultLocale ? eventTranslationKeys.length : eventTranslationKeys.filter((key) => hasTranslationValue(eventTranslation, key)).length
+  const missingEventField = (key: typeof eventTranslationKeys[number]) => Boolean(selectedEvent && contentLocale !== defaultLocale && !hasTranslationValue(eventTranslation, key))
 
   return (
     <div className="modal-backdrop event-manager-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && requestClose()}>
       <section className="modal event-manager" role="dialog" aria-modal="true" aria-labelledby="events-title">
         <header className="event-manager-header">
           <div className="event-manager-heading"><span className="event-manager-icon"><CalendarDays size={22} /></span><div><span className="eyebrow">Zoo-Programm</span><h2 id="events-title">Veranstaltungen</h2><p>Fütterungen, Führungen und weitere Termine planen.</p></div></div>
-          <button className="icon-button" onClick={requestClose} aria-label="Schließen"><X size={18} /></button>
+          <div className="event-manager-header-actions">
+            <label className="topbar-language" title={draftDirty ? 'Änderungen zuerst speichern' : 'Sprache der bearbeiteten Inhalte'}>
+              <select disabled={draftDirty} value={contentLocale} onChange={(event) => onContentLocaleChange?.(event.target.value)} aria-label="Inhaltssprache der Veranstaltungen">
+                {enabledLocales.map((locale) => <option key={locale} value={locale}>{locale.toUpperCase()} · {localeName(locale)}</option>)}
+              </select>
+            </label>
+            <button className="icon-button" onClick={requestClose} aria-label="Schließen"><X size={18} /></button>
+          </div>
         </header>
 
         <div className="event-manager-body">
@@ -448,10 +475,11 @@ export function EventManager({ open, events, items, onCreate, onUpdate, onDelete
 
               <section className="event-form-section">
                 <h4>Allgemein</h4>
-                <label className="field"><span>Name</span><input required value={draft.title} onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))} placeholder="Zum Beispiel Pinguinfütterung" /></label>
-                <label className="field"><span>Beschreibung</span><textarea rows={3} value={draft.description} onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))} placeholder="Was erwartet die Besucher?" /></label>
+                {selectedEvent && <div className={`translation-status${contentLocale === defaultLocale || eventTranslatedCount === eventTranslationKeys.length ? ' is-complete' : ''}`}><strong>{contentLocale.toUpperCase()}</strong><span>{contentLocale === defaultLocale ? 'Hauptsprache' : eventTranslatedCount === eventTranslationKeys.length ? 'Übersetzung vollständig' : `${eventTranslatedCount} von ${eventTranslationKeys.length} Textfeldern übersetzt`}</span></div>}
+                <div className={`field localized-field${missingEventField('title') ? ' is-missing' : ''}`}><span><span>Name</span>{missingEventField('title') && <><em>Übersetzung fehlt</em><button type="button" onClick={() => setDraft((current) => ({ ...current, title: selectedEvent?.title ?? '' }))}>Hauptsprache übernehmen</button></>}</span><input aria-label="Name" required value={draft.title} onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))} placeholder={missingEventField('title') ? selectedEvent?.title : 'Zum Beispiel Pinguinfütterung'} /></div>
+                <div className={`field localized-field${missingEventField('description') ? ' is-missing' : ''}`}><span><span>Beschreibung</span>{missingEventField('description') && <><em>Übersetzung fehlt</em>{selectedEvent?.description && <button type="button" onClick={() => setDraft((current) => ({ ...current, description: selectedEvent.description }))}>Hauptsprache übernehmen</button>}</>}</span><textarea aria-label="Beschreibung" rows={3} value={draft.description} onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))} placeholder={missingEventField('description') ? selectedEvent?.description : 'Was erwartet die Besucher?'} /></div>
                 <div className="event-form-grid two-columns">
-                  <label className="field"><span><MapPin size={13} /> Ort</span><input value={draft.location} onChange={(event) => setDraft((current) => ({ ...current, location: event.target.value }))} placeholder="Pinguinanlage" /></label>
+                  <div className={`field localized-field${missingEventField('location') ? ' is-missing' : ''}`}><span><span><MapPin size={13} /> Ort</span>{missingEventField('location') && <em>Übersetzung fehlt</em>}</span><input aria-label="Ort" value={draft.location} onChange={(event) => setDraft((current) => ({ ...current, location: event.target.value }))} placeholder={missingEventField('location') ? selectedEvent?.location : 'Pinguinanlage'} /></div>
                   <label className="field"><span>Kartenpunkt</span><select value={draft.relatedItemId ?? ''} onChange={(event) => selectRelatedItem(event.target.value)}><option value="">Kein Kartenpunkt</option>{items.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></label>
                 </div>
               </section>

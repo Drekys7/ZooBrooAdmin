@@ -1,6 +1,7 @@
 import { Info, X } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import type { MapCategory, MapFact, MapItem } from '../domain/models'
+import { visitorCopy } from './visitor-i18n'
 
 interface PhoneClientPreviewProps {
   item: MapItem
@@ -8,6 +9,7 @@ interface PhoneClientPreviewProps {
   imageUrl?: string | null
   iconUrl: string
   expanded: boolean
+  locale?: string
   getFactIconUrl?: (fact: MapFact, item: MapItem) => string | null | undefined
   onExpand: () => void
   onClose: () => void
@@ -45,11 +47,13 @@ export function PhoneClientPreview({
   imageUrl,
   iconUrl,
   expanded,
+  locale = 'de',
   getFactIconUrl,
   onExpand,
   onClose,
 }: PhoneClientPreviewProps) {
   const style = { '--client-preview-accent': previewColor(item, category) } as CSSProperties
+  const copy = visitorCopy(locale)
 
   if (!expanded) {
     return (
@@ -57,7 +61,7 @@ export function PhoneClientPreview({
         <button
           type="button"
           className="map-client-preview__close"
-          aria-label="Vorschau schließen"
+          aria-label={locale === 'de' ? 'Vorschau schließen' : copy.close}
           onClick={(event) => {
             event.stopPropagation()
             onClose()
@@ -88,7 +92,7 @@ export function PhoneClientPreview({
               onExpand()
             }}
           >
-            Weitere Informationen →
+            {copy.more}
           </button>
         </div>
       </aside>
@@ -105,7 +109,7 @@ export function PhoneClientPreview({
         style={style}
         onClick={(event) => event.stopPropagation()}
       >
-        <button type="button" className="map-client-preview__sheet-close" aria-label="Detailansicht schließen" onClick={onClose}>
+        <button type="button" className="map-client-preview__sheet-close" aria-label={locale === 'de' ? 'Detailansicht schließen' : copy.close} onClick={onClose}>
           <X size={15} strokeWidth={2} aria-hidden="true" />
         </button>
         <div className="map-client-preview__scroll">
@@ -126,7 +130,7 @@ export function PhoneClientPreview({
                 ))}
               </div>
             ) : null}
-            <p className="map-client-preview__description">{item.description || 'Keine Beschreibung vorhanden.'}</p>
+            <p className="map-client-preview__description">{item.description || copy.noDescription}</p>
           </div>
         </div>
       </article>

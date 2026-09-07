@@ -16,9 +16,10 @@ import {
   setBackgroundColor,
   updateItem,
   updateMapSettings,
+  updateProjectLanguages,
   updateEvent,
 } from "../application";
-import { createEmptyProject, denormalizePosition, normalizePosition } from "../domain";
+import { createEmptyProject, denormalizePosition, localizeItem, normalizePosition } from "../domain";
 
 const now = "2026-07-13T00:00:00.000Z";
 
@@ -43,6 +44,24 @@ describe("normalized coordinates", () => {
 });
 
 describe("project commands", () => {
+  it("keeps translations independent when the main language changes", () => {
+    let project = createItem(projectWithCategory(), {
+      id: "bear",
+      categoryId: "animals",
+      title: "Bär",
+      position: { x: 0.5, y: 0.5 },
+      now,
+    });
+    project = updateItem(project, {
+      itemId: "bear",
+      patch: { translations: { ...project.items[0]!.translations, nl: { title: "Beer" } } },
+      now,
+    });
+    project = updateProjectLanguages(project, { defaultLocale: "nl", enabledLocales: ["de", "nl"], now });
+
+    expect(localizeItem(project.items[0]!, "nl", project.defaultLocale).title).toBe("Beer");
+    expect(localizeItem(project.items[0]!, "de", project.defaultLocale).title).toBe("Bär");
+  });
   it("creates, updates, moves, duplicates and deletes entities without mutating the source", () => {
     const initial = projectWithCategory();
     const created = createItem(initial, {

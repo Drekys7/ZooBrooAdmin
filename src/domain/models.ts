@@ -27,6 +27,11 @@ export const EventFrequencySchema = z.enum(["once", "daily", "weekly", "monthly"
 export const WeekdaySchema = z.enum(["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]);
 export const CalendarDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 export const ClockTimeSchema = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
+export const LocaleCodeSchema = z.string().regex(/^[a-z]{2}(?:-[A-Z]{2})?$/);
+export const LocalizedCategoryContentSchema = z.object({ name: z.string() });
+export const LocalizedFactContentSchema = z.object({ label: z.string(), value: z.string() });
+export const LocalizedItemContentSchema = z.object({ title: z.string(), subtitle: z.string(), description: z.string() });
+export const LocalizedEventContentSchema = z.object({ title: z.string(), description: z.string(), location: z.string() });
 
 export const NormalizedPositionSchema = z.object({
   x: z.number().finite().min(0).max(1),
@@ -53,6 +58,7 @@ export const MapFactSchema = z.object({
   label: z.string().trim().min(1),
   value: z.string(),
   iconAssetId: EntityIdSchema.nullish(),
+  translations: z.record(LocaleCodeSchema, LocalizedFactContentSchema.partial()).optional(),
 });
 
 export const MapCategorySchema = z.object({
@@ -76,6 +82,7 @@ export const MapCategorySchema = z.object({
   shadowColor: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
   visible: z.boolean(),
   sortOrder: z.number().int().nonnegative(),
+  translations: z.record(LocaleCodeSchema, LocalizedCategoryContentSchema.partial()).optional(),
 });
 
 export const MarkerOverridesSchema = z.object({
@@ -111,6 +118,7 @@ export const MapItemSchema = z.object({
   visible: z.boolean(),
   createdAt: IsoDateSchema,
   updatedAt: IsoDateSchema,
+  translations: z.record(LocaleCodeSchema, LocalizedItemContentSchema.partial()).optional(),
 });
 
 export const EventRecurrenceSchema = z
@@ -144,6 +152,7 @@ export const MapEventSchema = z.object({
   visible: z.boolean(),
   createdAt: IsoDateSchema,
   updatedAt: IsoDateSchema,
+  translations: z.record(LocaleCodeSchema, LocalizedEventContentSchema.partial()).optional(),
 });
 
 export const MapProjectSchema = z
@@ -156,6 +165,8 @@ export const MapProjectSchema = z
     backgroundHeight: z.number().int().positive().nullable(),
     backgroundColor: MapBackgroundColorSchema,
     mapSettings: MapSettingsSchema.default(DEFAULT_MAP_SETTINGS),
+    defaultLocale: LocaleCodeSchema.default("de"),
+    enabledLocales: z.array(LocaleCodeSchema).min(1).default(["de"]),
     categories: z.array(MapCategorySchema),
     items: z.array(MapItemSchema),
     events: z.array(MapEventSchema).default([]),
@@ -164,6 +175,12 @@ export const MapProjectSchema = z
   })
   .superRefine((project, context) => {
     const categoryIds = new Set<string>();
+    if (!project.enabledLocales.includes(project.defaultLocale)) {
+      context.addIssue({ code: z.ZodIssueCode.custom, message: "Default locale must be enabled", path: ["defaultLocale"] });
+    }
+    if (new Set(project.enabledLocales).size !== project.enabledLocales.length) {
+      context.addIssue({ code: z.ZodIssueCode.custom, message: "Enabled locales must be unique", path: ["enabledLocales"] });
+    }
     for (const category of project.categories) {
       if (categoryIds.has(category.id)) {
         context.addIssue({ code: z.ZodIssueCode.custom, message: `Duplicate category id: ${category.id}` });
@@ -230,6 +247,7 @@ export type EventFrequency = z.infer<typeof EventFrequencySchema>;
 export type Weekday = z.infer<typeof WeekdaySchema>;
 export type EventRecurrence = z.infer<typeof EventRecurrenceSchema>;
 export type MapEvent = z.infer<typeof MapEventSchema>;
+export type LocaleCode = z.infer<typeof LocaleCodeSchema>;
 export type MapProject = z.infer<typeof MapProjectSchema>;
 export type AssetKind = z.infer<typeof AssetKindSchema>;
 export type Asset = z.infer<typeof AssetSchema>;

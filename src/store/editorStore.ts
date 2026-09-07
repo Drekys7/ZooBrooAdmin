@@ -19,11 +19,12 @@ import {
   updateEvent,
   updateItem,
   updateMapSettings,
+  updateProjectLanguages,
   type CreateEventInput,
   type OperationRecord,
   type OperationType,
 } from '../application'
-import { createEmptyProject, type Asset, type MapCategory, type MapEvent, type MapItem, type MapProject, type MapSettings, type NormalizedPosition } from '../domain'
+import { createEmptyProject, seedProjectTranslations, type Asset, type MapCategory, type MapEvent, type MapItem, type MapProject, type MapSettings, type NormalizedPosition } from '../domain'
 import { createLocalApplication } from '../infrastructure'
 
 type SaveStatus = 'saved' | 'dirty' | 'saving'
@@ -76,9 +77,11 @@ interface EditorState {
   redo: () => void
   uploadAsset: (file: File, kind: Asset['kind']) => Promise<Asset>
   deleteAsset: (id: string) => Promise<void>
+  setBackgroundAsset: (id: string) => void
   setBackgroundFile: (file: File) => Promise<void>
   setBackgroundColor: (color: string) => void
   updateMapSettings: (patch: Partial<MapSettings>) => void
+  updateProjectLanguages: (defaultLocale: string, enabledLocales: string[]) => void
   importProjectFile: (file: File) => Promise<void>
   exportProject: () => void
   publish: () => Promise<number>
@@ -279,7 +282,8 @@ export const useEditorStore = create<EditorState>((set, get) => {
           await container.contentRepository.save(project)
           projects = [project]
         }
-        let project = projects.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0]
+        let project = seedProjectTranslations(projects.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0])
+        await container.contentRepository.save(project)
         if (project.id === 'zooweb-main' && project.backgroundAssetId === 'builtin-zoo-map') {
           project = buildDemoProject()
           await container.contentRepository.save(project)
@@ -423,10 +427,16 @@ export const useEditorStore = create<EditorState>((set, get) => {
       if (url) URL.revokeObjectURL(url)
       set((state) => ({ assets: state.assets.filter((asset) => asset.id !== id), assetUrls: Object.fromEntries(Object.entries(state.assetUrls).filter(([assetId]) => assetId !== id)) }))
     },
-    setBackgroundFile: async (file) => {
-      const asset = await get().uploadAsset(file, 'background')
+    setBackgroundAsset: (id) => {
+      const asset = get().assets.find((entry) => entry.id === id)
+      if (!asset) throw new Error('Die ausgewählte Ressource wurde nicht gefunden')
+      if (!asset.mimeType.startsWith('image/')) throw new Error('Als Karte kann nur eine Bildressource verwendet werden')
       if (!asset.width || !asset.height) throw new Error('Die Bildgröße konnte nicht ermittelt werden')
       commit('setBackground', 'project', get().project?.id ?? 'project', (project) => setBackground(project, { assetId: asset.id, width: asset.width!, height: asset.height! }))
+    },
+    setBackgroundFile: async (file) => {
+      const asset = await get().uploadAsset(file, 'background')
+      get().setBackgroundAsset(asset.id)
     },
     setBackgroundColor: (color) => {
       commit(
@@ -445,6 +455,12 @@ export const useEditorStore = create<EditorState>((set, get) => {
         (project) => updateMapSettings(project, { patch }),
       )
     },
+    updateProjectLanguages: (defaultLocale, enabledLocales) => commit(
+      'updateProject',
+      'project',
+      get().project?.id ?? 'project',
+      (project) => updateProjectLanguages(project, { defaultLocale, enabledLocales }),
+    ),
     importProjectFile: async (file) => {
       const project = importProjectFromJson(await file.text())
       await container.contentRepository.save(project)

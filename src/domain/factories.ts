@@ -29,6 +29,8 @@ export function createEmptyProject(options: CreateEmptyProjectOptions = {}): Map
     backgroundHeight: null,
     backgroundColor: DEFAULT_MAP_BACKGROUND_COLOR,
     mapSettings: DEFAULT_MAP_SETTINGS,
+    defaultLocale: "de",
+    enabledLocales: ["de"],
     categories: [],
     items: [],
     events: [],

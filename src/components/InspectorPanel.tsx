@@ -1,5 +1,6 @@
 import { Copy, ImagePlus, Plus, Trash2, Upload, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { hasTranslationValue } from '../domain/localization'
 import type { MapCategory, MapFact, MapItem } from '../domain/models'
 import { CategoryIcon } from './CategoryIcon'
 import { ItemMarkerOverrides } from './ItemMarkerOverrides'
@@ -14,24 +15,32 @@ interface InspectorPanelProps {
   onUpload: (file: File, field: 'imageAssetId' | 'iconAssetId') => void
   onChooseAsset: (field: 'imageAssetId' | 'iconAssetId') => void
   onDeselect: () => void
+  contentLocale?: string
+  defaultLocale?: string
 }
 
-function TextField({ label, value, placeholder, multiline, onCommit }: { label: string; value: string; placeholder?: string; multiline?: boolean; onCommit: (value: string) => void }) {
+function TextField({ label, value, placeholder, fallback, missing = false, multiline, onCommit }: { label: string; value: string; placeholder?: string; fallback?: string; missing?: boolean; multiline?: boolean; onCommit: (value: string) => void }) {
   const [draft, setDraft] = useState(value)
   useEffect(() => setDraft(value), [value])
   const commit = () => draft !== value && onCommit(draft)
-  return <label className="field"><span>{label}</span>{multiline
-    ? <textarea value={draft} placeholder={placeholder} onChange={(event) => setDraft(event.target.value)} onBlur={commit} rows={4} />
-    : <input value={draft} placeholder={placeholder} onChange={(event) => setDraft(event.target.value)} onBlur={commit} onKeyDown={(event) => event.key === 'Enter' && event.currentTarget.blur()} />}</label>
+  const inputPlaceholder = missing ? fallback : placeholder
+  return <div className={`field localized-field${missing ? ' is-missing' : ''}`}><span><span>{label}</span>{missing && <><em>Übersetzung fehlt</em>{fallback && <button type="button" onClick={() => { setDraft(fallback); onCommit(fallback) }}>Hauptsprache übernehmen</button>}</>}</span>{multiline
+    ? <textarea aria-label={label} value={draft} placeholder={inputPlaceholder} onChange={(event) => setDraft(event.target.value)} onBlur={commit} rows={4} />
+    : <input aria-label={label} value={draft} placeholder={inputPlaceholder} onChange={(event) => setDraft(event.target.value)} onBlur={commit} onKeyDown={(event) => event.key === 'Enter' && event.currentTarget.blur()} />}</div>
 }
 
-export function InspectorPanel({ item, categories, assetUrls, onUpdate, onDuplicate, onDelete, onUpload, onChooseAsset, onDeselect }: InspectorPanelProps) {
+export function InspectorPanel({ item, categories, assetUrls, onUpdate, onDuplicate, onDelete, onUpload, onChooseAsset, onDeselect, contentLocale = 'de', defaultLocale = 'de' }: InspectorPanelProps) {
   if (!item) {
     return <aside className="sidebar inspector empty-inspector" aria-label="Inspektor"><div className="inspector-placeholder"><span className="placeholder-marker"><span /></span><h2>Kategorie oder Punkt auswählen</h2><p>Klicken Sie auf eine Kategorie oder einen Punkt, um die Einstellungen anzuzeigen.</p></div></aside>
   }
   const category = categories.find((entry) => entry.id === item.categoryId)
   const imageUrl = item.imageAssetId ? assetUrls[item.imageAssetId] : undefined
   const iconUrl = item.iconAssetId ? assetUrls[item.iconAssetId] : undefined
+  const translation = item.translations?.[contentLocale]
+  const localizedKeys = ['title', 'subtitle', 'description'] as const
+  const translatedFieldCount = contentLocale === defaultLocale ? localizedKeys.length : localizedKeys.filter((key) => hasTranslationValue(translation, key)).length
+  const translatedValue = (key: typeof localizedKeys[number]) => contentLocale === defaultLocale ? item[key] : hasTranslationValue(translation, key) ? translation?.[key] ?? '' : ''
+  const isMissing = (key: typeof localizedKeys[number]) => contentLocale !== defaultLocale && !hasTranslationValue(translation, key)
 
   const updateFact = (factId: string, patch: Partial<MapFact>) => onUpdate(item.id, { facts: item.facts.map((fact) => fact.id === factId ? { ...fact, ...patch } : fact) })
   const removeFact = (factId: string) => onUpdate(item.id, { facts: item.facts.filter((fact) => fact.id !== factId) })
@@ -49,10 +58,11 @@ export function InspectorPanel({ item, categories, assetUrls, onUpdate, onDuplic
       <div className="inspector-scroll">
         <section className="inspector-section">
           <h3>Allgemein</h3>
-          <TextField label="Name" value={item.title} onCommit={(title) => onUpdate(item.id, { title })} />
+          <div className={`translation-status${contentLocale === defaultLocale || translatedFieldCount === localizedKeys.length ? ' is-complete' : ''}`}><strong>{contentLocale.toUpperCase()}</strong><span>{contentLocale === defaultLocale ? 'Hauptsprache' : translatedFieldCount === localizedKeys.length ? 'Übersetzung vollständig' : `${translatedFieldCount} von ${localizedKeys.length} Textfeldern übersetzt`}</span></div>
+          <TextField label="Name" value={translatedValue('title')} fallback={item.title} missing={isMissing('title')} onCommit={(title) => onUpdate(item.id, { title })} />
           <label className="field"><span>Kategorie</span><select value={item.categoryId} onChange={(event) => onUpdate(item.id, { categoryId: event.target.value, type: categories.find((entry) => entry.id === event.target.value)?.type ?? item.type })}>{categories.map((entry) => <option key={entry.id} value={entry.id}>{entry.name}</option>)}</select></label>
-          <TextField label="Untertitel" value={item.subtitle} placeholder="Kurze Erläuterung" onCommit={(subtitle) => onUpdate(item.id, { subtitle })} />
-          <TextField label="Beschreibung" value={item.description} placeholder="Beschreibung des Objekts für Besucher" multiline onCommit={(description) => onUpdate(item.id, { description })} />
+          <TextField label="Untertitel" value={translatedValue('subtitle')} fallback={item.subtitle} missing={isMissing('subtitle')} placeholder="Kurze Erläuterung" onCommit={(subtitle) => onUpdate(item.id, { subtitle })} />
+          <TextField label="Beschreibung" value={translatedValue('description')} fallback={item.description} missing={isMissing('description')} placeholder="Beschreibung des Objekts für Besucher" multiline onCommit={(description) => onUpdate(item.id, { description })} />
         </section>
 
         <section className="inspector-section">
@@ -68,7 +78,12 @@ export function InspectorPanel({ item, categories, assetUrls, onUpdate, onDuplic
         <section className="inspector-section facts-section">
           <div className="section-heading-inline"><h3>Informationen</h3><button className="text-button" onClick={addFact}><Plus size={14} />Hinzufügen</button></div>
           <div className="facts-list">
-            {item.facts.map((fact) => <div className="fact-row" key={fact.id}><div><input aria-label="Bezeichnung der Information" value={fact.label} onChange={(event) => updateFact(fact.id, { label: event.target.value })} placeholder="Zum Beispiel Gewicht"/><input aria-label="Wert der Information" value={fact.value} onChange={(event) => updateFact(fact.id, { value: event.target.value })} placeholder="Wert"/></div><button className="icon-button subtle" onClick={() => removeFact(fact.id)} aria-label="Information löschen"><X size={14}/></button></div>)}
+            {item.facts.map((fact) => {
+              const factTranslation = fact.translations?.[contentLocale]
+              const missingLabel = contentLocale !== defaultLocale && !hasTranslationValue(factTranslation, 'label')
+              const missingValue = contentLocale !== defaultLocale && !hasTranslationValue(factTranslation, 'value')
+              return <div className={`fact-row${missingLabel || missingValue ? ' has-missing-translation' : ''}`} key={fact.id}><div><input aria-label="Bezeichnung der Information" value={missingLabel ? '' : contentLocale === defaultLocale ? fact.label : factTranslation?.label ?? ''} onChange={(event) => updateFact(fact.id, { label: event.target.value })} placeholder={missingLabel ? fact.label : 'Zum Beispiel Gewicht'}/><input aria-label="Wert der Information" value={missingValue ? '' : contentLocale === defaultLocale ? fact.value : factTranslation?.value ?? ''} onChange={(event) => updateFact(fact.id, { value: event.target.value })} placeholder={missingValue ? fact.value : 'Wert'}/></div><button className="icon-button subtle" onClick={() => removeFact(fact.id)} aria-label="Information löschen"><X size={14}/></button></div>
+            })}
             {item.facts.length === 0 && <p className="inline-empty">Fügen Sie Kurzinformationen für die Objektkarte hinzu.</p>}
           </div>
         </section>
