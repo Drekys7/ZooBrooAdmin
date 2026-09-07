@@ -35,9 +35,11 @@ export function localizeFact(fact: MapFact, locale: string, defaultLocale: strin
 }
 
 export function localizeItem(item: MapItem, locale: string, defaultLocale: string): MapItem {
+  const content = translated({ title: item.title, subtitle: item.subtitle, description: item.description }, item.translations, locale, defaultLocale)
   return {
     ...item,
-    ...translated({ title: item.title, subtitle: item.subtitle, description: item.description }, item.translations, locale, defaultLocale),
+    ...content,
+    subtitle: item.type === 'animal' ? '' : content.subtitle,
     facts: item.facts.map((fact) => localizeFact(fact, locale, defaultLocale)),
   }
 }
@@ -52,6 +54,15 @@ export function localeName(code: string): string {
 
 export function hasTranslationValue(translation: Record<string, unknown> | undefined, key: string): boolean {
   return typeof translation?.[key] === 'string' && String(translation[key]).trim().length > 0
+}
+
+export function stripItemSubtitleTranslations(translations: MapItem['translations']): MapItem['translations'] {
+  if (!translations) return translations
+  return Object.fromEntries(Object.entries(translations).map(([locale, content]) => {
+    const { subtitle: _subtitle, ...rest } = content
+    void _subtitle
+    return [locale, rest]
+  }))
 }
 
 export function translationCompletion(
@@ -70,7 +81,7 @@ export function translationCompletion(
   }
   categories.forEach((category) => count(category.translations?.[locale], ['name']))
   items.forEach((item) => {
-    count(item.translations?.[locale], ['title', 'subtitle', 'description'])
+    count(item.translations?.[locale], item.type === 'animal' ? ['title', 'description'] : ['title', 'subtitle', 'description'])
     item.facts.forEach((fact) => count(fact.translations?.[locale], ['label', 'value']))
   })
   events.forEach((event) => count(event.translations?.[locale], ['title', 'description', 'location']))
@@ -88,14 +99,18 @@ export function seedProjectTranslations(project: MapProject): MapProject {
       ...category,
       translations: { [locale]: { name: category.name }, ...(category.translations ?? {}) },
     })),
-    items: project.items.map((item) => ({
-      ...item,
-      translations: { [locale]: { title: item.title, subtitle: item.subtitle, description: item.description }, ...(item.translations ?? {}) },
-      facts: item.facts.map((fact) => ({
-        ...fact,
-        translations: { [locale]: { label: fact.label, value: fact.value }, ...(fact.translations ?? {}) },
-      })),
-    })),
+    items: project.items.map((item) => {
+      const translations = { [locale]: { title: item.title, ...(item.type === 'animal' ? {} : { subtitle: item.subtitle }), description: item.description }, ...(item.translations ?? {}) }
+      return {
+        ...item,
+        subtitle: item.type === 'animal' ? '' : item.subtitle,
+        translations: item.type === 'animal' ? stripItemSubtitleTranslations(translations) : translations,
+        facts: item.facts.map((fact) => ({
+          ...fact,
+          translations: { [locale]: { label: fact.label, value: fact.value }, ...(fact.translations ?? {}) },
+        })),
+      }
+    }),
     events: project.events.map((event) => ({
       ...event,
       translations: { [locale]: { title: event.title, description: event.description, location: event.location }, ...(event.translations ?? {}) },

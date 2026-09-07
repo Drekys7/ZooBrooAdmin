@@ -4,6 +4,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { DEFAULT_MAP_SETTINGS, type MapCategory, type MapEvent, type MapItem } from '../domain/models';
 import {
   canDragMarker,
+  clampFocusCenter,
+  quickPreviewWouldCoverPoint,
   denormalizePosition,
   latLngToPosition,
   MapCanvas,
@@ -111,6 +113,24 @@ describe('MapCanvas coordinate helpers', () => {
     previewMapSetting(verticalMap, imageBounds, 1000, 500, settings, [30, 30], 'vertical')
     expect(verticalMap.setView).toHaveBeenLastCalledWith([700, 500], -2, { animate: false })
   })
+
+  it('clamps a searched marker to the nearest camera center allowed by the viewport', () => {
+    const mapProjection = {
+      project: vi.fn((point: L.LatLng) => L.point(point.lng, point.lat)),
+      unproject: vi.fn((point: L.Point) => L.latLng(point.y, point.x)),
+      getSize: vi.fn(() => L.point(200, 100)),
+    }
+    const bounds = L.latLngBounds([0, 0], [100, 300])
+
+    expect(clampFocusCenter(mapProjection, [50, 290], 2, bounds)).toEqual(L.latLng(50, 200))
+    expect(clampFocusCenter(mapProjection, [50, 10], 2, bounds)).toEqual(L.latLng(50, 100))
+    expect(clampFocusCenter(mapProjection, [90, 150], 2, bounds)).toEqual(L.latLng(50, 150))
+  })
+
+  it('detects when the bottom quick preview would cover a focused marker', () => {
+    expect(quickPreviewWouldCoverPoint(L.point(120, 700), L.point(390, 844))).toBe(true)
+    expect(quickPreviewWouldCoverPoint(L.point(120, 240), L.point(390, 844))).toBe(false)
+  })
 });
 
 describe('MapCanvas marker interaction', () => {
@@ -203,9 +223,14 @@ describe('MapCanvas rendering', () => {
 
     expect(container.querySelector('.map-canvas')).toHaveClass('is-phone-preview')
     expect(renderedMap.getByRole('button', { name: 'Veranstaltungen anzeigen' })).toBeInTheDocument()
+    expect(renderedMap.getByRole('button', { name: 'Mein Standort' })).toBeInTheDocument()
     fireEvent.click(renderedMap.getByRole('button', { name: 'Veranstaltungen anzeigen' }))
     expect(renderedMap.getByRole('dialog', { name: 'Veranstaltungen' })).toBeInTheDocument()
+    expect(renderedMap.queryByRole('searchbox')).not.toBeInTheDocument()
+    expect(renderedMap.queryByRole('button', { name: 'Sprache' })).not.toBeInTheDocument()
     fireEvent.click(renderedMap.getByRole('button', { name: 'Veranstaltungen schließen' }))
+    expect(renderedMap.getByRole('searchbox', { name: 'Karte durchsuchen' })).toBeInTheDocument()
+    expect(renderedMap.getByRole('button', { name: 'Sprache' })).toBeInTheDocument()
     expect(renderedMap.getByRole('button', { name: 'Desktopansicht anzeigen' })).toHaveAttribute(
       'aria-pressed',
       'true',
@@ -280,6 +305,15 @@ describe('MapCanvas rendering', () => {
     expect(onSelect).toHaveBeenCalledWith('penguins')
     expect(renderedMap.queryByRole('dialog', { name: 'Veranstaltungen' })).not.toBeInTheDocument()
     expect(renderedMap.getByLabelText('Pinguine Vorschau')).toBeInTheDocument()
+
+    fireEvent.click(renderedMap.getByText('Pinguine'))
+    expect(renderedMap.getByRole('dialog', { name: 'Pinguine' })).toBeInTheDocument()
+    expect(renderedMap.queryByRole('searchbox')).not.toBeInTheDocument()
+    expect(renderedMap.queryByRole('button', { name: 'Sprache' })).not.toBeInTheDocument()
+
+    fireEvent.click(renderedMap.getByRole('button', { name: 'Detailansicht schließen' }))
+    expect(renderedMap.getByRole('searchbox', { name: 'Karte durchsuchen' })).toBeInTheDocument()
+    expect(renderedMap.getByRole('button', { name: 'Sprache' })).toBeInTheDocument()
   })
 
   it('applies and reports the configured map background color', () => {

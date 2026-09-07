@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
-import { CalendarClock, Languages, LocateFixed, Minus, Monitor, Palette, Plus, Settings2, Smartphone, X } from 'lucide-react';
+import { CalendarClock, LocateFixed, Minus, Monitor, Palette, Plus, Settings2, Smartphone, X } from 'lucide-react';
 import {
   DEFAULT_MAP_SETTINGS,
   categoryIconScale,
@@ -27,6 +27,7 @@ import { AVAILABLE_LOCALES, localizeCategory, localizeEvent, localizeItem, local
 import { getCategoryIconUrl } from './CategoryIcon';
 import { PhoneClientPreview } from './PhoneClientPreview';
 import { nextVisibleEventOccurrence, PhoneEventPanel } from './PhoneEventPanel';
+import { PhoneMapSearch } from './PhoneMapSearch';
 import { visitorCopy } from './visitor-i18n';
 import 'leaflet/dist/leaflet.css';
 import './map-canvas.css';
@@ -143,6 +144,38 @@ export function navigationPreviewPoint(
   return axis === 'horizontal'
     ? { lat: height / 2, lng: limits.northEast[1] }
     : { lat: limits.northEast[0], lng: width / 2 };
+}
+
+export function clampFocusCenter(
+  map: Pick<L.Map, 'project' | 'unproject' | 'getSize'>,
+  target: L.LatLngExpression,
+  zoom: number,
+  bounds: L.LatLngBounds,
+): L.LatLng {
+  const targetPoint = map.project(L.latLng(target), zoom)
+  const northWest = map.project(bounds.getNorthWest(), zoom)
+  const southEast = map.project(bounds.getSouthEast(), zoom)
+  const min = L.point(Math.min(northWest.x, southEast.x), Math.min(northWest.y, southEast.y))
+  const max = L.point(Math.max(northWest.x, southEast.x), Math.max(northWest.y, southEast.y))
+  const halfViewport = map.getSize().divideBy(2)
+
+  const clampAxis = (value: number, lower: number, upper: number) => (
+    lower <= upper ? Math.min(upper, Math.max(lower, value)) : (lower + upper) / 2
+  )
+
+  return map.unproject(L.point(
+    clampAxis(targetPoint.x, min.x + halfViewport.x, max.x - halfViewport.x),
+    clampAxis(targetPoint.y, min.y + halfViewport.y, max.y - halfViewport.y),
+  ), zoom)
+}
+
+export function quickPreviewWouldCoverPoint(
+  point: Pick<L.Point, 'y'>,
+  viewport: Pick<L.Point, 'y'>,
+): boolean {
+  const quickPreviewTop = viewport.y - 29 - 132
+  const markerClearance = 36
+  return point.y + markerClearance >= quickPreviewTop
 }
 
 function applyMapViewSettings(
@@ -598,6 +631,7 @@ export function MapCanvas({
   const [globalSettingsOpen, setGlobalSettingsOpen] = useState(false);
   const [visitorLocale, setVisitorLocale] = useState(defaultLocale);
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
+  const [hiddenVisitorCategoryIds, setHiddenVisitorCategoryIds] = useState<Set<string>>(() => new Set());
   const [mapEffectZoomScale, setMapEffectZoomScale] = useState(() => mapSettings.minZoomScale);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const globalSettingsRef = useRef<HTMLDivElement | null>(null);
@@ -895,7 +929,7 @@ export function MapCanvas({
 
     for (const item of items) {
       const category = categoriesById.get(item.categoryId);
-      if (!item.visible || (category && !category.visible)) continue;
+      if (!item.visible || (category && !category.visible) || (phonePreview && hiddenVisitorCategoryIds.has(item.categoryId))) continue;
       renderedItemIds.add(item.id);
 
       const iconUrl = getItemIconUrl?.(item, category);
@@ -1003,6 +1037,7 @@ export function MapCanvas({
     categoriesById,
     disabled,
     getItemIconUrl,
+    hiddenVisitorCategoryIds,
     items,
     phonePreview,
     selectedItemId,
@@ -1193,12 +1228,19 @@ export function MapCanvas({
         clientPreviewCategory?.type ?? clientPreviewItem.type,
       )
     : null;
+
+  useEffect(() => {
+    if (!clientPreviewItem || !hiddenVisitorCategoryIds.has(clientPreviewItem.categoryId)) return
+    setClientPreviewItemId(null)
+    setClientDetailsOpen(false)
+  }, [clientPreviewItem, hiddenVisitorCategoryIds])
+
   const nextEventOccurrence = useMemo(
     () => nextVisibleEventOccurrence(events, eventClock),
     [eventClock, events],
   );
 
-  const focusClientEventItem = (itemId: string) => {
+  const focusClientItem = (itemId: string, suppressCoveredPreview = false) => {
     const item = items.find((candidate) => candidate.id === itemId);
     const map = mapRef.current;
     if (!item || !map) return;
@@ -1210,10 +1252,24 @@ export function MapCanvas({
     );
     const fitZoom = boundsRef.current ? map.getBoundsZoom(boundsRef.current) : map.getZoom();
     const destinationZoom = Math.min(map.getMaxZoom(), Math.max(map.getZoom(), fitZoom + 1.35));
-    map.flyTo(target, destinationZoom, { animate: true, duration: 0.55, easeLinearity: 0.25 });
+    const limits = navigationLimitPoints(
+      safeDimension(backgroundWidth),
+      safeDimension(backgroundHeight),
+      mapViewSettingsForMode(phonePreview, mapSettings),
+    );
+    const destination = clampFocusCenter(
+      map,
+      target,
+      destinationZoom,
+      L.latLngBounds(limits.southWest, limits.northEast),
+    );
+    const targetScreenPoint = map.project(target, destinationZoom)
+      .subtract(map.project(destination, destinationZoom))
+      .add(map.getSize().divideBy(2));
+    map.flyTo(destination, destinationZoom, { animate: true, duration: 0.55, easeLinearity: 0.25 });
     callbacksRef.current.onSelect?.(item.id);
     setClientEventsOpen(false);
-    setClientPreviewItemId(item.id);
+    setClientPreviewItemId(suppressCoveredPreview && quickPreviewWouldCoverPoint(targetScreenPoint, map.getSize()) ? null : item.id);
     setClientDetailsOpen(false);
   };
 
@@ -1346,17 +1402,32 @@ export function MapCanvas({
         />
 
         {phonePreview ? (
-          <>
+            <>
             <span className="map-canvas__phone-island" aria-hidden="true" />
             <span className="map-canvas__phone-home-indicator" aria-hidden="true" />
-            <div className="map-client-language">
-              <button type="button" aria-label={clientCopy.language} title={clientCopy.language} aria-expanded={languageMenuOpen} onClick={() => setLanguageMenuOpen((open) => !open)}>
-                <Languages size={17} strokeWidth={1.9} /><span>{visitorLocale.toUpperCase()}</span>
-              </button>
-              {languageMenuOpen ? <div className="map-client-language__menu" role="menu">
-                {enabledLocales.map((locale) => <button type="button" role="menuitemradio" aria-checked={visitorLocale === locale} className={visitorLocale === locale ? 'is-active' : ''} key={locale} onClick={() => chooseVisitorLocale(locale)}><strong>{locale.toUpperCase()}</strong><span>{localeName(locale)}</span></button>)}
-              </div> : null}
-            </div>
+            {!clientDetailsOpen && !clientEventsOpen ? (
+              <>
+                <PhoneMapSearch
+                  items={items}
+                  categories={categories}
+                  locale={visitorLocale}
+                  enabledLocales={enabledLocales}
+                  languageMenuOpen={languageMenuOpen}
+                  hiddenCategoryIds={hiddenVisitorCategoryIds}
+                  getLocaleName={localeName}
+                  getItemIconUrl={(item, category) => resolveMarkerIconUrl(getItemIconUrl?.(item, category), category?.type ?? item.type)}
+                  onLanguageMenuOpenChange={setLanguageMenuOpen}
+                  onChooseLocale={chooseVisitorLocale}
+                  onToggleCategory={(categoryId) => setHiddenVisitorCategoryIds((current) => {
+                    const next = new Set(current)
+                    if (next.has(categoryId)) next.delete(categoryId)
+                    else next.add(categoryId)
+                    return next
+                  })}
+                  onChooseItem={(itemId) => focusClientItem(itemId, true)}
+                />
+              </>
+            ) : null}
             <button
               type="button"
               className={`map-client-events__toggle${clientPreviewItem ? ' is-raised' : ''}`}
@@ -1379,6 +1450,15 @@ export function MapCanvas({
                   <small>{nextEventOccurrence.event.title}</small>
                 </span>
               ) : null}
+            </button>
+            <button
+              type="button"
+              className={`map-client-location__toggle${clientPreviewItem ? ' is-raised' : ''}`}
+              aria-label={clientCopy.myLocation}
+              title={clientCopy.myLocation}
+              onClick={() => {}}
+            >
+              <LocateFixed size={21} strokeWidth={1.8} aria-hidden="true" />
             </button>
           </>
         ) : null}
@@ -1416,7 +1496,7 @@ export function MapCanvas({
             items={items}
             now={eventClock}
             locale={visitorLocale}
-            onFocusItem={focusClientEventItem}
+            onFocusItem={focusClientItem}
             onClose={() => setClientEventsOpen(false)}
           />
         ) : null}

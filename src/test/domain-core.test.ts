@@ -75,6 +75,8 @@ describe("project commands", () => {
     expect(created.items[0]?.colorOverride).toBeNull();
     const updated = updateItem(created, { itemId: "lion", patch: { subtitle: "Afrikanischer Löwe", colorOverride: "#A1B2C3" }, now });
     expect(updated.items[0]?.colorOverride).toBe("#A1B2C3");
+    expect(updated.items[0]?.subtitle).toBe("");
+    expect(updated.items[0]?.translations?.de).not.toHaveProperty("subtitle");
     const moved = moveItem(updated, { itemId: "lion", position: { x: 2, y: -1 }, now });
     const duplicated = duplicateItem(moved, { itemId: "lion", id: "lion-copy", now });
     expect(duplicated.items).toHaveLength(2);

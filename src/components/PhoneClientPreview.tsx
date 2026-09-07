@@ -80,7 +80,7 @@ export function PhoneClientPreview({
             </div>
           ) : (
             <>
-              <strong className="map-client-preview__subtitle">{item.subtitle}</strong>
+              {item.type !== 'animal' && item.subtitle ? <strong className="map-client-preview__subtitle">{item.subtitle}</strong> : null}
               <p className="map-client-preview__quick-description">{item.description}</p>
             </>
           )}
@@ -116,7 +116,7 @@ export function PhoneClientPreview({
           <PreviewVisual imageUrl={imageUrl} iconUrl={iconUrl} large />
           <div className="map-client-preview__content">
             <h2 id="map-client-preview-title">{item.title}</h2>
-            {item.subtitle ? <p className="map-client-preview__sheet-subtitle">{item.subtitle}</p> : null}
+            {item.type !== 'animal' && item.subtitle ? <p className="map-client-preview__sheet-subtitle">{item.subtitle}</p> : null}
             {item.facts.length > 0 ? (
               <div className="map-client-preview__facts">
                 {item.facts.map((fact) => (

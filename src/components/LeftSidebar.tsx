@@ -32,7 +32,7 @@ export function LeftSidebar(props: LeftSidebarProps) {
   const visibleItems = props.items
     .filter((item) => !props.selectedCategoryId || props.selectedCategoryId === ALL_CATEGORIES_ID || item.categoryId === props.selectedCategoryId)
     .filter((item) => props.visibility === 'all' || (props.visibility === 'visible' ? isEffectivelyVisible(item) : !isEffectivelyVisible(item)))
-    .filter((item) => !query || `${item.title} ${item.subtitle}`.toLocaleLowerCase('de-DE').includes(query))
+    .filter((item) => !query || `${item.title} ${item.type === 'animal' ? '' : item.subtitle}`.toLocaleLowerCase('de-DE').includes(query))
     .sort((a, b) => a.title.localeCompare(b.title, 'de-DE'))
   const allCategoriesVisible = props.categories.every((category) => category.visible)
 
@@ -104,7 +104,7 @@ export function LeftSidebar(props: LeftSidebarProps) {
                 onDoubleClick={() => isSelected && props.onFocusItem(item.id)}
               >
                 <span className="item-dot" style={{ background: category?.color ?? '#60756d' }} />
-                <span className="item-copy"><strong>{item.title}</strong><small>{category?.name ?? 'Ohne Kategorie'}{item.subtitle ? ` · ${item.subtitle}` : ''}</small></span>
+                <span className="item-copy"><strong>{item.title}</strong><small>{category?.name ?? 'Ohne Kategorie'}{item.type !== 'animal' && item.subtitle ? ` · ${item.subtitle}` : ''}</small></span>
                 {!effectivelyVisible && <EyeOff size={13} />}
               </button>
               {isSelected && <button

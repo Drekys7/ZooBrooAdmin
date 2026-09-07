@@ -37,7 +37,7 @@ export function InspectorPanel({ item, categories, assetUrls, onUpdate, onDuplic
   const imageUrl = item.imageAssetId ? assetUrls[item.imageAssetId] : undefined
   const iconUrl = item.iconAssetId ? assetUrls[item.iconAssetId] : undefined
   const translation = item.translations?.[contentLocale]
-  const localizedKeys = ['title', 'subtitle', 'description'] as const
+  const localizedKeys: Array<'title' | 'subtitle' | 'description'> = item.type === 'animal' ? ['title', 'description'] : ['title', 'subtitle', 'description']
   const translatedFieldCount = contentLocale === defaultLocale ? localizedKeys.length : localizedKeys.filter((key) => hasTranslationValue(translation, key)).length
   const translatedValue = (key: typeof localizedKeys[number]) => contentLocale === defaultLocale ? item[key] : hasTranslationValue(translation, key) ? translation?.[key] ?? '' : ''
   const isMissing = (key: typeof localizedKeys[number]) => contentLocale !== defaultLocale && !hasTranslationValue(translation, key)
@@ -61,7 +61,7 @@ export function InspectorPanel({ item, categories, assetUrls, onUpdate, onDuplic
           <div className={`translation-status${contentLocale === defaultLocale || translatedFieldCount === localizedKeys.length ? ' is-complete' : ''}`}><strong>{contentLocale.toUpperCase()}</strong><span>{contentLocale === defaultLocale ? 'Hauptsprache' : translatedFieldCount === localizedKeys.length ? 'Übersetzung vollständig' : `${translatedFieldCount} von ${localizedKeys.length} Textfeldern übersetzt`}</span></div>
           <TextField label="Name" value={translatedValue('title')} fallback={item.title} missing={isMissing('title')} onCommit={(title) => onUpdate(item.id, { title })} />
           <label className="field"><span>Kategorie</span><select value={item.categoryId} onChange={(event) => onUpdate(item.id, { categoryId: event.target.value, type: categories.find((entry) => entry.id === event.target.value)?.type ?? item.type })}>{categories.map((entry) => <option key={entry.id} value={entry.id}>{entry.name}</option>)}</select></label>
-          <TextField label="Untertitel" value={translatedValue('subtitle')} fallback={item.subtitle} missing={isMissing('subtitle')} placeholder="Kurze Erläuterung" onCommit={(subtitle) => onUpdate(item.id, { subtitle })} />
+          {item.type !== 'animal' && <TextField label="Untertitel" value={translatedValue('subtitle')} fallback={item.subtitle} missing={isMissing('subtitle')} placeholder="Kurze Erläuterung" onCommit={(subtitle) => onUpdate(item.id, { subtitle })} />}
           <TextField label="Beschreibung" value={translatedValue('description')} fallback={item.description} missing={isMissing('description')} placeholder="Beschreibung des Objekts für Besucher" multiline onCommit={(description) => onUpdate(item.id, { description })} />
         </section>
 

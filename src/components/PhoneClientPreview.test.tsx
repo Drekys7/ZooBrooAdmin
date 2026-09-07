@@ -60,6 +60,7 @@ describe('PhoneClientPreview', () => {
 
     rerender(<PhoneClientPreview {...props} expanded />)
     expect(screen.getByRole('dialog', { name: 'Bär' })).toBeInTheDocument()
+    expect(screen.queryByText(item.subtitle)).not.toBeInTheDocument()
     expect(screen.getByText('80–300 kg')).toBeInTheDocument()
     expect(screen.getByText(item.description)).toBeInTheDocument()
   })

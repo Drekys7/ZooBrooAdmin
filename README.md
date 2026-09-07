@@ -28,7 +28,7 @@ npm run preview   # lokale Vorschau des Production-Bundles
 - Zoomen mit dem Mausrad, Verschieben der Karte, Schaltflächen zum Zoomen und Zurücksetzen sowie verschiebbare Marker;
 - Hinzufügen eines Punkts per Kartenklick sowie Bearbeiten, Duplizieren und Löschen mit Bestätigung;
 - Suche, Kategorien, Zähler, Sichtbarkeitsfilter und Punktauswahl aus der Liste;
-- Editor für Name, Kategorie, Untertitel, Beschreibung, Bild, Symbol, optionale eigene Farbe, Fakten und Sichtbarkeit;
+- Editor für Name, Kategorie, Beschreibung, Bild, Symbol, optionale eigene Farbe, Fakten und Sichtbarkeit; Untertitel stehen nur für Nicht-Tier-Punkte zur Verfügung;
 - Kategorie-Editor für Standardsymbol, Farbe, Symbolgröße und Markierungsstil (`Nur Bild`, `Bild im Kreis`, `Pin`) inklusive gemeinsamer Bearbeitung aller Kategorien;
 - Medienverwaltung für PNG-, WebP- und SVG-Dateien mit Vorschau und Wiederverwendung;
 - Rückgängig/Wiederholen und Vorgangsprotokoll; das Verschieben eines Markers wird nach Abschluss des Ziehvorgangs als ein Vorgang gespeichert;

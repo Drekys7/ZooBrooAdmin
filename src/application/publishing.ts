@@ -14,6 +14,7 @@ import {
   categoryShadowEnabled,
   categoryShadowOpacity,
   eventLifecycleStatus,
+  stripItemSubtitleTranslations,
   type MapProject,
 } from "../domain";
 import {
@@ -100,7 +101,7 @@ export function buildPublishedSnapshot(
       categoryId: item.categoryId,
       type: item.type,
       title: item.title,
-      subtitle: item.subtitle,
+      subtitle: item.type === 'animal' ? '' : item.subtitle,
       description: item.description,
       icon: publishedAsset(item.iconAssetId, resolveAssetUrl),
       image: publishedAsset(item.imageAssetId, resolveAssetUrl),
@@ -117,7 +118,7 @@ export function buildPublishedSnapshot(
       visible: item.visible,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
-      translations: item.translations,
+      translations: item.type === 'animal' ? stripItemSubtitleTranslations(item.translations) : item.translations,
     })),
     events: project.events
       .filter((event) => eventLifecycleStatus(event, publishedClock) === 'upcoming')

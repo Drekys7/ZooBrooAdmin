@@ -12,6 +12,7 @@ import {
   MarkerOverridesSchema,
   MapProjectSchema,
   normalizePosition,
+  stripItemSubtitleTranslations,
   createId,
   type MapProject,
 } from "../domain";
@@ -189,11 +190,14 @@ export function createItem(projectValue: MapProject, inputValue: CreateItemInput
   const id = input.id ?? createId();
   if (project.items.some((item) => item.id === id)) throw new Error(`Item already exists: ${id}`);
   const now = timestamp(input.now);
+  const type = input.type ?? category.type;
+  const translations = input.translations ?? { [project.defaultLocale]: { title: input.title, ...(type === 'animal' ? {} : { subtitle: input.subtitle }), description: input.description } };
   const item = MapItemSchema.parse({
     ...input,
     id,
-    type: input.type ?? category.type,
-    translations: input.translations ?? { [project.defaultLocale]: { title: input.title, subtitle: input.subtitle, description: input.description } },
+    type,
+    subtitle: type === 'animal' ? '' : input.subtitle,
+    translations: type === 'animal' ? stripItemSubtitleTranslations(translations) : translations,
     facts: input.facts.map((fact) => ({ ...fact, translations: fact.translations ?? { [project.defaultLocale]: { label: fact.label, value: fact.value } } })),
     position: normalizePosition(input.position),
     createdAt: now,
@@ -210,7 +214,12 @@ export function updateItem(projectValue: MapProject, inputValue: UpdateItemInput
   const now = timestamp(input.now);
   const patch = { ...input.patch, ...(input.patch.position ? { position: normalizePosition(input.patch.position) } : {}) };
   if (category && input.patch.type === undefined) patch.type = category.type;
-  const item = MapItemSchema.parse({ ...existing, ...patch, updatedAt: now });
+  const candidate = { ...existing, ...patch, updatedAt: now };
+  const item = MapItemSchema.parse(candidate.type === 'animal' ? {
+    ...candidate,
+    subtitle: '',
+    translations: stripItemSubtitleTranslations(candidate.translations),
+  } : candidate);
   return finish({ ...project, items: project.items.map((value) => (value.id === item.id ? item : value)), updatedAt: now });
 }
 
