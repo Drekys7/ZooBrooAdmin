@@ -1,5 +1,5 @@
 import { Info, X } from 'lucide-react'
-import type { CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type PointerEvent, type TouchEvent } from 'react'
 import type { MapCategory, MapFact, MapItem } from '../domain/models'
 import { visitorCopy } from './visitor-i18n'
 
@@ -7,6 +7,7 @@ interface PhoneClientPreviewProps {
   item: MapItem
   category: MapCategory | undefined
   imageUrl?: string | null
+  imageUrls?: string[]
   iconUrl: string
   expanded: boolean
   locale?: string
@@ -45,6 +46,7 @@ export function PhoneClientPreview({
   item,
   category,
   imageUrl,
+  imageUrls,
   iconUrl,
   expanded,
   locale = 'de',
@@ -54,6 +56,41 @@ export function PhoneClientPreview({
 }: PhoneClientPreviewProps) {
   const style = { '--client-preview-accent': previewColor(item, category) } as CSSProperties
   const copy = visitorCopy(locale)
+  const images = imageUrls?.length ? imageUrls : imageUrl ? [imageUrl] : []
+  const primaryImage = images[0] ?? null
+  const [activeImageIndex, setActiveImageIndex] = useState(0)
+  const galleryTouchStart = useRef<{ x: number; y: number } | null>(null)
+  const galleryPointerStart = useRef<{ id: number; x: number; y: number } | null>(null)
+
+  useEffect(() => setActiveImageIndex(0), [item.id])
+
+  const showImage = (index: number) => {
+    if (images.length) setActiveImageIndex((index + images.length) % images.length)
+  }
+  const handleGalleryTouchStart = (event: TouchEvent<HTMLDivElement>) => {
+    if (event.touches.length === 1) galleryTouchStart.current = { x: event.touches[0].clientX, y: event.touches[0].clientY }
+  }
+  const handleGalleryTouchEnd = (event: TouchEvent<HTMLDivElement>) => {
+    const start = galleryTouchStart.current
+    galleryTouchStart.current = null
+    if (!start || event.changedTouches.length !== 1 || images.length < 2) return
+    const deltaX = event.changedTouches[0].clientX - start.x
+    const deltaY = event.changedTouches[0].clientY - start.y
+    if (Math.abs(deltaX) >= 42 && Math.abs(deltaX) > Math.abs(deltaY)) showImage(activeImageIndex + (deltaX < 0 ? 1 : -1))
+  }
+  const handleGalleryPointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === 'touch' || !event.isPrimary) return
+    galleryPointerStart.current = { id: event.pointerId, x: event.clientX, y: event.clientY }
+    event.currentTarget.setPointerCapture(event.pointerId)
+  }
+  const handleGalleryPointerUp = (event: PointerEvent<HTMLDivElement>) => {
+    const start = galleryPointerStart.current
+    galleryPointerStart.current = null
+    if (!start || start.id !== event.pointerId || images.length < 2) return
+    const deltaX = event.clientX - start.x
+    const deltaY = event.clientY - start.y
+    if (Math.abs(deltaX) >= 42 && Math.abs(deltaX) > Math.abs(deltaY)) showImage(activeImageIndex + (deltaX < 0 ? 1 : -1))
+  }
 
   if (!expanded) {
     return (
@@ -69,7 +106,7 @@ export function PhoneClientPreview({
         >
           <X size={13} strokeWidth={2} aria-hidden="true" />
         </button>
-        <PreviewVisual imageUrl={imageUrl} iconUrl={iconUrl} />
+        <PreviewVisual imageUrl={primaryImage} iconUrl={iconUrl} />
         <div className="map-client-preview__quick-content">
           <h2>{item.title}</h2>
           {item.facts.length > 0 ? (
@@ -113,7 +150,14 @@ export function PhoneClientPreview({
           <X size={15} strokeWidth={2} aria-hidden="true" />
         </button>
         <div className="map-client-preview__scroll">
-          <PreviewVisual imageUrl={imageUrl} iconUrl={iconUrl} large />
+          {images.length ? <div className="map-client-preview__gallery" onTouchStart={handleGalleryTouchStart} onTouchEnd={handleGalleryTouchEnd} onPointerDown={handleGalleryPointerDown} onPointerUp={handleGalleryPointerUp} onPointerCancel={() => { galleryPointerStart.current = null }}>
+            <div className="map-client-preview__gallery-track" style={{ transform: `translate3d(-${activeImageIndex * 100}%, 0, 0)` }}>
+              {images.map((src, index) => <img className="map-client-preview__hero-image" src={src} alt={index === 0 ? item.title : `${item.title}, Foto ${index + 1}`} draggable={false} key={`${src}-${index}`} />)}
+            </div>
+            {images.length > 1 && <div className="map-client-preview__gallery-dots" role="group" aria-label="Fotos auswählen">
+              {images.map((_, index) => <button type="button" className={index === activeImageIndex ? 'is-active' : ''} aria-label={`Foto ${index + 1} von ${images.length}`} aria-current={index === activeImageIndex ? 'true' : undefined} onClick={() => showImage(index)} key={index}/>) }
+            </div>}
+          </div> : <PreviewVisual imageUrl={null} iconUrl={iconUrl} large />}
           <div className="map-client-preview__content">
             <h2 id="map-client-preview-title">{item.title}</h2>
             {item.type !== 'animal' && item.subtitle ? <p className="map-client-preview__sheet-subtitle">{item.subtitle}</p> : null}

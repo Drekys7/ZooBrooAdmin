@@ -274,7 +274,7 @@ describe('MapCanvas rendering', () => {
     }
     const item: MapItem = {
       id: 'penguins', categoryId: 'animals', type: 'animal', title: 'Pinguine', subtitle: '', description: '', iconAssetId: null,
-      imageAssetId: null, colorOverride: null, markerOverrides: null, position: { x: 0.3, y: 0.4 }, facts: [], visible: true,
+      imageAssetId: 'penguin-front', imageAssetIds: ['penguin-front', 'penguin-side', 'penguin-pool'], colorOverride: null, markerOverrides: null, position: { x: 0.3, y: 0.4 }, facts: [], visible: true,
       createdAt: '2026-08-12T08:00:00.000Z', updatedAt: '2026-08-12T08:00:00.000Z',
     }
     const zooEvent: MapEvent = {
@@ -292,6 +292,8 @@ describe('MapCanvas rendering', () => {
         items={[item]}
         categories={[category]}
         events={[zooEvent]}
+        getItemImageUrl={() => '/penguin-front.jpg'}
+        getItemImageUrls={(mapItem) => mapItem.imageAssetIds?.map((id) => `/${id}.jpg`) ?? []}
         onSelect={onSelect}
       />,
     )
@@ -308,6 +310,7 @@ describe('MapCanvas rendering', () => {
 
     fireEvent.click(renderedMap.getByText('Pinguine'))
     expect(renderedMap.getByRole('dialog', { name: 'Pinguine' })).toBeInTheDocument()
+    expect(renderedMap.getAllByRole('button', { name: /Foto \d von 3/ })).toHaveLength(3)
     expect(renderedMap.queryByRole('searchbox')).not.toBeInTheDocument()
     expect(renderedMap.queryByRole('button', { name: 'Sprache' })).not.toBeInTheDocument()
 

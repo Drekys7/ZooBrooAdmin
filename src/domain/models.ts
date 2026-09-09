@@ -111,6 +111,7 @@ export const MapItemSchema = z.object({
   description: z.string(),
   iconAssetId: EntityIdSchema.nullish(),
   imageAssetId: EntityIdSchema.nullish(),
+  imageAssetIds: z.array(EntityIdSchema).optional(),
   colorOverride: z.string().regex(/^#[0-9a-f]{6}$/i).nullish(),
   markerOverrides: MarkerOverridesSchema.nullish(),
   position: NormalizedPositionSchema,

@@ -26,7 +26,7 @@ import { useEditorStore } from './store/editorStore'
 import { localizeCategory, localizeEvent, localizeFact, localizeItem, localeName, translationCompletion, type MapCategory, type MapEvent, type MapItem } from './domain'
 import './styles.css'
 
-type AssetSelectionField = 'imageAssetId' | 'iconAssetId' | 'categoryIconAssetId' | 'backgroundAssetId'
+type AssetSelectionField = 'imageGallery' | 'iconAssetId' | 'categoryIconAssetId' | 'backgroundAssetId'
 
 function formatDate(value: string | null) {
   if (!value) return 'Noch nicht veröffentlicht'
@@ -197,6 +197,7 @@ function App() {
     project.categories.forEach((category) => category.defaultIconAssetId && ids.add(category.defaultIconAssetId))
     project.items.forEach((item) => {
       if (item.imageAssetId) ids.add(item.imageAssetId)
+      item.imageAssetIds?.forEach((id) => ids.add(id))
       if (item.iconAssetId) ids.add(item.iconAssetId)
       item.facts.forEach((fact) => fact.iconAssetId && ids.add(fact.iconAssetId))
     })
@@ -215,12 +216,17 @@ function App() {
     kind: asset.kind,
   }))
 
-  const uploadForItem = async (file: File, field: 'imageAssetId' | 'iconAssetId') => {
+  const uploadForItem = async (files: File[], field: 'imageGallery' | 'iconAssetId') => {
     if (!selectedItem) return
     try {
-      const asset = await editor.uploadAsset(file, field === 'iconAssetId' ? 'icon' : 'image')
-      editor.updateItem(selectedItem.id, { [field]: asset.id })
-      toast('Ressource wurde hochgeladen und ausgewählt')
+      const assets = await Promise.all(files.map((file) => editor.uploadAsset(file, field === 'iconAssetId' ? 'icon' : 'image')))
+      if (field === 'iconAssetId') editor.updateItem(selectedItem.id, { iconAssetId: assets[0]?.id ?? null })
+      else {
+        const currentIds = selectedItem.imageAssetIds?.length ? selectedItem.imageAssetIds : selectedItem.imageAssetId ? [selectedItem.imageAssetId] : []
+        const imageAssetIds = [...currentIds, ...assets.map((asset) => asset.id)]
+        editor.updateItem(selectedItem.id, { imageAssetId: imageAssetIds[0] ?? null, imageAssetIds })
+      }
+      toast(assets.length > 1 ? `${assets.length} Fotos wurden hinzugefügt` : 'Ressource wurde hochgeladen und ausgewählt')
     } catch (error) { toast(error instanceof Error ? error.message : 'Fehler beim Hochladen', 'error') }
   }
 
@@ -231,7 +237,11 @@ function App() {
       if (editAllCategories) editor.updateAllCategories({ defaultIconAssetId: assetId })
       else if (selectedCategory) editor.updateCategory(selectedCategory.id, { defaultIconAssetId: assetId })
     } else if (assetSelectionField && selectedItem) {
-      editor.updateItem(selectedItem.id, { [assetSelectionField]: assetId })
+      if (assetSelectionField === 'imageGallery') {
+        const currentIds = selectedItem.imageAssetIds?.length ? selectedItem.imageAssetIds : selectedItem.imageAssetId ? [selectedItem.imageAssetId] : []
+        const imageAssetIds = [...currentIds, assetId]
+        editor.updateItem(selectedItem.id, { imageAssetId: imageAssetIds[0] ?? null, imageAssetIds })
+      } else editor.updateItem(selectedItem.id, { iconAssetId: assetId })
     }
     setAssetManagerOpen(false)
     setAssetSelectionField(null)
@@ -324,6 +334,10 @@ function App() {
               return assetId ? editor.assetUrls[assetId] : null
             }}
             getItemImageUrl={(item) => item.imageAssetId ? editor.assetUrls[item.imageAssetId] : null}
+            getItemImageUrls={(item) => {
+              const ids = item.imageAssetIds?.length ? item.imageAssetIds : item.imageAssetId ? [item.imageAssetId] : []
+              return ids.map((id) => editor.assetUrls[id]).filter(Boolean)
+            }}
             getFactIconUrl={(fact) => fact.iconAssetId ? editor.assetUrls[fact.iconAssetId] : null}
             onSelect={editor.setSelectedItemId}
             onAdd={editor.createItemAt}
@@ -345,7 +359,7 @@ function App() {
             onUpdate={updateLocalizedItem}
             onDuplicate={() => { editor.duplicateSelected(); toast('Punkt dupliziert') }}
             onDelete={() => setDeleteDialogOpen(true)}
-            onUpload={(file, field) => void uploadForItem(file, field)}
+            onUpload={(files, field) => void uploadForItem(files, field)}
             onChooseAsset={(field) => { setAssetSelectionField(field); setAssetManagerOpen(true) }}
             onDeselect={() => editor.setSelectedItemId(null)}
           /> : (selectedCategory || editAllCategories) ? <CategoryInspector

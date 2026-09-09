@@ -67,6 +67,7 @@ export interface MapCanvasProps {
   ariaLabel?: string;
   getItemIconUrl?: (item: MapItem, category: MapCategory | undefined) => string | null | undefined;
   getItemImageUrl?: (item: MapItem) => string | null | undefined;
+  getItemImageUrls?: (item: MapItem) => string[];
   getFactIconUrl?: (fact: MapFact, item: MapItem) => string | null | undefined;
   onSelect?: (itemId: string | null) => void;
   onAdd?: (position: NormalizedPosition) => void;
@@ -612,6 +613,7 @@ export function MapCanvas({
   ariaLabel = 'Interaktive Zoo-Karte',
   getItemIconUrl,
   getItemImageUrl,
+  getItemImageUrls,
   getFactIconUrl,
   onSelect,
   onAdd,
@@ -1475,9 +1477,11 @@ export function MapCanvas({
 
         {clientPreviewItem && clientPreviewIconUrl ? (
           <PhoneClientPreview
+            key={`${clientPreviewItem.id}:${(clientPreviewItem.imageAssetIds?.length ? clientPreviewItem.imageAssetIds : clientPreviewItem.imageAssetId ? [clientPreviewItem.imageAssetId] : []).join(',')}`}
             item={clientPreviewItem}
             category={clientPreviewCategory}
             imageUrl={getItemImageUrl?.(clientPreviewItem)}
+            imageUrls={getItemImageUrls?.(clientPreviewItem)}
             iconUrl={clientPreviewIconUrl}
             expanded={clientDetailsOpen}
             locale={visitorLocale}

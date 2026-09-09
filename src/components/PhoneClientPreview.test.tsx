@@ -42,6 +42,7 @@ describe('PhoneClientPreview', () => {
       item,
       category,
       imageUrl: '/bear.jpg',
+      imageUrls: ['/bear.jpg', '/bear-side.jpg'],
       iconUrl: '/bear-icon.png',
       getFactIconUrl: () => null,
       onExpand,
@@ -63,5 +64,16 @@ describe('PhoneClientPreview', () => {
     expect(screen.queryByText(item.subtitle)).not.toBeInTheDocument()
     expect(screen.getByText('80–300 kg')).toBeInTheDocument()
     expect(screen.getByText(item.description)).toBeInTheDocument()
+    const firstDot = screen.getByRole('button', { name: 'Foto 1 von 2' })
+    const secondDot = screen.getByRole('button', { name: 'Foto 2 von 2' })
+    expect(firstDot).toHaveAttribute('aria-current', 'true')
+    fireEvent.click(secondDot)
+    expect(secondDot).toHaveAttribute('aria-current', 'true')
+    fireEvent.click(firstDot)
+    const gallery = document.querySelector('.map-client-preview__gallery')
+    expect(gallery).not.toBeNull()
+    fireEvent.touchStart(gallery!, { touches: [{ clientX: 220, clientY: 100 }] })
+    fireEvent.touchEnd(gallery!, { changedTouches: [{ clientX: 120, clientY: 104 }] })
+    expect(secondDot).toHaveAttribute('aria-current', 'true')
   })
 })

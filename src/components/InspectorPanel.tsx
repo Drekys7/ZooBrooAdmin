@@ -12,8 +12,8 @@ interface InspectorPanelProps {
   onUpdate: (id: string, patch: Partial<MapItem>) => void
   onDuplicate: () => void
   onDelete: () => void
-  onUpload: (file: File, field: 'imageAssetId' | 'iconAssetId') => void
-  onChooseAsset: (field: 'imageAssetId' | 'iconAssetId') => void
+  onUpload: (files: File[], field: 'imageGallery' | 'iconAssetId') => void
+  onChooseAsset: (field: 'imageGallery' | 'iconAssetId') => void
   onDeselect: () => void
   contentLocale?: string
   defaultLocale?: string
@@ -30,11 +30,12 @@ function TextField({ label, value, placeholder, fallback, missing = false, multi
 }
 
 export function InspectorPanel({ item, categories, assetUrls, onUpdate, onDuplicate, onDelete, onUpload, onChooseAsset, onDeselect, contentLocale = 'de', defaultLocale = 'de' }: InspectorPanelProps) {
+  const [draggedImageIndex, setDraggedImageIndex] = useState<number | null>(null)
   if (!item) {
     return <aside className="sidebar inspector empty-inspector" aria-label="Inspektor"><div className="inspector-placeholder"><span className="placeholder-marker"><span /></span><h2>Kategorie oder Punkt auswählen</h2><p>Klicken Sie auf eine Kategorie oder einen Punkt, um die Einstellungen anzuzeigen.</p></div></aside>
   }
   const category = categories.find((entry) => entry.id === item.categoryId)
-  const imageUrl = item.imageAssetId ? assetUrls[item.imageAssetId] : undefined
+  const imageAssetIds = item.imageAssetIds?.length ? item.imageAssetIds : item.imageAssetId ? [item.imageAssetId] : []
   const iconUrl = item.iconAssetId ? assetUrls[item.iconAssetId] : undefined
   const translation = item.translations?.[contentLocale]
   const localizedKeys: Array<'title' | 'subtitle' | 'description'> = item.type === 'animal' ? ['title', 'description'] : ['title', 'subtitle', 'description']
@@ -45,6 +46,15 @@ export function InspectorPanel({ item, categories, assetUrls, onUpdate, onDuplic
   const updateFact = (factId: string, patch: Partial<MapFact>) => onUpdate(item.id, { facts: item.facts.map((fact) => fact.id === factId ? { ...fact, ...patch } : fact) })
   const removeFact = (factId: string) => onUpdate(item.id, { facts: item.facts.filter((fact) => fact.id !== factId) })
   const addFact = () => onUpdate(item.id, { facts: [...item.facts, { id: crypto.randomUUID(), label: 'Neue Information', value: '' }] })
+  const setImages = (ids: string[]) => onUpdate(item.id, { imageAssetId: ids[0] ?? null, imageAssetIds: ids })
+  const removeImage = (index: number) => setImages(imageAssetIds.filter((_, candidate) => candidate !== index))
+  const moveImage = (index: number, target: number) => {
+    if (index === target || index < 0 || target < 0 || index >= imageAssetIds.length || target >= imageAssetIds.length) return
+    const ids = [...imageAssetIds]
+    const [moved] = ids.splice(index, 1)
+    ids.splice(target, 0, moved)
+    setImages(ids)
+  }
 
   return (
     <aside className="sidebar inspector" aria-label="Objektinspektor">
@@ -67,9 +77,26 @@ export function InspectorPanel({ item, categories, assetUrls, onUpdate, onDuplic
 
         <section className="inspector-section">
           <h3>Medien</h3>
-          <div className={`photo-dropzone ${imageUrl ? 'has-image' : ''}`} style={imageUrl ? { backgroundImage: `linear-gradient(180deg, transparent 35%, rgba(12,24,20,.68)), url(${imageUrl})` } : undefined}>
-            {!imageUrl && <><ImagePlus size={23} /><strong>Titelbild</strong><span>PNG, JPG oder WebP</span></>}
-            <div className="media-actions"><label className="mini-button"><Upload size={14} />{imageUrl ? 'Ersetzen' : 'Hochladen'}<input hidden type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => event.target.files?.[0] && onUpload(event.target.files[0], 'imageAssetId')} /></label><button className="mini-button" onClick={() => onChooseAsset('imageAssetId')}>Auswählen</button></div>
+          <div className="photo-gallery-editor">
+            <div className="photo-gallery-heading"><strong>Fotos</strong><span>{imageAssetIds.length ? `${imageAssetIds.length} hinzugefügt · das erste ist das Titelbild` : 'Das erste Foto wird in der kleinen Karte gezeigt'}</span></div>
+            {imageAssetIds.length > 0 && <div className="photo-gallery-list">
+              {imageAssetIds.map((assetId, index) => <div
+                className={`photo-gallery-item${draggedImageIndex === index ? ' is-dragging' : ''}`}
+                draggable
+                onDragStart={(event) => { setDraggedImageIndex(index); event.dataTransfer.effectAllowed = 'move' }}
+                onDragOver={(event) => { event.preventDefault(); event.dataTransfer.dropEffect = 'move' }}
+                onDrop={(event) => { event.preventDefault(); if (draggedImageIndex !== null) moveImage(draggedImageIndex, index); setDraggedImageIndex(null) }}
+                onDragEnd={() => setDraggedImageIndex(null)}
+                aria-label={`Foto ${index + 1} verschieben`}
+                key={`${assetId}-${index}`}
+              >
+                <div className="photo-gallery-thumb">{assetUrls[assetId] ? <img src={assetUrls[assetId]} alt={`Foto ${index + 1}`} /> : <ImagePlus size={20} />}{index === 0 && <span>Titelbild</span>}<button type="button" className="photo-gallery-remove" onClick={() => removeImage(index)} aria-label="Foto entfernen"><X size={14}/></button></div>
+              </div>)}
+            </div>}
+            <div className={`photo-dropzone compact ${imageAssetIds.length ? 'has-gallery' : ''}`}>
+              {!imageAssetIds.length && <><ImagePlus size={23} /><strong>Fotos hinzufügen</strong><span>PNG, JPG oder WebP · Mehrfachauswahl möglich</span></>}
+              <div className="media-actions"><label className="mini-button"><Upload size={14} />Hochladen<input hidden multiple type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => { const files = Array.from(event.target.files ?? []); if (files.length) onUpload(files, 'imageGallery'); event.currentTarget.value = '' }} /></label><button className="mini-button" onClick={() => onChooseAsset('imageGallery')}>Auswählen</button></div>
+            </div>
           </div>
           <div className="icon-picker-row"><div className="icon-preview">{iconUrl ? <img src={iconUrl} alt="" /> : <CategoryIcon type={item.type} size={19} />}</div><div><strong>Markierungssymbol</strong><span>{iconUrl ? 'Benutzerdefiniert' : 'Aus der Kategorie'}</span></div><button className="mini-button" onClick={() => onChooseAsset('iconAssetId')}>Auswählen</button></div>
           {category && <ItemMarkerOverrides item={item} category={category} onUpdate={(patch) => onUpdate(item.id, patch)} />}

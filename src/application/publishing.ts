@@ -104,7 +104,10 @@ export function buildPublishedSnapshot(
       subtitle: item.type === 'animal' ? '' : item.subtitle,
       description: item.description,
       icon: publishedAsset(item.iconAssetId, resolveAssetUrl),
-      image: publishedAsset(item.imageAssetId, resolveAssetUrl),
+      image: publishedAsset(item.imageAssetIds?.[0] ?? item.imageAssetId, resolveAssetUrl),
+      images: (item.imageAssetIds?.length ? item.imageAssetIds : item.imageAssetId ? [item.imageAssetId] : [])
+        .map((assetId) => publishedAsset(assetId, resolveAssetUrl))
+        .filter((asset): asset is PublishedAsset => asset !== null),
       colorOverride: item.colorOverride ?? null,
       markerOverrides: item.markerOverrides ?? (item.colorOverride ? { color: item.colorOverride } : null),
       position: item.position,

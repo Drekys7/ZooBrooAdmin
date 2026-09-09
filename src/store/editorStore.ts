@@ -149,6 +149,7 @@ function buildDemoProject(): MapProject {
       description: item.description,
       iconAssetId: item.iconAssetId,
       imageAssetId: item.categoryId === 'animals' ? 'zooweb-animal-preview' : null,
+      imageAssetIds: item.categoryId === 'animals' ? ['zooweb-animal-preview'] : [],
       position: { x: item.x, y: item.y },
       facts: item.facts ?? [],
       visible: true,
@@ -420,7 +421,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
     deleteAsset: async (id) => {
       const project = get().project
       if (!project) return
-      const used = project.backgroundAssetId === id || project.categories.some((category) => category.defaultIconAssetId === id) || project.items.some((item) => item.iconAssetId === id || item.imageAssetId === id || item.facts.some((fact) => fact.iconAssetId === id))
+      const used = project.backgroundAssetId === id || project.categories.some((category) => category.defaultIconAssetId === id) || project.items.some((item) => item.iconAssetId === id || item.imageAssetId === id || item.imageAssetIds?.includes(id) || item.facts.some((fact) => fact.iconAssetId === id))
       if (used) throw new Error('Diese Ressource wird vom Projekt verwendet')
       await container.assetRepository.delete(id)
       const url = get().assetUrls[id]

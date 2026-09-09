@@ -128,6 +128,7 @@ export const PublishedMapItemSchema = z
     description: z.string(),
     icon: PublishedAssetSchema.nullable(),
     image: PublishedAssetSchema.nullable(),
+    images: z.array(PublishedAssetSchema).optional(),
     colorOverride: z.string().regex(/^#[0-9a-f]{6}$/i).nullable().optional(),
     markerOverrides: PublishedMarkerOverridesSchema.nullable().optional(),
     position: NormalizedPositionSchema,
