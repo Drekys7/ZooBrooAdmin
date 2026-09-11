@@ -1,5 +1,6 @@
 import { ArrowRight, Eye, EyeOff, ListFilter, Plus, Search, SlidersHorizontal } from 'lucide-react'
 import type { MapCategory, MapItem } from '../domain/models'
+import { groupEntries } from '../domain/groups'
 import { CategoryIcon } from './CategoryIcon'
 
 export type VisibilityFilter = 'all' | 'visible' | 'hidden'
@@ -9,6 +10,7 @@ interface LeftSidebarProps {
   categories: MapCategory[]
   items: MapItem[]
   selectedItemId: string | null
+  selectedEntryId?: string | null
   selectedCategoryId: string | null
   inspectedCategoryId: string | null
   search: string
@@ -20,7 +22,7 @@ interface LeftSidebarProps {
   onToggleCategory: (id: string) => void
   onToggleAllCategories: () => void
   onCreateCategory: () => void
-  onSelectItem: (id: string) => void
+  onSelectItem: (id: string, memberId?: string) => void
   onFocusItem: (id: string) => void
   onAddItem: () => void
 }
@@ -32,8 +34,9 @@ export function LeftSidebar(props: LeftSidebarProps) {
   const visibleItems = props.items
     .filter((item) => !props.selectedCategoryId || props.selectedCategoryId === ALL_CATEGORIES_ID || item.categoryId === props.selectedCategoryId)
     .filter((item) => props.visibility === 'all' || (props.visibility === 'visible' ? isEffectivelyVisible(item) : !isEffectivelyVisible(item)))
-    .filter((item) => !query || `${item.title} ${item.type === 'animal' ? '' : item.subtitle}`.toLocaleLowerCase('de-DE').includes(query))
-    .sort((a, b) => a.title.localeCompare(b.title, 'de-DE'))
+    .flatMap((root) => (query ? groupEntries(root) : [root]).map((item) => ({ item, root })))
+    .filter(({ item }) => !query || `${item.title} ${item.type === 'animal' ? '' : item.subtitle}`.toLocaleLowerCase('de-DE').includes(query))
+    .sort((a, b) => a.item.title.localeCompare(b.item.title, 'de-DE'))
   const allCategoriesVisible = props.categories.every((category) => category.visible)
 
   return (
@@ -93,23 +96,24 @@ export function LeftSidebar(props: LeftSidebarProps) {
 
       <div className="panel-section items-section">
         <div className="item-list">
-          {visibleItems.map((item) => {
+          {visibleItems.map(({ item, root }) => {
             const category = categoriesById.get(item.categoryId)
-            const isSelected = props.selectedItemId === item.id
+            const isMember = item.id !== root.id
+            const isSelected = props.selectedItemId === root.id && (!query || (props.selectedEntryId ?? root.id) === item.id)
             const effectivelyVisible = isEffectivelyVisible(item)
             return <div key={item.id} className={`item-row ${isSelected ? 'selected' : ''} ${!effectivelyVisible ? 'muted' : ''}`}>
               <button
                 className="item-select"
-                onClick={() => props.onSelectItem(item.id)}
-                onDoubleClick={() => isSelected && props.onFocusItem(item.id)}
+                onClick={() => props.onSelectItem(root.id, isMember ? item.id : undefined)}
+                onDoubleClick={() => isSelected && props.onFocusItem(root.id)}
               >
                 <span className="item-dot" style={{ background: category?.color ?? '#60756d' }} />
-                <span className="item-copy"><strong>{item.title}</strong><small>{category?.name ?? 'Ohne Kategorie'}{item.type !== 'animal' && item.subtitle ? ` · ${item.subtitle}` : ''}</small></span>
+                <span className="item-copy"><strong>{item.title}</strong><small>{category?.name ?? 'Ohne Kategorie'}{item.type !== 'animal' && item.subtitle ? ` · ${item.subtitle}` : ''}{isMember ? ` · Gruppe: ${root.title}` : ''}</small></span>
                 {!effectivelyVisible && <EyeOff size={13} />}
               </button>
               {isSelected && <button
                 className="item-focus-button"
-                onClick={() => props.onFocusItem(item.id)}
+                onClick={() => props.onFocusItem(root.id)}
                 title="Auf der Karte zentrieren"
                 aria-label={`${item.title} auf der Karte zentrieren`}
               >

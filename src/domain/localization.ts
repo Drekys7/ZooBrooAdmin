@@ -1,4 +1,5 @@
 import { MapProjectSchema, type LocaleCode, type MapCategory, type MapEvent, type MapFact, type MapItem, type MapProject } from './models'
+import { groupEntries } from './groups'
 
 export const AVAILABLE_LOCALES: ReadonlyArray<{ code: LocaleCode; label: string; nativeLabel: string }> = [
   { code: 'de', label: 'Deutsch', nativeLabel: 'Deutsch' },
@@ -41,6 +42,11 @@ export function localizeItem(item: MapItem, locale: string, defaultLocale: strin
     ...content,
     subtitle: item.type === 'animal' ? '' : content.subtitle,
     facts: item.facts.map((fact) => localizeFact(fact, locale, defaultLocale)),
+    members: item.members?.map((member) => ({
+      ...member,
+      ...translated({ title: member.title, subtitle: member.subtitle, description: member.description }, member.translations, locale, defaultLocale),
+      facts: member.facts.map((fact) => localizeFact(fact, locale, defaultLocale)),
+    })),
   }
 }
 
@@ -80,7 +86,7 @@ export function translationCompletion(
     complete += keys.filter((key) => hasTranslationValue(translation, key)).length
   }
   categories.forEach((category) => count(category.translations?.[locale], ['name']))
-  items.forEach((item) => {
+  items.flatMap(groupEntries).forEach((item) => {
     count(item.translations?.[locale], item.type === 'animal' ? ['title', 'description'] : ['title', 'subtitle', 'description'])
     item.facts.forEach((fact) => count(fact.translations?.[locale], ['label', 'value']))
   })
@@ -108,6 +114,14 @@ export function seedProjectTranslations(project: MapProject): MapProject {
         facts: item.facts.map((fact) => ({
           ...fact,
           translations: { [locale]: { label: fact.label, value: fact.value }, ...(fact.translations ?? {}) },
+        })),
+        members: item.members?.map((member) => ({
+          ...member,
+          translations: { [locale]: { title: member.title, ...(item.type === 'animal' ? {} : { subtitle: member.subtitle }), description: member.description }, ...(member.translations ?? {}) },
+          facts: member.facts.map((fact) => ({
+            ...fact,
+            translations: { [locale]: { label: fact.label, value: fact.value }, ...(fact.translations ?? {}) },
+          })),
         })),
       }
     }),

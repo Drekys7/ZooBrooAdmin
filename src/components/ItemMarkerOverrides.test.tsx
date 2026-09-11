@@ -36,7 +36,7 @@ const item: MapItem = {
 describe('ItemMarkerOverrides', () => {
   it('stores only explicitly enabled values', () => {
     const onUpdate = vi.fn()
-    render(<ItemMarkerOverrides item={item} category={category} onUpdate={onUpdate} />)
+    render(<ItemMarkerOverrides item={{ ...item, iconAssetId: 'own-icon' }} category={category} onUpdate={onUpdate} />)
 
     fireEvent.click(screen.getByText('Individuelle Einstellungen'))
     fireEvent.click(screen.getByRole('checkbox', { name: 'Farbe überschreiben' }))
@@ -45,5 +45,13 @@ describe('ItemMarkerOverrides', () => {
       markerOverrides: { color: '#4F8F64' },
       colorOverride: null,
     })
+  })
+
+  it('keeps the category color for the default icon even with a stale override', () => {
+    render(<ItemMarkerOverrides item={{ ...item, markerOverrides: { color: '#FFFFFF' } }} category={category} onUpdate={vi.fn()} />)
+    fireEvent.click(screen.getByText('Individuelle Einstellungen'))
+    expect(screen.getByRole('checkbox', { name: 'Farbe überschreiben' })).toBeDisabled()
+    expect(screen.getByRole('checkbox', { name: 'Farbe überschreiben' })).not.toBeChecked()
+    expect(screen.getByLabelText('color Wert')).toHaveValue('#4f8f64')
   })
 })

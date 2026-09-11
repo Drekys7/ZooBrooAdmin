@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { MapCategory, MapItem } from '../domain/models'
+import type { CategoryType, MapCategory, MapItem } from '../domain/models'
 import { PhoneMapSearch, searchScore } from './PhoneMapSearch'
 
 const categories: MapCategory[] = [
@@ -16,6 +16,37 @@ const items: MapItem[] = [
 afterEach(cleanup)
 
 describe('PhoneMapSearch', () => {
+  it('finds all group members with their own icons or the category fallback and selects them by ID', () => {
+    const choose = vi.fn()
+    const grouped: MapItem = { ...items[0], iconAssetId: 'group-icon', members: [
+      { id: 'lynx', title: 'Luchs', subtitle: '', description: '', facts: [], iconAssetId: 'lynx-icon', markerOverrides: { iconContentScale: 0.8 } },
+      { id: 'fox', title: 'Fuchs', subtitle: '', description: '', facts: [] },
+    ] }
+    render(<PhoneMapSearch items={[grouped]} categories={[{ ...categories[0], defaultIconAssetId: 'category-icon' }]} locale="de" hiddenCategoryIds={new Set()}
+      getItemIconUrl={(item) => `/${item.iconAssetId}.png`} onToggleCategory={vi.fn()} onChooseItem={choose} />)
+    const search = screen.getByRole('searchbox')
+    fireEvent.change(search, { target: { value: 'Luchs' } })
+    const lynx = screen.getByRole('option', { name: 'Luchs Tiere' })
+    expect(lynx.querySelector('img')).toHaveAttribute('src', '/lynx-icon.png')
+    expect(lynx.querySelector('.map-client-search__result-icon')).toHaveStyle({ '--search-result-icon-scale': '0.8' })
+    fireEvent.keyDown(search, { key: 'Enter' })
+    expect(choose).toHaveBeenLastCalledWith('lynx')
+    fireEvent.change(search, { target: { value: 'Fuchs' } })
+    const fox = screen.getByRole('option', { name: 'Fuchs Tiere' })
+    expect(fox.querySelector('.map-client-search__result-default-icon')).toHaveStyle({ maskImage: 'url("/category-icon.png")', backgroundColor: categories[0].color })
+    fireEvent.click(fox)
+    expect(choose).toHaveBeenLastCalledWith('fox')
+    expect(grouped.members![1].iconAssetId).toBeUndefined()
+  })
+
+  it.each(['hidden-group', 'hidden-category', 'visitor-filter'])('excludes group members when visibility is disabled: %s', (mode) => {
+    render(<PhoneMapSearch items={[{ ...items[0], visible: mode !== 'hidden-group', members: [{ id: 'lynx', title: 'Luchs', subtitle: '', description: '', facts: [] }] }]}
+      categories={[{ ...categories[0], visible: mode !== 'hidden-category' }]} locale="de" hiddenCategoryIds={new Set(mode === 'visitor-filter' ? ['animals'] : [])}
+      getItemIconUrl={() => '/icon.png'} onToggleCategory={vi.fn()} onChooseItem={vi.fn()} />)
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'Luchs' } })
+    expect(screen.queryByRole('option')).not.toBeInTheDocument()
+  })
+
   it('ranks localized title prefixes and ignores accents', () => {
     expect(searchScore(items[0], categories[0], 'bar', 'de')).toBeGreaterThan(
       searchScore(items[1], categories[1], 'bar', 'de'),
@@ -75,13 +106,14 @@ describe('PhoneMapSearch', () => {
     expect(screen.getByRole('option', { name: 'Bären-Bistro Essen' })).toBeInTheDocument()
   })
 
-  it('uses the marker color for a non-animal icon even without the colorize flag', () => {
+  it.each(['animal', 'restaurant', 'restroom', 'souvenir', 'entrance', 'custom'] as CategoryType[])('shows a custom group member icon in its original colors despite the white reset (%s)', (type) => {
     const restroomCategory: MapCategory = {
-      id: 'restrooms', name: 'Toiletten', type: 'restroom', color: '#2F79A8', defaultIconAssetId: null,
+      id: 'restrooms', name: 'Toiletten', type, color: '#2F79A8', defaultIconAssetId: null,
       colorizeIcon: false, iconContentScale: 0.7, visible: true, sortOrder: 0,
     }
     const restroom: MapItem = {
-      ...items[0], id: 'wc-1', categoryId: restroomCategory.id, type: 'restroom', title: 'WC 1', iconAssetId: 'restroom-icon',
+      ...items[0], id: 'wc-1', categoryId: restroomCategory.id, type, title: 'WC 1',
+      members: [{ id: 'member', title: 'vova2', subtitle: '', description: '', facts: [], iconAssetId: 'own-icon', markerOverrides: { color: '#FFFFFF' } }],
     }
     const { container } = render(
       <PhoneMapSearch
@@ -95,9 +127,19 @@ describe('PhoneMapSearch', () => {
       />,
     )
 
-    fireEvent.change(screen.getByRole('searchbox', { name: 'Karte durchsuchen' }), { target: { value: 'WC' } })
-    expect(container.querySelector('.map-client-search__result-icon img')).not.toBeInTheDocument()
-    expect(container.querySelector('.map-client-search__result-default-icon')).toHaveStyle({ backgroundColor: '#2F79A8' })
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Karte durchsuchen' }), { target: { value: 'vova2' } })
+    expect(container.querySelector('.map-client-search__result-icon img')).toHaveAttribute('src', '/restroom.svg')
+    expect(container.querySelector('.map-client-search__result-default-icon')).not.toBeInTheDocument()
     expect(container.querySelector('.map-client-search__result-icon')).toHaveStyle({ '--search-result-icon-scale': '0.7' })
+  })
+
+  it('still applies an explicitly enabled tint to a custom icon', () => {
+    const { container } = render(<PhoneMapSearch
+      items={[{ ...items[1], iconAssetId: 'custom-icon', markerOverrides: { colorizeIcon: true, color: '#123456' } }]}
+      categories={categories} locale="de" hiddenCategoryIds={new Set()}
+      getItemIconUrl={() => '/custom.svg'} onToggleCategory={vi.fn()} onChooseItem={vi.fn()} />)
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'Bistro' } })
+    expect(container.querySelector('.map-client-search__result-icon img')).not.toBeInTheDocument()
+    expect(container.querySelector('.map-client-search__result-default-icon')).toHaveStyle({ backgroundColor: '#123456', maskImage: 'url("/custom.svg")' })
   })
 })

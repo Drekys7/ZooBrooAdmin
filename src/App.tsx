@@ -19,10 +19,13 @@ import { ConfirmDialog } from './components/ConfirmDialog'
 import { CategoryInspector } from './components/CategoryInspector'
 import { EventManager } from './components/EventManager'
 import { InspectorPanel } from './components/InspectorPanel'
+import { GroupInspector } from './components/GroupInspector'
+import { groupEntries, itemIconAssetId, itemImageIds } from './domain/groups'
 import { ALL_CATEGORIES_ID, LeftSidebar } from './components/LeftSidebar'
 import { MapCanvas, type MapFocusRequest } from './components/MapCanvas'
 import { ToastRegion, type ToastData } from './components/Toast'
 import { useEditorStore } from './store/editorStore'
+import { useColorEditHistory } from './hooks/useColorEditHistory'
 import { localizeCategory, localizeEvent, localizeFact, localizeItem, localeName, translationCompletion, type MapCategory, type MapEvent, type MapItem } from './domain'
 import './styles.css'
 
@@ -35,9 +38,12 @@ function formatDate(value: string | null) {
 
 function App() {
   const editor = useEditorStore()
+  useColorEditHistory(editor.beginContinuousEdit, editor.endContinuousEdit)
   const [assetManagerOpen, setAssetManagerOpen] = useState(false)
   const [eventManagerOpen, setEventManagerOpen] = useState(false)
   const [assetSelectionField, setAssetSelectionField] = useState<AssetSelectionField | null>(null)
+  const [assetTargetItemId, setAssetTargetItemId] = useState<string | null>(null)
+  const [inspectorEntry, setInspectorEntry] = useState<{ rootId: string; entryId: string } | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleteCategoryDialogOpen, setDeleteCategoryDialogOpen] = useState(false)
   const [activityOpen, setActivityOpen] = useState(false)
@@ -129,7 +135,7 @@ function App() {
   )
 
   const updateLocalizedItem = useCallback((id: string, patch: Partial<MapItem>) => {
-    const source = project?.items.find((item) => item.id === id)
+    const source = project?.items.flatMap(groupEntries).find((item) => item.id === id)
     if (!source) return
     const defaultLocale = project?.defaultLocale ?? 'de'
     const next: Partial<MapItem> = { ...patch }
@@ -195,7 +201,7 @@ function App() {
     if (!project) return ids
     if (project.backgroundAssetId) ids.add(project.backgroundAssetId)
     project.categories.forEach((category) => category.defaultIconAssetId && ids.add(category.defaultIconAssetId))
-    project.items.forEach((item) => {
+    project.items.flatMap(groupEntries).forEach((item) => {
       if (item.imageAssetId) ids.add(item.imageAssetId)
       item.imageAssetIds?.forEach((id) => ids.add(id))
       if (item.iconAssetId) ids.add(item.iconAssetId)
@@ -216,32 +222,49 @@ function App() {
     kind: asset.kind,
   }))
 
-  const uploadForItem = async (files: File[], field: 'imageGallery' | 'iconAssetId') => {
-    if (!selectedItem) return
+  const addGroupMember = (id: string) => {
+    const current = useEditorStore.getState().project?.items.find((item) => item.id === id)
+    if (!current) return
+    setInspectorEntry(null)
+    editor.updateItem(id, { members: [...(current.members ?? []), {
+      id: crypto.randomUUID(), title: 'Neuer Punkt', subtitle: '', description: '',
+      facts: [], imageAssetId: null, imageAssetIds: [],
+    }] })
+    editor.setSelectedItemId(id)
+  }
+
+  const uploadForItem = async (files: File[], field: 'imageGallery' | 'iconAssetId', itemId?: string) => {
+    const targetId = itemId ?? selectedItem?.id
+    const projectId = project?.id
+    if (!targetId) return
     try {
       const assets = await Promise.all(files.map((file) => editor.uploadAsset(file, field === 'iconAssetId' ? 'icon' : 'image')))
-      if (field === 'iconAssetId') editor.updateItem(selectedItem.id, { iconAssetId: assets[0]?.id ?? null })
+      const currentProject = useEditorStore.getState().project
+      const target = currentProject && currentProject.id === projectId ? currentProject.items.flatMap(groupEntries).find((item) => item.id === targetId) : null
+      if (!target) return
+      if (field === 'iconAssetId') editor.updateItem(target.id, { iconAssetId: assets[0]?.id ?? null })
       else {
-        const currentIds = selectedItem.imageAssetIds?.length ? selectedItem.imageAssetIds : selectedItem.imageAssetId ? [selectedItem.imageAssetId] : []
+        const currentIds = itemImageIds(target)
         const imageAssetIds = [...currentIds, ...assets.map((asset) => asset.id)]
-        editor.updateItem(selectedItem.id, { imageAssetId: imageAssetIds[0] ?? null, imageAssetIds })
+        editor.updateItem(target.id, { imageAssetId: imageAssetIds[0] ?? null, imageAssetIds })
       }
       toast(assets.length > 1 ? `${assets.length} Fotos wurden hinzugefügt` : 'Ressource wurde hochgeladen und ausgewählt')
     } catch (error) { toast(error instanceof Error ? error.message : 'Fehler beim Hochladen', 'error') }
   }
 
   const selectAsset = (assetId: string) => {
+    const target = project?.items.flatMap(groupEntries).find((item) => item.id === (assetTargetItemId ?? selectedItem?.id))
     if (assetSelectionField === 'backgroundAssetId') {
       editor.setBackgroundAsset(assetId)
     } else if (assetSelectionField === 'categoryIconAssetId') {
       if (editAllCategories) editor.updateAllCategories({ defaultIconAssetId: assetId })
       else if (selectedCategory) editor.updateCategory(selectedCategory.id, { defaultIconAssetId: assetId })
-    } else if (assetSelectionField && selectedItem) {
+    } else if (assetSelectionField && target) {
       if (assetSelectionField === 'imageGallery') {
-        const currentIds = selectedItem.imageAssetIds?.length ? selectedItem.imageAssetIds : selectedItem.imageAssetId ? [selectedItem.imageAssetId] : []
+        const currentIds = itemImageIds(target)
         const imageAssetIds = [...currentIds, assetId]
-        editor.updateItem(selectedItem.id, { imageAssetId: imageAssetIds[0] ?? null, imageAssetIds })
-      } else editor.updateItem(selectedItem.id, { iconAssetId: assetId })
+        editor.updateItem(target.id, { imageAssetId: imageAssetIds[0] ?? null, imageAssetIds })
+      } else editor.updateItem(target.id, { iconAssetId: assetId })
     }
     setAssetManagerOpen(false)
     setAssetSelectionField(null)
@@ -298,6 +321,7 @@ function App() {
           categories={localizedCategories}
           items={localizedItems}
           selectedItemId={editor.selectedItemId}
+          selectedEntryId={inspectorEntry?.rootId === editor.selectedItemId ? inspectorEntry.entryId : null}
           selectedCategoryId={editor.selectedCategoryId}
           inspectedCategoryId={editor.inspectedCategoryId}
           search={editor.search}
@@ -309,7 +333,10 @@ function App() {
           onToggleCategory={(id) => { const category = project.categories.find((entry) => entry.id === id); if (category) editor.updateCategory(id, { visible: !category.visible }) }}
           onToggleAllCategories={() => editor.updateAllCategories({ visible: !project.categories.every((category) => category.visible) })}
           onCreateCategory={editor.createCategory}
-          onSelectItem={editor.setSelectedItemId}
+          onSelectItem={(rootId, memberId) => {
+            editor.setSelectedItemId(rootId)
+            setInspectorEntry({ rootId, entryId: memberId ?? rootId })
+          }}
           onFocusItem={focusItemOnMap}
           onAddItem={() => editor.setActiveTool(editor.activeTool === 'add' ? 'select' : 'add')}
         />
@@ -330,7 +357,7 @@ function App() {
             focusRequest={mapFocusRequest}
             phonePreviewRequest={phonePreviewRequest}
             getItemIconUrl={(item, category) => {
-              const assetId = item.iconAssetId ?? category?.defaultIconAssetId
+              const assetId = itemIconAssetId(item, category)
               return assetId ? editor.assetUrls[assetId] : null
             }}
             getItemImageUrl={(item) => item.imageAssetId ? editor.assetUrls[item.imageAssetId] : null}
@@ -339,7 +366,8 @@ function App() {
               return ids.map((id) => editor.assetUrls[id]).filter(Boolean)
             }}
             getFactIconUrl={(fact) => fact.iconAssetId ? editor.assetUrls[fact.iconAssetId] : null}
-            onSelect={editor.setSelectedItemId}
+            onSelect={(id) => { setInspectorEntry(null); editor.setSelectedItemId(id) }}
+            onAddGroupMember={addGroupMember}
             onAdd={editor.createItemAt}
             onMove={editor.moveItem}
             onDragPreview={editor.previewMoveItem}
@@ -350,7 +378,13 @@ function App() {
             onSettingsEditEnd={editor.endContinuousEdit}
           />
         </section>
-        {selectedItem ? <InspectorPanel
+        {selectedItem ? <GroupInspector
+            focusEntry={inspectorEntry?.rootId === selectedItem.id ? inspectorEntry : undefined}
+            onAddMember={addGroupMember}
+            onRemoveMember={(parentId, memberId) => {
+              const current = useEditorStore.getState().project?.items.find((item) => item.id === parentId)
+              if (current) editor.updateItem(parentId, { members: current.members?.filter((member) => member.id !== memberId) })
+            }}
             item={selectedItem}
             contentLocale={contentLocale}
             defaultLocale={project.defaultLocale}
@@ -359,9 +393,9 @@ function App() {
             onUpdate={updateLocalizedItem}
             onDuplicate={() => { editor.duplicateSelected(); toast('Punkt dupliziert') }}
             onDelete={() => setDeleteDialogOpen(true)}
-            onUpload={(files, field) => void uploadForItem(files, field)}
-            onChooseAsset={(field) => { setAssetSelectionField(field); setAssetManagerOpen(true) }}
-            onDeselect={() => editor.setSelectedItemId(null)}
+            onUpload={(files, field, itemId) => void uploadForItem(files, field, itemId)}
+            onChooseAsset={(field, itemId) => { setAssetTargetItemId(itemId ?? selectedItem.id); setAssetSelectionField(field); setAssetManagerOpen(true) }}
+            onDeselect={() => { setInspectorEntry(null); editor.setSelectedItemId(null) }}
           /> : (selectedCategory || editAllCategories) ? <CategoryInspector
             categories={localizedCategories}
             category={selectedCategory}

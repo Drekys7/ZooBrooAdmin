@@ -3,6 +3,7 @@ export * from "./eventSchedule";
 export * from "./factories";
 export * from "./models";
 export * from "./localization";
+export * from "./groups";
 
 // Kept as a compatibility export for consumers that historically imported the
 // published contract from the domain barrel. The source of truth is public-contract.

@@ -102,7 +102,7 @@ export const MarkerOverridesSchema = z.object({
   shadowColor: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
 });
 
-export const MapItemSchema = z.object({
+const MapItemBaseSchema = z.object({
   id: EntityIdSchema,
   categoryId: EntityIdSchema,
   type: CategoryTypeSchema,
@@ -120,6 +120,16 @@ export const MapItemSchema = z.object({
   createdAt: IsoDateSchema,
   updatedAt: IsoDateSchema,
   translations: z.record(LocaleCodeSchema, LocalizedItemContentSchema.partial()).optional(),
+});
+
+// Members have their own content and icon styling, but share the parent's map location.
+export const MapGroupMemberSchema = MapItemBaseSchema.pick({
+  id: true, title: true, subtitle: true, description: true,
+  imageAssetId: true, imageAssetIds: true, facts: true, translations: true,
+  iconAssetId: true, colorOverride: true, markerOverrides: true,
+});
+export const MapItemSchema = MapItemBaseSchema.extend({
+  members: z.array(MapGroupMemberSchema).optional(),
 });
 
 export const EventRecurrenceSchema = z
@@ -195,6 +205,12 @@ export const MapProjectSchema = z
         context.addIssue({ code: z.ZodIssueCode.custom, message: `Duplicate item id: ${item.id}` });
       }
       itemIds.add(item.id);
+      for (const member of item.members ?? []) {
+        if (itemIds.has(member.id) || project.items.some((root) => root.id === member.id)) {
+          context.addIssue({ code: z.ZodIssueCode.custom, message: `Duplicate member id: ${member.id}` });
+        }
+        itemIds.add(member.id);
+      }
       if (!categoryIds.has(item.categoryId)) {
         context.addIssue({
           code: z.ZodIssueCode.custom,
@@ -217,7 +233,7 @@ export const MapProjectSchema = z
         context.addIssue({ code: z.ZodIssueCode.custom, message: `Duplicate event id: ${event.id}` });
       }
       eventIds.add(event.id);
-      if (event.relatedItemId && !itemIds.has(event.relatedItemId)) {
+      if (event.relatedItemId && !project.items.some((item) => item.id === event.relatedItemId)) {
         context.addIssue({ code: z.ZodIssueCode.custom, message: `Event ${event.id} references unknown item ${event.relatedItemId}` });
       }
     }

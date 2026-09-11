@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import type { MapCategory, MapItem } from '../domain/models'
 import { LeftSidebar, type VisibilityFilter } from './LeftSidebar'
@@ -56,6 +56,34 @@ function renderSidebar(visibility: VisibilityFilter) {
 }
 
 describe('LeftSidebar visibility filter', () => {
+  it('finds members by their own name and focuses the primary marker while keeping group filters', () => {
+    const member = { id: 'lynx', title: 'Luchs', subtitle: '', description: '', facts: [] }
+    const root = { ...visibleItem, members: [member] }
+    const onSelectItem = vi.fn(), onFocusItem = vi.fn()
+    const props = {
+      categories: [{ ...hiddenCategory, visible: true }], items: [root], selectedItemId: root.id,
+      selectedEntryId: member.id, selectedCategoryId: null, inspectedCategoryId: null,
+      search: '  LUChS  ', visibility: 'all' as const, activeTool: 'select' as const,
+      onSearch: vi.fn(), onVisibility: vi.fn(), onCategory: vi.fn(), onToggleCategory: vi.fn(),
+      onToggleAllCategories: vi.fn(), onCreateCategory: vi.fn(), onSelectItem, onFocusItem, onAddItem: vi.fn(),
+    }
+    const { container, rerender } = render(<LeftSidebar {...props} />)
+    const ui = within(container)
+    fireEvent.click(ui.getByRole('button', { name: 'Luchs Tiere · Gruppe: Bär' }))
+    expect(onSelectItem).toHaveBeenCalledWith('bear', 'lynx')
+    fireEvent.click(ui.getByRole('button', { name: 'Luchs auf der Karte zentrieren' }))
+    expect(onFocusItem).toHaveBeenCalledWith('bear')
+    rerender(<LeftSidebar {...props} search="" />)
+    expect(ui.queryByText('Luchs')).not.toBeInTheDocument()
+    expect(ui.getByText('Bär')).toBeInTheDocument()
+    rerender(<LeftSidebar {...props} selectedCategoryId="another-category" />)
+    expect(ui.getByText('Keine Punkte gefunden')).toBeInTheDocument()
+    rerender(<LeftSidebar {...props} categories={[hiddenCategory]} visibility="visible" />)
+    expect(ui.getByText('Keine Punkte gefunden')).toBeInTheDocument()
+    rerender(<LeftSidebar {...props} categories={[hiddenCategory]} visibility="hidden" />)
+    expect(ui.getByText('Luchs')).toBeInTheDocument()
+  })
+
   it('treats an item in a hidden category as hidden', () => {
     const { rerender } = renderSidebar('visible')
 

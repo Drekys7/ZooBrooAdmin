@@ -6,6 +6,7 @@ import {
   MapCategorySchema,
   MapFactSchema,
   MapItemSchema,
+  MapGroupMemberSchema,
   MapEventSchema,
   MapSettingsSchema,
   LocaleCodeSchema,
@@ -13,6 +14,7 @@ import {
   MapProjectSchema,
   normalizePosition,
   stripItemSubtitleTranslations,
+  seedProjectTranslations,
   createId,
   type MapProject,
 } from "../domain";
@@ -36,6 +38,7 @@ export const CreateItemInputSchema = z.object({
   facts: z.array(MapFactSchema).default([]),
   visible: z.boolean().default(true),
   translations: MapItemSchema.shape.translations,
+  members: MapItemSchema.shape.members,
   now: z.string().datetime().optional(),
 });
 
@@ -57,6 +60,7 @@ export const UpdateItemInputSchema = z.object({
       facts: z.array(MapFactSchema),
       visible: z.boolean(),
       translations: MapItemSchema.shape.translations,
+      members: MapItemSchema.shape.members,
     })
     .partial()
     .refine((patch) => Object.keys(patch).length > 0, "Patch cannot be empty"),
@@ -211,6 +215,21 @@ export function createItem(projectValue: MapProject, inputValue: CreateItemInput
 export function updateItem(projectValue: MapProject, inputValue: UpdateItemInput): MapProject {
   const project = checkedProject(projectValue);
   const input = UpdateItemInputSchema.parse(inputValue);
+  const parent = project.items.find((item) => item.members?.some((member) => member.id === input.itemId));
+  const current = parent?.members?.find((member) => member.id === input.itemId) ?? requireItem(project, input.itemId);
+  if (input.patch.iconAssetId !== undefined && input.patch.iconAssetId !== current.iconAssetId) {
+    const overrides = { ...current.markerOverrides, ...input.patch.markerOverrides };
+    if (input.patch.iconAssetId) overrides.color = '#FFFFFF';
+    else delete overrides.color;
+    input.patch.markerOverrides = Object.keys(overrides).length ? overrides : null;
+    input.patch.colorOverride = null;
+  }
+  if (parent) {
+    const now = timestamp(input.now);
+    const members = parent.members!.map((member) => member.id === input.itemId
+      ? MapGroupMemberSchema.parse({ ...member, ...input.patch, id: member.id }) : member);
+    return finish({ ...project, updatedAt: now, items: project.items.map((item) => item.id === parent.id ? { ...item, members, updatedAt: now } : item) });
+  }
   const existing = requireItem(project, input.itemId);
   const category = input.patch.categoryId ? requireCategory(project, input.patch.categoryId) : undefined;
   const now = timestamp(input.now);
@@ -243,6 +262,7 @@ export function duplicateItem(projectValue: MapProject, inputValue: DuplicateIte
     title: input.title ?? `${source.title} (Kopie)`,
     position: normalizePosition({ x: source.position.x + input.offset.x, y: source.position.y + input.offset.y }),
     facts: source.facts.map((fact) => ({ ...fact, id: createId() })),
+    members: source.members?.map((member) => ({ ...member, id: createId(), facts: member.facts.map((fact) => ({ ...fact, id: createId() })) })),
     createdAt: now,
     updatedAt: now,
   });
@@ -392,7 +412,7 @@ export function updateMapSettings(
 }
 
 export function updateProjectLanguages(projectValue: MapProject, inputValue: UpdateProjectLanguagesInput): MapProject {
-  const project = checkedProject(projectValue);
+  const project = seedProjectTranslations(checkedProject(projectValue));
   const input = UpdateProjectLanguagesInputSchema.parse(inputValue);
   const enabledLocales = [...new Set(input.enabledLocales)];
   if (!enabledLocales.includes(input.defaultLocale)) enabledLocales.unshift(input.defaultLocale);

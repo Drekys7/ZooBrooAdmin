@@ -1,19 +1,22 @@
 import { Copy, ImagePlus, Plus, Trash2, Upload, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { hasTranslationValue } from '../domain/localization'
+import { itemIconAssetId, itemIconColor } from '../domain/groups'
 import type { MapCategory, MapFact, MapItem } from '../domain/models'
-import { CategoryIcon } from './CategoryIcon'
+import { CategoryIcon, getCategoryIconUrl } from './CategoryIcon'
 import { ItemMarkerOverrides } from './ItemMarkerOverrides'
 
-interface InspectorPanelProps {
+export interface InspectorPanelProps {
   item: MapItem | null
   categories: MapCategory[]
   assetUrls: Record<string, string>
   onUpdate: (id: string, patch: Partial<MapItem>) => void
   onDuplicate: () => void
   onDelete: () => void
-  onUpload: (files: File[], field: 'imageGallery' | 'iconAssetId') => void
-  onChooseAsset: (field: 'imageGallery' | 'iconAssetId') => void
+  onUpload: (files: File[], field: 'imageGallery' | 'iconAssetId', itemId?: string) => void
+  onChooseAsset: (field: 'imageGallery' | 'iconAssetId', itemId?: string) => void
+  embedded?: boolean
+  member?: boolean
   onDeselect: () => void
   contentLocale?: string
   defaultLocale?: string
@@ -29,14 +32,15 @@ function TextField({ label, value, placeholder, fallback, missing = false, multi
     : <input aria-label={label} value={draft} placeholder={inputPlaceholder} onChange={(event) => setDraft(event.target.value)} onBlur={commit} onKeyDown={(event) => event.key === 'Enter' && event.currentTarget.blur()} />}</div>
 }
 
-export function InspectorPanel({ item, categories, assetUrls, onUpdate, onDuplicate, onDelete, onUpload, onChooseAsset, onDeselect, contentLocale = 'de', defaultLocale = 'de' }: InspectorPanelProps) {
+export function InspectorPanel({ item, categories, assetUrls, onUpdate, onDuplicate, onDelete, onUpload, onChooseAsset, onDeselect, embedded = false, member = false, contentLocale = 'de', defaultLocale = 'de' }: InspectorPanelProps) {
   const [draggedImageIndex, setDraggedImageIndex] = useState<number | null>(null)
   if (!item) {
     return <aside className="sidebar inspector empty-inspector" aria-label="Inspektor"><div className="inspector-placeholder"><span className="placeholder-marker"><span /></span><h2>Kategorie oder Punkt auswählen</h2><p>Klicken Sie auf eine Kategorie oder einen Punkt, um die Einstellungen anzuzeigen.</p></div></aside>
   }
   const category = categories.find((entry) => entry.id === item.categoryId)
   const imageAssetIds = item.imageAssetIds?.length ? item.imageAssetIds : item.imageAssetId ? [item.imageAssetId] : []
-  const iconUrl = item.iconAssetId ? assetUrls[item.iconAssetId] : undefined
+  const resolvedIconId = itemIconAssetId(item, category)
+  const iconUrl = resolvedIconId ? assetUrls[resolvedIconId] : undefined
   const translation = item.translations?.[contentLocale]
   const localizedKeys: Array<'title' | 'subtitle' | 'description'> = item.type === 'animal' ? ['title', 'description'] : ['title', 'subtitle', 'description']
   const translatedFieldCount = contentLocale === defaultLocale ? localizedKeys.length : localizedKeys.filter((key) => hasTranslationValue(translation, key)).length
@@ -57,20 +61,20 @@ export function InspectorPanel({ item, categories, assetUrls, onUpdate, onDuplic
   }
 
   return (
-    <aside className="sidebar inspector" aria-label="Objektinspektor">
-      <div className="inspector-titlebar">
+    <aside className={embedded ? 'inspector-embedded' : 'sidebar inspector'} aria-label="Objektinspektor">
+      {!embedded && <div className="inspector-titlebar">
         <div className="inspector-avatar" style={{ color: category?.color, background: `${category?.color ?? '#50796a'}18` }}>
           {iconUrl ? <img src={iconUrl} alt="" /> : <CategoryIcon type={item.type} size={19} />}
         </div>
         <div><span className="eyebrow">Inspektor</span><h2>{item.title || 'Ohne Namen'}</h2></div>
         <button className="icon-button" title="Auswahl aufheben" aria-label="Auswahl aufheben" onClick={onDeselect}><X size={17} /></button>
-      </div>
+      </div>}
       <div className="inspector-scroll">
         <section className="inspector-section">
           <h3>Allgemein</h3>
           <div className={`translation-status${contentLocale === defaultLocale || translatedFieldCount === localizedKeys.length ? ' is-complete' : ''}`}><strong>{contentLocale.toUpperCase()}</strong><span>{contentLocale === defaultLocale ? 'Hauptsprache' : translatedFieldCount === localizedKeys.length ? 'Übersetzung vollständig' : `${translatedFieldCount} von ${localizedKeys.length} Textfeldern übersetzt`}</span></div>
           <TextField label="Name" value={translatedValue('title')} fallback={item.title} missing={isMissing('title')} onCommit={(title) => onUpdate(item.id, { title })} />
-          <label className="field"><span>Kategorie</span><select value={item.categoryId} onChange={(event) => onUpdate(item.id, { categoryId: event.target.value, type: categories.find((entry) => entry.id === event.target.value)?.type ?? item.type })}>{categories.map((entry) => <option key={entry.id} value={entry.id}>{entry.name}</option>)}</select></label>
+          {!member && <label className="field"><span>Kategorie</span><select value={item.categoryId} onChange={(event) => onUpdate(item.id, { categoryId: event.target.value, type: categories.find((entry) => entry.id === event.target.value)?.type ?? item.type })}>{categories.map((entry) => <option key={entry.id} value={entry.id}>{entry.name}</option>)}</select></label>}
           {item.type !== 'animal' && <TextField label="Untertitel" value={translatedValue('subtitle')} fallback={item.subtitle} missing={isMissing('subtitle')} placeholder="Kurze Erläuterung" onCommit={(subtitle) => onUpdate(item.id, { subtitle })} />}
           <TextField label="Beschreibung" value={translatedValue('description')} fallback={item.description} missing={isMissing('description')} placeholder="Beschreibung des Objekts für Besucher" multiline onCommit={(description) => onUpdate(item.id, { description })} />
         </section>
@@ -95,10 +99,18 @@ export function InspectorPanel({ item, categories, assetUrls, onUpdate, onDuplic
             </div>}
             <div className={`photo-dropzone compact ${imageAssetIds.length ? 'has-gallery' : ''}`}>
               {!imageAssetIds.length && <><ImagePlus size={23} /><strong>Fotos hinzufügen</strong><span>PNG, JPG oder WebP · Mehrfachauswahl möglich</span></>}
-              <div className="media-actions"><label className="mini-button"><Upload size={14} />Hochladen<input hidden multiple type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => { const files = Array.from(event.target.files ?? []); if (files.length) onUpload(files, 'imageGallery'); event.currentTarget.value = '' }} /></label><button className="mini-button" onClick={() => onChooseAsset('imageGallery')}>Auswählen</button></div>
+              <div className="media-actions"><label className="mini-button"><Upload size={14} />Hochladen<input hidden multiple type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => { const files = Array.from(event.target.files ?? []); if (files.length) onUpload(files, 'imageGallery', item.id); event.currentTarget.value = '' }} /></label><button className="mini-button" onClick={() => onChooseAsset('imageGallery', item.id)}>Auswählen</button></div>
             </div>
           </div>
-          <div className="icon-picker-row"><div className="icon-preview">{iconUrl ? <img src={iconUrl} alt="" /> : <CategoryIcon type={item.type} size={19} />}</div><div><strong>Markierungssymbol</strong><span>{iconUrl ? 'Benutzerdefiniert' : 'Aus der Kategorie'}</span></div><button className="mini-button" onClick={() => onChooseAsset('iconAssetId')}>Auswählen</button></div>
+          <div className="icon-picker-row" role="group" aria-label="Markierungssymbol">
+            <div className="icon-preview" style={{ color: itemIconColor(item, category) }}>{item.iconAssetId && iconUrl ? <img src={iconUrl} alt="Markierungssymbol" /> : <span role="img" aria-label="Markierungssymbol" className="icon-preview-default" style={{ backgroundColor: 'currentColor', maskImage: `url("${iconUrl ?? getCategoryIconUrl(item.type)}")`, WebkitMaskImage: `url("${iconUrl ?? getCategoryIconUrl(item.type)}")` }} />}</div>
+            <div><strong>Markierungssymbol</strong><span>{item.iconAssetId ? 'Benutzerdefiniert' : 'Aus der Kategorie'}</span></div>
+            <div className="icon-picker-actions">
+            <label className="mini-button icon-upload" title="Symbol hochladen"><Upload size={14}/>Hochladen<input hidden type="file" aria-label="Symbol hochladen" accept="image/png,image/webp,image/svg+xml" onChange={(event) => { const file = event.target.files?.[0]; if (file) onUpload([file], 'iconAssetId', item.id); event.currentTarget.value = '' }} /></label>
+            <button className="mini-button" onClick={() => onChooseAsset('iconAssetId', item.id)}>Auswählen</button>
+            {item.iconAssetId && <button className="icon-button" aria-label="Standardsymbol verwenden" title="Standardsymbol verwenden" onClick={() => onUpdate(item.id, { iconAssetId: null })}><X size={14}/></button>}
+            </div>
+          </div>
           {category && <ItemMarkerOverrides item={item} category={category} onUpdate={(patch) => onUpdate(item.id, patch)} />}
         </section>
 
@@ -115,12 +127,12 @@ export function InspectorPanel({ item, categories, assetUrls, onUpdate, onDuplic
           </div>
         </section>
 
-        <section className="inspector-section visibility-section">
+        {!member && <section className="inspector-section visibility-section">
           <label className="switch-row"><span><strong>Auf der Karte anzeigen</strong><small>Das Objekt ist nach der Veröffentlichung für Besucher sichtbar</small></span><input type="checkbox" checked={item.visible} onChange={(event) => onUpdate(item.id, { visible: event.target.checked })}/><i /></label>
           <div className="position-readout"><span>Position</span><code>x {item.position.x.toFixed(3)}</code><code>y {item.position.y.toFixed(3)}</code></div>
-        </section>
+        </section>}
       </div>
-      <div className="inspector-actions"><button className="button ghost" onClick={onDuplicate}><Copy size={15}/>Duplizieren</button><button className="button danger-ghost" onClick={onDelete}><Trash2 size={15}/>Löschen</button></div>
+      {!embedded && <div className="inspector-actions"><button className="button ghost" onClick={onDuplicate}><Copy size={15}/>Duplizieren</button><button className="button danger-ghost" onClick={onDelete}><Trash2 size={15}/>Löschen</button></div>}
     </aside>
   )
 }

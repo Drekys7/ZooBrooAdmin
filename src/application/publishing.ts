@@ -103,6 +103,18 @@ export function buildPublishedSnapshot(
       title: item.title,
       subtitle: item.type === 'animal' ? '' : item.subtitle,
       description: item.description,
+      members: item.members?.map((member) => ({
+        id: member.id, title: member.title, subtitle: item.type === 'animal' ? '' : member.subtitle,
+        description: member.description, translations: member.translations,
+        icon: publishedAsset(member.iconAssetId, resolveAssetUrl),
+        colorOverride: member.colorOverride ?? null,
+        markerOverrides: member.markerOverrides ?? (member.colorOverride ? { color: member.colorOverride } : null),
+        image: publishedAsset(member.imageAssetIds?.[0] ?? member.imageAssetId, resolveAssetUrl),
+        images: (member.imageAssetIds ?? (member.imageAssetId ? [member.imageAssetId] : []))
+          .map((id) => publishedAsset(id, resolveAssetUrl)),
+        facts: member.facts.map((fact) => ({ id: fact.id, label: fact.label, value: fact.value,
+          icon: publishedAsset(fact.iconAssetId, resolveAssetUrl), translations: fact.translations })),
+      })),
       icon: publishedAsset(item.iconAssetId, resolveAssetUrl),
       image: publishedAsset(item.imageAssetIds?.[0] ?? item.imageAssetId, resolveAssetUrl),
       images: (item.imageAssetIds?.length ? item.imageAssetIds : item.imageAssetId ? [item.imageAssetId] : [])

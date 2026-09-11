@@ -180,6 +180,7 @@ button.category-row { gap: 10px; padding: 0 8.75px; }
 .map-badge.add { color: white; border-color: #34775b; background: #34775bf2; }
 .inspector-titlebar { display: flex; align-items: center; gap: 12.5px; min-height: 85px; padding: 12.5px 16.25px; border-bottom: 1px solid #e1e6e3; }
 .inspector-titlebar > div:nth-child(2) { min-width: 0; flex: 1; }
+.group-inspector > .inspector-titlebar > div { min-width: 0; flex: 1; }
 .inspector-titlebar h2 { overflow: hidden; max-width: 250px; text-overflow: ellipsis; white-space: nowrap; }
 .inspector-avatar { display: grid; flex: 0 0 auto; place-items: center; width: 43.75px; height: 43.75px; border-radius: 10px; }
 .inspector-avatar img, .icon-preview img { width: 27.5px; height: 27.5px; object-fit: contain; }
@@ -197,6 +198,16 @@ button.category-row { gap: 10px; padding: 0 8.75px; }
 .photo-dropzone > span { font-size: 10.625px; }
 .photo-dropzone.has-image { align-items: flex-start; justify-content: flex-end; min-height: 160px; color: white; border-style: solid; }
 .photo-gallery-editor { display: grid; gap: 10px; }
+.inspector-embedded .inspector-scroll { overflow: visible; }
+.group-editor-entry { border-bottom: 1px solid #dce3df; }
+.group-editor-heading { display: flex; align-items: center; padding: 8px 12px; gap: 5px; background: #f3f6ef; }
+.group-editor-heading > button:first-child { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; padding: 10px 0; border: 0; border-radius: 6px; text-align: left; background: transparent; color: #263c30; cursor: pointer; }
+.group-editor-heading > button:first-child:hover { color: #2f7d59; }
+.group-editor-heading svg, .group-editor-heading small { flex-shrink: 0; }
+.group-editor-heading strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
+.group-editor-heading small { font-size: 9px; color: #6b8070; margin-left: auto; }
+.group-editor-heading button[aria-expanded=false] > svg { transform: rotate(-90deg); }
+.group-editor-add { margin: 14px; width: calc(100% - 28px); color: #2f7d59; border: 1px dashed #adc3b4; background: #f8faf4; }
 .photo-gallery-heading strong, .photo-gallery-heading span { display: block; }
 .photo-gallery-heading strong { color: #44544c; font-size: 12.5px; font-weight: 650; }
 .photo-gallery-heading span { margin-top: 2px; color: #7c8983; font-size: 10.625px; line-height: 1.35; }
@@ -216,12 +227,14 @@ button.category-row { gap: 10px; padding: 0 8.75px; }
 .media-actions { display: flex; gap: 6.25px; margin-top: 8.75px; }
 .mini-button { display: inline-flex; align-items: center; justify-content: center; gap: 6.25px; min-height: 33.75px; padding: 0 10px; border: 1px solid #d4dcd7; border-radius: 6.25px; color: #43524b; background: #ffffffeb; font-size: 11.25px; font-weight: 600; cursor: pointer; }
 .mini-button:hover { background: white; }
-.icon-picker-row { display: flex; align-items: center; gap: 10px; padding: 11.25px 0; }
+.icon-picker-row { display: grid; grid-template-columns: 44px minmax(0, 1fr); align-items: center; gap: 8px 10px; padding: 11.25px 0; }
+.icon-picker-actions { grid-column: 1 / -1; display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
 .icon-picker-row > div:nth-child(2) { min-width: 0; flex: 1; }
 .icon-picker-row strong, .icon-picker-row span { display: block; }
 .icon-picker-row strong { font-size: 12.5px; font-weight: 600; }
 .icon-picker-row span { margin-top: 2px; color: #7c8983; font-size: 10.625px; }
 .icon-preview { display: grid; place-items: center; width: 43.75px; height: 43.75px; border: 1px solid #d9e0dc; border-radius: 8.75px; color: #3b735a; background: #f4f8f5; }
+.icon-preview-default { width: 27.5px; height: 27.5px; mask-size: contain; mask-repeat: no-repeat; mask-position: center; }
 .color-field > div { display: flex; align-items: center; gap: 10px; }
 .color-field input[type=color] { width: 38.75px; height: 33.75px; padding: 2px; border: 1px solid #d2dad6; border-radius: 6.25px; background: white; cursor: pointer; }
 .color-field code, .position-readout code { color: #61716a; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 11.25px; }

@@ -421,7 +421,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
     deleteAsset: async (id) => {
       const project = get().project
       if (!project) return
-      const used = project.backgroundAssetId === id || project.categories.some((category) => category.defaultIconAssetId === id) || project.items.some((item) => item.iconAssetId === id || item.imageAssetId === id || item.imageAssetIds?.includes(id) || item.facts.some((fact) => fact.iconAssetId === id))
+      const used = project.backgroundAssetId === id || project.categories.some((category) => category.defaultIconAssetId === id) || project.items.some((item) => [item, ...(item.members ?? [])].some((entry) => entry.iconAssetId === id || entry.imageAssetId === id || entry.imageAssetIds?.includes(id) || entry.facts.some((fact) => fact.iconAssetId === id)))
       if (used) throw new Error('Diese Ressource wird vom Projekt verwendet')
       await container.assetRepository.delete(id)
       const url = get().assetUrls[id]

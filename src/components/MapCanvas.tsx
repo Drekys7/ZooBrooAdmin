@@ -26,6 +26,8 @@ import {
 import { AVAILABLE_LOCALES, localizeCategory, localizeEvent, localizeItem, localeName, translationCompletion } from '../domain/localization';
 import { getCategoryIconUrl } from './CategoryIcon';
 import { PhoneClientPreview } from './PhoneClientPreview';
+import { groupEntries, itemIconColor } from '../domain/groups';
+import { PhoneGroupPreview } from './PhoneGroupPreview';
 import { nextVisibleEventOccurrence, PhoneEventPanel } from './PhoneEventPanel';
 import { PhoneMapSearch } from './PhoneMapSearch';
 import { visitorCopy } from './visitor-i18n';
@@ -70,6 +72,7 @@ export interface MapCanvasProps {
   getItemImageUrls?: (item: MapItem) => string[];
   getFactIconUrl?: (fact: MapFact, item: MapItem) => string | null | undefined;
   onSelect?: (itemId: string | null) => void;
+  onAddGroupMember?: (itemId: string) => void;
   onAdd?: (position: NormalizedPosition) => void;
   onMove?: (itemId: string, position: NormalizedPosition) => void;
   onDragPreview?: (itemId: string, position: NormalizedPosition) => void;
@@ -451,7 +454,7 @@ function effectiveMarkerCategory(item: MapItem, category: MapCategory | undefine
   return category ? {
     ...category,
     ...item.markerOverrides,
-    color: item.markerOverrides?.color ?? item.colorOverride ?? category.color,
+    color: itemIconColor(item, category),
   } : undefined
 }
 
@@ -461,6 +464,7 @@ function createMarkerIcon(
   selected: boolean,
   iconUrl: string | null | undefined,
   phonePreview = false,
+  onAddGroupMember?: (itemId: string) => void,
 ): L.DivIcon {
   const isAnimal = item.type === 'animal'
   const effectiveCategory = effectiveMarkerCategory(item, category)
@@ -557,9 +561,52 @@ function createMarkerIcon(
     }
   }
 
+  const wrapper = document.createElement('span');
+  wrapper.className = 'map-marker-group';
+  wrapper.append(body);
+  if (item.members?.length) {
+    const badge = document.createElement('span');
+    badge.className = 'map-marker-group__count';
+    const count = `+${item.members.length}`;
+    const size = Math.max(23, count.length * 7 + 8);
+    badge.style.setProperty('--group-badge-size', `${size}px`);
+    const label = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    label.setAttribute('viewBox', `0 0 ${size - 4} ${size - 4}`);
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('x', '50%');
+    text.setAttribute('y', '50%');
+    text.setAttribute('text-anchor', 'middle');
+    text.setAttribute('dominant-baseline', 'central');
+    text.textContent = count;
+    label.append(text);
+    badge.append(label);
+    wrapper.append(badge);
+  } else if (!phonePreview && selected && onAddGroupMember) {
+    const add = document.createElement('button');
+    add.type = 'button';
+    add.className = 'map-marker-group__add';
+    add.setAttribute('aria-label', 'Punkt zur Gruppe hinzufügen');
+    const plus = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    plus.setAttribute('viewBox', '0 0 19 19');
+    plus.setAttribute('aria-hidden', 'true');
+    plus.setAttribute('focusable', 'false');
+    const plusPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    plusPath.setAttribute('d', 'M9.5 4.5V14.5M4.5 9.5H14.5');
+    plusPath.setAttribute('fill', 'none');
+    plusPath.setAttribute('stroke', 'currentColor');
+    plusPath.setAttribute('stroke-width', '1.5');
+    plusPath.setAttribute('stroke-linecap', 'round');
+    plus.append(plusPath);
+    add.append(plus);
+    L.DomEvent.disableClickPropagation(add);
+    add.addEventListener('pointerdown', (event) => event.stopPropagation());
+    add.addEventListener('keydown', (event) => event.stopPropagation());
+    add.addEventListener('click', (event) => { event.stopPropagation(); onAddGroupMember(item.id); });
+    wrapper.append(add);
+  }
   return L.divIcon({
     className: 'map-canvas__marker-icon',
-    html: body,
+    html: wrapper,
     iconSize: [iconWidth, iconHeight],
     iconAnchor: markerIconAnchor(markerStyle, iconWidth, iconHeight),
     tooltipAnchor: markerTooltipAnchor(markerStyle, iconHeight),
@@ -616,6 +663,7 @@ export function MapCanvas({
   getItemImageUrls,
   getFactIconUrl,
   onSelect,
+  onAddGroupMember,
   onAdd,
   onMove,
   onDragPreview,
@@ -627,6 +675,7 @@ export function MapCanvas({
 }: MapCanvasProps) {
   const [phonePreview, setPhonePreview] = useState(false);
   const [clientPreviewItemId, setClientPreviewItemId] = useState<string | null>(null);
+  const [clientMemberId, setClientMemberId] = useState<string | null>(null);
   const [clientDetailsOpen, setClientDetailsOpen] = useState(false);
   const [clientEventsOpen, setClientEventsOpen] = useState(false);
   const [eventClock, setEventClock] = useState(() => new Date());
@@ -711,7 +760,7 @@ export function MapCanvas({
     setEventClock(new Date());
   }, [phonePreviewRequest]);
   const draggingItemRef = useRef<string | null>(null);
-  const callbacksRef = useRef({ onSelect, onAdd, onMove, onDragPreview });
+  const callbacksRef = useRef({ onSelect, onAdd, onMove, onDragPreview, onAddGroupMember });
   const stateRef = useRef({
     addMode,
     disabled,
@@ -722,7 +771,7 @@ export function MapCanvas({
     mapSettings,
   });
 
-  callbacksRef.current = { onSelect, onAdd, onMove, onDragPreview };
+  callbacksRef.current = { onSelect, onAdd, onMove, onDragPreview, onAddGroupMember };
   stateRef.current = {
     addMode,
     disabled,
@@ -939,12 +988,14 @@ export function MapCanvas({
       const isDraggable = canDragMarker(item.id, selectedItemId, disabled, phonePreview);
       const signature = [
         item.title,
+        item.members?.length ?? 0,
         item.iconAssetId ?? '',
         item.colorOverride ?? '',
         JSON.stringify(item.markerOverrides ?? null),
         categorySignature(category),
         iconUrl ?? '',
         isSelected ? 'selected' : '',
+        disabled ? 'disabled' : '',
         phonePreview ? 'phone-preview' : 'desktop',
       ].join('|');
 
@@ -956,7 +1007,7 @@ export function MapCanvas({
           riseOnHover: true,
           title: item.title,
           alt: item.title,
-          icon: createMarkerIcon(item, category, isSelected, iconUrl, phonePreview),
+          icon: createMarkerIcon(item, category, isSelected, iconUrl, phonePreview, disabled ? undefined : (id) => callbacksRef.current.onAddGroupMember?.(id)),
         })
           .bindTooltip(createTooltipContent(item.title), {
             className: 'map-canvas__point-tooltip',
@@ -970,6 +1021,7 @@ export function MapCanvas({
           if (stateRef.current.phonePreview) {
             callbacksRef.current.onSelect?.(item.id);
             setClientPreviewItemId(item.id);
+            setClientMemberId(null);
             setClientDetailsOpen(false);
             setClientEventsOpen(false);
             return;
@@ -1009,7 +1061,7 @@ export function MapCanvas({
       }
 
       if (markerSignaturesRef.current.get(item.id) !== signature) {
-        marker.setIcon(createMarkerIcon(item, category, isSelected, iconUrl, phonePreview));
+        marker.setIcon(createMarkerIcon(item, category, isSelected, iconUrl, phonePreview, disabled ? undefined : (id) => callbacksRef.current.onAddGroupMember?.(id)));
         marker.setTooltipContent(createTooltipContent(item.title));
         markerSignaturesRef.current.set(item.id, signature);
       }
@@ -1218,9 +1270,12 @@ export function MapCanvas({
     .filter(Boolean)
     .join(' ');
 
-  const clientPreviewItem = phonePreview
+  const clientGroupRoot = phonePreview
     ? items.find((item) => item.id === clientPreviewItemId) ?? null
     : null;
+  const clientGroupEntries = clientGroupRoot ? groupEntries(clientGroupRoot) : [];
+  const clientPreviewItem = clientGroupEntries.find((entry) => entry.id === clientMemberId) ?? clientGroupRoot;
+  const showGroupPicker = Boolean(clientGroupRoot?.members?.length && !clientGroupEntries.some((entry) => entry.id === clientMemberId));
   const clientPreviewCategory = clientPreviewItem
     ? categoriesById.get(clientPreviewItem.categoryId)
     : undefined;
@@ -1242,8 +1297,8 @@ export function MapCanvas({
     [eventClock, events],
   );
 
-  const focusClientItem = (itemId: string, suppressCoveredPreview = false) => {
-    const item = items.find((candidate) => candidate.id === itemId);
+  const focusClientItem = (itemId: string, { suppressCoveredPreview = false, openGroupEntry = false }: { suppressCoveredPreview?: boolean; openGroupEntry?: boolean } = {}) => {
+    const item = items.find((candidate) => candidate.id === itemId || candidate.members?.some((member) => member.id === itemId));
     const map = mapRef.current;
     if (!item || !map) return;
 
@@ -1271,7 +1326,9 @@ export function MapCanvas({
     map.flyTo(destination, destinationZoom, { animate: true, duration: 0.55, easeLinearity: 0.25 });
     callbacksRef.current.onSelect?.(item.id);
     setClientEventsOpen(false);
-    setClientPreviewItemId(suppressCoveredPreview && quickPreviewWouldCoverPoint(targetScreenPoint, map.getSize()) ? null : item.id);
+    const choosingGroupEntry = openGroupEntry && Boolean(item.members?.length);
+    setClientPreviewItemId(suppressCoveredPreview && !choosingGroupEntry && quickPreviewWouldCoverPoint(targetScreenPoint, map.getSize()) ? null : item.id);
+    setClientMemberId(choosingGroupEntry || item.id !== itemId ? itemId : null);
     setClientDetailsOpen(false);
   };
 
@@ -1426,7 +1483,7 @@ export function MapCanvas({
                     else next.add(categoryId)
                     return next
                   })}
-                  onChooseItem={(itemId) => focusClientItem(itemId, true)}
+                  onChooseItem={(itemId) => focusClientItem(itemId, { suppressCoveredPreview: true, openGroupEntry: true })}
                 />
               </>
             ) : null}
@@ -1475,7 +1532,12 @@ export function MapCanvas({
           </div>
         ) : null}
 
-        {clientPreviewItem && clientPreviewIconUrl ? (
+        {showGroupPicker ? <PhoneGroupPreview
+          entries={clientGroupEntries}
+          getImageUrl={(entry) => getItemImageUrls?.(entry)?.[0] ?? getItemImageUrl?.(entry)}
+          onChoose={(id) => { setClientMemberId(id); setClientDetailsOpen(false); }}
+          onClose={() => { setClientPreviewItemId(null); setClientMemberId(null); }}
+        /> : clientPreviewItem && clientPreviewIconUrl ? (
           <PhoneClientPreview
             key={`${clientPreviewItem.id}:${(clientPreviewItem.imageAssetIds?.length ? clientPreviewItem.imageAssetIds : clientPreviewItem.imageAssetId ? [clientPreviewItem.imageAssetId] : []).join(',')}`}
             item={clientPreviewItem}
@@ -1484,6 +1546,7 @@ export function MapCanvas({
             imageUrls={getItemImageUrls?.(clientPreviewItem)}
             iconUrl={clientPreviewIconUrl}
             expanded={clientDetailsOpen}
+            onBackToGroup={clientGroupRoot?.members?.length ? () => { setClientMemberId(null); setClientDetailsOpen(false); } : undefined}
             locale={visitorLocale}
             getFactIconUrl={getFactIconUrl}
             onExpand={() => setClientDetailsOpen(true)}

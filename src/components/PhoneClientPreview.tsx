@@ -14,10 +14,11 @@ interface PhoneClientPreviewProps {
   getFactIconUrl?: (fact: MapFact, item: MapItem) => string | null | undefined
   onExpand: () => void
   onClose: () => void
+  onBackToGroup?: () => void
 }
 
 function previewColor(item: MapItem, category: MapCategory | undefined): string {
-  return item.markerOverrides?.color ?? item.colorOverride ?? category?.color ?? '#2F7D59'
+  return (item.iconAssetId ? item.markerOverrides?.color ?? item.colorOverride : null) ?? category?.color ?? '#2F7D59'
 }
 
 function PreviewVisual({ imageUrl, iconUrl, large = false }: { imageUrl?: string | null; iconUrl: string; large?: boolean }) {
@@ -53,6 +54,7 @@ export function PhoneClientPreview({
   getFactIconUrl,
   onExpand,
   onClose,
+  onBackToGroup,
 }: PhoneClientPreviewProps) {
   const style = { '--client-preview-accent': previewColor(item, category) } as CSSProperties
   const copy = visitorCopy(locale)
@@ -95,6 +97,7 @@ export function PhoneClientPreview({
   if (!expanded) {
     return (
       <aside className="map-client-preview__quick" aria-label={`${item.title} Vorschau`} style={style} onClick={onExpand}>
+        {onBackToGroup && <button className="map-client-preview__back" aria-label="Zur Gruppe" onClick={(event) => { event.stopPropagation(); onBackToGroup() }}>‹</button>}
         <button
           type="button"
           className="map-client-preview__close"

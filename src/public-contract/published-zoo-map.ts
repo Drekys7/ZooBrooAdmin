@@ -118,7 +118,7 @@ export const PublishedMarkerOverridesSchema = z
   })
   .strict()
 
-export const PublishedMapItemSchema = z
+const PublishedMapItemBaseSchema = z
   .object({
     id: idSchema,
     categoryId: idSchema,
@@ -139,6 +139,14 @@ export const PublishedMapItemSchema = z
     translations: z.record(localeCodeSchema, z.object({ title: z.string().optional(), subtitle: z.string().optional(), description: z.string().optional() })).optional(),
   })
   .strict()
+
+export const PublishedMapItemSchema = PublishedMapItemBaseSchema.extend({
+  members: z.array(PublishedMapItemBaseSchema.pick({
+    id: true, title: true, subtitle: true, description: true,
+    image: true, images: true, facts: true, translations: true,
+    colorOverride: true, markerOverrides: true,
+  }).extend({ icon: PublishedAssetSchema.nullable().optional() })).optional(),
+}).strict()
 
 export const PublishedEventRecurrenceSchema = z.object({
   frequency: EventFrequencySchema,

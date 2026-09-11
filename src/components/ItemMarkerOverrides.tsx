@@ -51,10 +51,10 @@ export function ItemMarkerOverrides({ item, category, onUpdate }: Props) {
   }
 
   const hasOverride = (key: keyof MarkerOverrides) =>
-    Object.prototype.hasOwnProperty.call(overrides, key) || (key === 'color' && Boolean(item.colorOverride))
+    (key !== 'color' || Boolean(item.iconAssetId)) && (Object.prototype.hasOwnProperty.call(overrides, key) || (key === 'color' && Boolean(item.colorOverride)))
 
   const valueFor = <K extends keyof MarkerOverrides>(key: K): Required<MarkerOverrides>[K] =>
-    (key === 'color' && item.colorOverride ? item.colorOverride : overrides[key] ?? defaults[key]) as Required<MarkerOverrides>[K]
+    (key === 'color' && !item.iconAssetId ? category.color : key === 'color' && item.colorOverride ? item.colorOverride : overrides[key] ?? defaults[key]) as Required<MarkerOverrides>[K]
 
   const setOverride = <K extends keyof MarkerOverrides>(key: K, value: MarkerOverrides[K] | undefined) => {
     const next: MarkerOverrides = { ...overrides }
@@ -74,6 +74,7 @@ export function ItemMarkerOverrides({ item, category, onUpdate }: Props) {
           type="checkbox"
           aria-label={`${label} überschreiben`}
           checked={enabled}
+          disabled={key === 'color' && !item.iconAssetId}
           onChange={(event) => setOverride(key, event.target.checked ? defaults[key] : undefined)}
         />
         <span>{label}</span>

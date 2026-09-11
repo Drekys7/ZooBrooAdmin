@@ -1,6 +1,7 @@
 import { Languages, Search, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { categoryColorizeIcon, categoryIconContentScale, type MapCategory, type MapItem } from '../domain/models'
+import { groupEntries, itemIconAssetId, itemIconColor } from '../domain/groups'
 import { getCategoryIconUrl } from './CategoryIcon'
 import { visitorCopy } from './visitor-i18n'
 
@@ -72,6 +73,7 @@ export function PhoneMapSearch({
   const results = useMemo(() => {
     if (!query.trim()) return []
     return items
+      .flatMap(groupEntries)
       .filter((item) => {
         const category = categoriesById.get(item.categoryId)
         return item.visible && category?.visible && !hiddenCategoryIds.has(item.categoryId)
@@ -166,14 +168,15 @@ export function PhoneMapSearch({
       {resultsOpen && query.trim() ? (
         <div className="map-client-search__results" id="map-client-search-results" role="listbox" aria-label={copy.searchResults}>
           {results.length ? results.map(({ item, category }) => {
-            const iconUrl = getItemIconUrl(item, category)
-            const iconColor = item.markerOverrides?.color ?? item.colorOverride ?? category?.color ?? '#315F4B'
+            const iconAssetId = itemIconAssetId(item, category)
+            const iconUrl = getItemIconUrl({ ...item, iconAssetId }, category)
+            const iconColor = itemIconColor(item, category)
             const colorizeIcon = categoryColorizeIcon({ colorizeIcon: item.markerOverrides?.colorizeIcon ?? category?.colorizeIcon })
             const iconContentScale = categoryIconContentScale({ iconContentScale: item.markerOverrides?.iconContentScale ?? category?.iconContentScale })
             return (
               <button type="button" role="option" aria-selected="false" key={item.id} onClick={() => choose(item)}>
                 <span className="map-client-search__result-icon" style={{ '--search-result-icon-scale': iconContentScale } as CSSProperties}>
-                  {item.type === 'animal' && item.iconAssetId && !colorizeIcon ? <img src={iconUrl} alt="" /> : (
+                  {item.iconAssetId && !colorizeIcon ? <img src={iconUrl} alt="" /> : (
                     <span
                       className="map-client-search__result-default-icon"
                       aria-hidden="true"
