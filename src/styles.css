@@ -242,7 +242,22 @@ button.category-row { gap: 10px; padding: 0 8.75px; }
 .section-heading-inline h3 { margin: 0; }
 .text-button { display: inline-flex; align-items: center; gap: 5px; padding: 3px 6.25px; color: #34775b; background: transparent; font-size: 11.25px; font-weight: 600; }
 .fact-row { display: flex; gap: 5px; margin-bottom: 7.5px; }
-.fact-row > div { display: grid; flex: 1; grid-template-columns: .9fr 1.1fr; border: 1px solid #dbe1dd; border-radius: 7.5px; background: white; }
+.fact-row > .fact-row__fields { display: grid; flex: 1; min-width: 0; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); border: 1px solid #dbe1dd; border-radius: 7.5px; background: white; }
+.fact-icon-picker { position: relative; display: flex; align-items: center; justify-content: center; flex: 0 0 36px; height: 38px; border: 1px solid var(--line); border-radius: 8px; background: #fffefa; color: var(--leaf-dark); cursor: pointer; transition: background .15s, border-color .15s; }
+.fact-icon-picker:hover, .fact-icon-picker:focus-within { background: #edf5ef; border-color: var(--leaf); }
+.fact-icon-picker:focus-within { outline: 2px solid var(--leaf); outline-offset: 2px; }
+.fact-icon-picker select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.fact-icon-picker__image { display: block; width: 19px; height: 19px; background: currentColor; mask: center / contain no-repeat; -webkit-mask: center / contain no-repeat; }
+.fact-icon-manager { width: min(520px, calc(100vw - 32px)); max-height: 85vh; overflow: auto; }
+.fact-icon-manager__content { padding: 0 24px 24px; }
+.fact-icon-manager__content > p { color: var(--muted); font-size: 13px; line-height: 1.5; }
+.fact-icon-manager__list { margin: 20px 0; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.fact-icon-manager__row { display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 8px 14px; color: var(--leaf-dark); }
+.fact-icon-manager__row + .fact-icon-manager__row { border-top: 1px solid var(--line); }
+.fact-icon-manager__row > span, .fact-icon-manager__row > svg { flex-shrink: 0; }
+.fact-icon-manager__row strong, .fact-icon-manager__row input { flex: 1; min-width: 0; font-size: 13px; }
+.fact-icon-manager__row input { border: 1px solid var(--line); padding: 7px; border-radius: 6px; }
+.fact-icon-manager__row small { color: var(--muted); font-size: 11px; }
 .fact-row input { min-width: 0; height: 36.25px; padding: 0 8.75px; border: 0; outline: 0; background: transparent; font-size: 11.25px; }
 .fact-row input + input { border-left: 1px solid #e0e5e2; }
 .inline-empty { margin: 3px 0; color: #829088; font-size: 11.25px; line-height: 1.45; }

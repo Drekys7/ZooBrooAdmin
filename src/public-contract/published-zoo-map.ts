@@ -50,6 +50,7 @@ export const PublishedTypographySchema = z.object({
   }).strict()
 
 export const PublishedMapSettingsSchema = z.object({
+  accentColor: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
   typography: PublishedTypographySchema.optional(),
   zones: ZoneSettingsSchema.omit({ typography: true }).extend({ typography: PublishedTypographySchema.optional() }).optional(),
   minZoomScale: z.number().finite().positive().default(defaultMapSettings.minZoomScale),

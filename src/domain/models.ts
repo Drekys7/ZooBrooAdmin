@@ -46,6 +46,8 @@ export const MapBackgroundColorSchema = z
   .default(DEFAULT_MAP_BACKGROUND_COLOR);
 
 export const MapSettingsSchema = z.object({
+  factIcons: z.array(z.object({ id: EntityIdSchema, label: z.string().trim().min(1) })).optional(),
+  accentColor: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
   zones: ZoneSettingsSchema.optional(),
   typography: TypographySchema.optional(),
   minZoomScale: z.number().finite().positive().default(DEFAULT_MAP_SETTINGS.minZoomScale),

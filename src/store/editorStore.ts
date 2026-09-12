@@ -1,3 +1,4 @@
+import { removeFactIcon } from '../domain/fact-icons'
 import { create } from 'zustand'
 import {
   CommandHistory,
@@ -80,6 +81,7 @@ interface EditorState {
   setBackgroundAsset: (id: string) => void
   setBackgroundFile: (file: File) => Promise<void>
   setBackgroundColor: (color: string) => void
+  removeFactIcon: (id: string) => void
   updateMapSettings: (patch: Partial<MapSettings>) => void
   updateProjectLanguages: (defaultLocale: string, enabledLocales: string[]) => void
   importProjectFile: (file: File) => Promise<void>
@@ -422,7 +424,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
       const project = get().project
       if (!project) return
       const used = project.backgroundAssetId === id || project.categories.some((category) => category.defaultIconAssetId === id) || project.items.some((item) => [item, ...(item.members ?? [])].some((entry) => entry.iconAssetId === id || entry.imageAssetId === id || entry.imageAssetIds?.includes(id) || entry.facts.some((fact) => fact.iconAssetId === id)))
-      if (used || [project.mapSettings.typography, project.mapSettings.zones?.typography].some(font => font?.regularAssetId === id || font?.boldAssetId === id)) throw new Error('Diese Ressource wird vom Projekt verwendet')
+      if (used || project.mapSettings.factIcons?.some(icon => icon.id === id) || [project.mapSettings.typography, project.mapSettings.zones?.typography].some(font => font?.regularAssetId === id || font?.boldAssetId === id)) throw new Error('Diese Ressource wird vom Projekt verwendet')
       await container.assetRepository.delete(id)
       const url = get().assetUrls[id]
       if (url) URL.revokeObjectURL(url)
@@ -447,6 +449,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
         (project) => setBackgroundColor(project, { color }),
       )
     },
+    removeFactIcon: (id) => commit('updateMapSettings', 'project', get().project?.id ?? 'project', project => removeFactIcon(project, id)),
     updateMapSettings: (patch) => {
       if (!Object.keys(patch).length) return
       commit(

@@ -26,7 +26,7 @@ describe('map groups', () => {
     expect(loaded.items).toEqual(original.items)
     expect(loaded.mapSettings).not.toHaveProperty('groupSelectionStyle')
   })
-  it('persists, duplicates and publishes a separate group badge color and supports undo', async () => {
+  it('preserves legacy badge data in drafts but omits it from new publications', async () => {
     const original = setBackground(groupedProject(), { assetId: 'map', width: 1000, height: 600, now })
     const history = new CommandHistory()
     const project = history.execute(original, { type: 'updateItem', affectedEntityType: 'item', affectedEntityId: 'primary' },
@@ -36,7 +36,7 @@ describe('map groups', () => {
     expect(project.items[0].members).toEqual(original.items[0].members)
     expect(importProjectFromJson(exportProjectToJson(project))).toEqual(project)
     expect(duplicateItem(project, { itemId: 'primary', id: 'copy', now }).items[1].groupBadgeColor).toBe('#AA3366')
-    expect(buildPublishedSnapshot(project, 1, now, (id) => `/assets/${id}`).items[0].groupBadgeColor).toBe('#AA3366')
+    expect(buildPublishedSnapshot(project, 1, now, (id) => `/assets/${id}`).items[0].groupBadgeColor).toBeUndefined()
     expect(history.undo(project)?.project.items[0].groupBadgeColor).toBeUndefined()
     expect(history.redo(original)?.project.items[0].groupBadgeColor).toBe('#AA3366')
     expect(updateItem(project, { itemId: 'primary', patch: { groupBadgeColor: null }, now }).items[0].groupBadgeColor).toBeNull()

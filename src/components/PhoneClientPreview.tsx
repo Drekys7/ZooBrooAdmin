@@ -1,4 +1,4 @@
-import { Info, X } from 'lucide-react'
+import { Hourglass, Info, X } from 'lucide-react'
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent, type TouchEvent } from 'react'
 import type { MapCategory, MapFact, MapItem } from '../domain/models'
 import { visitorCopy } from './visitor-i18n'
@@ -18,10 +18,6 @@ interface PhoneClientPreviewProps {
   onBackToGroup?: () => void
 }
 
-function previewColor(item: MapItem, category: MapCategory | undefined): string {
-  return (item.iconAssetId ? item.markerOverrides?.color ?? item.colorOverride : null) ?? category?.color ?? '#2F7D59'
-}
-
 function PreviewVisual({ imageUrl, iconUrl, large = false }: { imageUrl?: string | null; iconUrl: string; large?: boolean }) {
   if (imageUrl) {
     return <img className={large ? 'map-client-preview__hero-image' : 'map-client-preview__image'} src={imageUrl} alt="" />
@@ -38,15 +34,17 @@ function PreviewVisual({ imageUrl, iconUrl, large = false }: { imageUrl?: string
 }
 
 function FactIcon({ fact, item, getFactIconUrl }: { fact: MapFact; item: MapItem; getFactIconUrl?: PhoneClientPreviewProps['getFactIconUrl'] }) {
+  if (fact.iconAssetId === 'zooweb-fact-lifespan') {
+    return <Hourglass className="map-client-preview__fact-icon" size={20} strokeWidth={2} aria-hidden="true" />
+  }
   const iconUrl = getFactIconUrl?.(fact, item)
   return iconUrl
-    ? <img className="map-client-preview__fact-icon-image" src={iconUrl} alt="" aria-hidden="true" />
+    ? <span className="map-client-preview__fact-icon-image" style={{ maskImage: `url(${JSON.stringify(iconUrl)})`, WebkitMaskImage: `url(${JSON.stringify(iconUrl)})` }} aria-hidden="true" />
     : <Info className="map-client-preview__fact-icon" size={14} strokeWidth={1.9} aria-hidden="true" />
 }
 
 export function PhoneClientPreview({
   item,
-  category,
   imageUrl,
   imageUrls,
   iconUrl,
@@ -57,7 +55,7 @@ export function PhoneClientPreview({
   onClose,
   onBackToGroup,
 }: PhoneClientPreviewProps) {
-  const style = { '--client-preview-accent': previewColor(item, category) } as CSSProperties
+  const style = { '--client-preview-accent': 'var(--map-accent-ink, #1d6043)' } as CSSProperties
   const copy = visitorCopy(locale)
   const dragDescription = useMouseDragScroll('y')
   const images = imageUrls?.length ? imageUrls : imageUrl ? [imageUrl] : []

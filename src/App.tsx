@@ -1,3 +1,4 @@
+import { FactIconManager } from './components/FactIconManager'
 import {
   Archive,
   CalendarDays,
@@ -33,7 +34,7 @@ import { validateFont } from './domain/typography'
 import { DEFAULT_ZONES, ZoneSchema, type Zone } from './domain/zones'
 import { ZoneSidebar, ZoneInspector } from './components/ZoneEditor'
 
-type AssetSelectionField = 'imageGallery' | 'iconAssetId' | 'categoryIconAssetId' | 'backgroundAssetId'
+type AssetSelectionField = 'factIconAssetId' | 'imageGallery' | 'iconAssetId' | 'categoryIconAssetId' | 'backgroundAssetId'
 
 function formatDate(value: string | null) {
   if (!value) return 'Noch nicht veröffentlicht'
@@ -46,9 +47,11 @@ function App() {
   const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null)
   const [addingZone, setAddingZone] = useState(false)
   useColorEditHistory(editor.beginContinuousEdit, editor.endContinuousEdit)
+  const [factIconManagerOpen, setFactIconManagerOpen] = useState(false)
   const [assetManagerOpen, setAssetManagerOpen] = useState(false)
   const [eventManagerOpen, setEventManagerOpen] = useState(false)
   const [assetSelectionField, setAssetSelectionField] = useState<AssetSelectionField | null>(null)
+  const [assetTargetFactId, setAssetTargetFactId] = useState<string | null>(null)
   const [assetTargetItemId, setAssetTargetItemId] = useState<string | null>(null)
   const [inspectorEntry, setInspectorEntry] = useState<{ rootId: string; entryId: string } | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -205,7 +208,7 @@ function App() {
   }, [project])
 
   const usedAssetIds = useMemo(() => {
-    const ids = new Set<string>()
+    const ids = new Set<string>(project?.mapSettings.factIcons?.map(icon => icon.id) ?? [])
     if (!project) return ids
     if (project.backgroundAssetId) ids.add(project.backgroundAssetId)
     project.categories.forEach((category) => category.defaultIconAssetId && ids.add(category.defaultIconAssetId))
@@ -268,7 +271,9 @@ function App() {
       if (editAllCategories) editor.updateAllCategories({ defaultIconAssetId: assetId })
       else if (selectedCategory) editor.updateCategory(selectedCategory.id, { defaultIconAssetId: assetId })
     } else if (assetSelectionField && target) {
-      if (assetSelectionField === 'imageGallery') {
+      if (assetSelectionField === 'factIconAssetId') {
+        editor.updateItem(target.id, { facts: target.facts.map((fact) => fact.id === assetTargetFactId ? { ...fact, iconAssetId: assetId } : fact) })
+      } else if (assetSelectionField === 'imageGallery') {
         const currentIds = itemImageIds(target)
         const imageAssetIds = [...currentIds, assetId]
         editor.updateItem(target.id, { imageAssetId: imageAssetIds[0] ?? null, imageAssetIds })
@@ -430,11 +435,13 @@ function App() {
             defaultLocale={project.defaultLocale}
             categories={localizedCategories}
             assetUrls={editor.assetUrls}
+            factIcons={project.mapSettings.factIcons}
+            onManageFactIcons={() => setFactIconManagerOpen(true)}
             onUpdate={updateLocalizedItem}
             onDuplicate={() => { editor.duplicateSelected(); toast('Punkt dupliziert') }}
             onDelete={() => setDeleteDialogOpen(true)}
             onUpload={(files, field, itemId) => void uploadForItem(files, field, itemId)}
-            onChooseAsset={(field, itemId) => { setAssetTargetItemId(itemId ?? selectedItem.id); setAssetSelectionField(field); setAssetManagerOpen(true) }}
+            onChooseAsset={(field, itemId, factId) => { setAssetTargetFactId(factId ?? null); setAssetTargetItemId(itemId ?? selectedItem.id); setAssetSelectionField(field); setAssetManagerOpen(true) }}
             onDeselect={() => { setInspectorEntry(null); editor.setSelectedItemId(null) }}
           /> : (selectedCategory || editAllCategories) ? <CategoryInspector
             categories={localizedCategories}
@@ -472,12 +479,23 @@ function App() {
         <span className="online"><i/> Lokale Datenbank</span>
       </footer>
 
+      {factIconManagerOpen && <FactIconManager icons={project.mapSettings.factIcons ?? []} assetUrls={editor.assetUrls}
+        onClose={() => setFactIconManagerOpen(false)}
+        onDelete={editor.removeFactIcon}
+        onRename={(id, label) => editor.updateMapSettings({ factIcons: (project.mapSettings.factIcons ?? []).map(icon => icon.id === id ? { ...icon, label } : icon) })}
+        onAdd={async (file, label) => {
+          const projectId = project.id
+          const asset = await editor.uploadAsset(file, 'icon')
+          const current = useEditorStore.getState().project
+          if (!current || current.id !== projectId) throw new Error('Das Projekt wurde inzwischen gewechselt.')
+          editor.updateMapSettings({ factIcons: [...(current.mapSettings.factIcons ?? []), { id: asset.id, label }] })
+        }} />}
       <AssetManager
         open={assetManagerOpen}
         assets={assetViews}
         selectionMode={Boolean(assetSelectionField)}
-        selectionKind={assetSelectionField === 'backgroundAssetId' ? 'background' : undefined}
-        accept={assetSelectionField === 'iconAssetId' || assetSelectionField === 'categoryIconAssetId' ? 'image/png,image/webp,image/svg+xml' : undefined}
+        selectionKind={assetSelectionField === 'backgroundAssetId' ? 'background' : assetSelectionField === 'factIconAssetId' ? 'icon' : undefined}
+        accept={assetSelectionField === 'iconAssetId' || assetSelectionField === 'categoryIconAssetId' || assetSelectionField === 'factIconAssetId' ? 'image/png,image/webp,image/svg+xml' : undefined}
         onUpload={(files) => {
           if (assetSelectionField === 'backgroundAssetId') {
             const file = files[0]
@@ -489,7 +507,7 @@ function App() {
             }).catch((error) => toast(error instanceof Error ? error.message : 'Fehler beim Hochladen der Karte', 'error'))
             return
           }
-          void Promise.all(files.map((file) => editor.uploadAsset(file, assetSelectionField === 'iconAssetId' || assetSelectionField === 'categoryIconAssetId' ? 'icon' : 'image'))).then(() => toast('Ressourcen hochgeladen')).catch((error) => toast(error instanceof Error ? error.message : 'Fehler beim Hochladen', 'error'))
+          void Promise.all(files.map((file) => editor.uploadAsset(file, assetSelectionField === 'iconAssetId' || assetSelectionField === 'categoryIconAssetId' || assetSelectionField === 'factIconAssetId' ? 'icon' : 'image'))).then(() => toast('Ressourcen hochgeladen')).catch((error) => toast(error instanceof Error ? error.message : 'Fehler beim Hochladen', 'error'))
         }}
         onDelete={(id) => void editor.deleteAsset(id).then(() => toast('Ressource gelöscht')).catch((error) => toast(error instanceof Error ? error.message : 'Fehler beim Löschen', 'error'))}
         onSelect={selectAsset}

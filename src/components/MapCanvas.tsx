@@ -26,7 +26,8 @@ import {
 import { AVAILABLE_LOCALES, localizeCategory, localizeEvent, localizeItem, localeName, translationCompletion } from '../domain/localization';
 import { getCategoryIconUrl } from './CategoryIcon';
 import { PhoneClientPreview } from './PhoneClientPreview';
-import { DEFAULT_GROUP_BADGE_COLOR, groupEntries, itemIconColor } from '../domain/groups';
+import { groupEntries, itemIconColor } from '../domain/groups';
+import { accentVariables, DEFAULT_ACCENT_COLOR } from '../domain/accent';
 import { PhoneGroupPreview } from './PhoneGroupPreview';
 import { nextVisibleEventOccurrence, PhoneEventPanel } from './PhoneEventPanel';
 import { PhoneMapSearch } from './PhoneMapSearch';
@@ -578,7 +579,6 @@ function createMarkerIcon(
   if (item.members?.length) {
     const badge = document.createElement('span');
     badge.className = 'map-marker-group__count';
-    badge.style.backgroundColor = item.groupBadgeColor ?? DEFAULT_GROUP_BADGE_COLOR;
     const count = `+${item.members.length}`;
     const size = Math.max(23, count.length * 7 + 8);
     badge.style.setProperty('--group-badge-size', `${size}px`);
@@ -1015,7 +1015,6 @@ export function MapCanvas({
       const signature = [
         item.title,
         item.members?.length ?? 0,
-        item.groupBadgeColor ?? '',
         item.iconAssetId ?? '',
         item.colorOverride ?? '',
         JSON.stringify(item.markerOverrides ?? null),
@@ -1413,7 +1412,7 @@ export function MapCanvas({
     <section
       className={rootClassName}
       aria-label={ariaLabel}
-      style={{ backgroundColor: phonePreview ? '#D9DFDC' : backgroundColor, fontFamily }}
+      style={{ ...accentVariables(mapSettings.accentColor), backgroundColor: phonePreview ? '#D9DFDC' : backgroundColor, fontFamily }}
     >
       <svg
         className="map-canvas__filter-definitions"
@@ -1725,6 +1724,11 @@ export function MapCanvas({
             <FontSettings value={mapSettings.typography} fontFamily={fontFamily} names={fontAssetNames} onUpload={onFontUpload} onChange={typography => onMapSettingsChange?.({ typography })} />
             <div className="map-global-settings__section">
               <strong>Darstellung</strong>
+              <label className="map-global-settings__color">
+                <span><Palette size={15}/>Akzentfarbe</span>
+                <div><input type="color" aria-label="Globale Akzentfarbe" value={mapSettings.accentColor ?? DEFAULT_ACCENT_COLOR} onFocus={onSettingsEditStart} onBlur={onSettingsEditEnd} onChange={event => onMapSettingsChange?.({ accentColor: event.target.value })}/><code>{(mapSettings.accentColor ?? DEFAULT_ACCENT_COLOR).toUpperCase()}</code></div>
+              </label>
+              <p>Für Gruppenanzahl, Schaltflächen, Sprache, Kategorien und Veranstaltungen. Helle Hintergründe werden automatisch abgeleitet.</p>
               <label className="map-global-settings__color">
                 <span><Palette size={15} />Hintergrundfarbe</span>
                 <div>

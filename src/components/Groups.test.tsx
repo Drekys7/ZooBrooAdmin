@@ -31,22 +31,12 @@ describe('group interface', () => {
     fireEvent.click(ui.getByRole('button', { name: 'Zur Gruppe' }))
     expect(container.querySelector('.map-client-group')).toBeInTheDocument()
   })
-  it('edits and resets the badge color on the group rather than the expanded member', () => {
-    const update = vi.fn()
-    const { container, rerender } = render(<GroupInspector item={item} categories={[category]} assetUrls={{}}
-      onUpdate={update} onChooseAsset={vi.fn()} onUpload={vi.fn()} onAddMember={vi.fn()} onRemoveMember={vi.fn()}
+  it('no longer exposes a separate group badge color', () => {
+    const { container } = render(<GroupInspector item={{ ...item, groupBadgeColor: '#AA3366' }} categories={[category]} assetUrls={{}}
+      onUpdate={vi.fn()} onChooseAsset={vi.fn()} onUpload={vi.fn()} onAddMember={vi.fn()} onRemoveMember={vi.fn()}
       onDeselect={vi.fn()} onDuplicate={vi.fn()} onDelete={vi.fn()} />)
-    const ui = within(container)
-    expect(ui.getByLabelText('Hintergrund der Gruppenanzahl')).toHaveValue('#2f7d59')
-    fireEvent.change(ui.getByLabelText('Hintergrund der Gruppenanzahl'), { target: { value: '#aa3366' } })
-    expect(update).toHaveBeenCalledWith('root', { groupBadgeColor: '#aa3366' })
-    rerender(<GroupInspector item={{ ...item, groupBadgeColor: '#AA3366' }} categories={[category]} assetUrls={{}}
-      onUpdate={update} onChooseAsset={vi.fn()} onUpload={vi.fn()} onAddMember={vi.fn()} onRemoveMember={vi.fn()}
-      onDeselect={vi.fn()} onDuplicate={vi.fn()} onDelete={vi.fn()} />)
-    fireEvent.click(ui.getByRole('button', { name: 'Standardfarbe der Gruppenanzahl wiederherstellen' }))
-    expect(update).toHaveBeenLastCalledWith('root', { groupBadgeColor: null })
+    expect(within(container).queryByLabelText('Hintergrund der Gruppenanzahl')).not.toBeInTheDocument()
   })
-
   it('finds a group member in simulator search, opens its card and details, and keeps the root map marker', async () => {
     const select = vi.fn()
     const { container } = render(<MapCanvas backgroundUrl="/map.png" backgroundWidth={1000} backgroundHeight={600}
@@ -103,13 +93,13 @@ describe('group interface', () => {
     rerender(<MapCanvas {...props} selectedItemId="root" />)
     expect(ui.queryByLabelText('Punkt zur Gruppe hinzufügen')).not.toBeInTheDocument()
     expect(container.querySelector('.map-marker-group__count')).toHaveTextContent('+1')
-    expect(container.querySelector('.map-marker-group__count')).toHaveStyle({ backgroundColor: '#2F7D59' })
+    expect((container.querySelector('.map-marker-group__count') as HTMLElement).style.backgroundColor).toBe('')
     rerender(<MapCanvas {...props} items={[{ ...item, groupBadgeColor: '#AA3366' }]} selectedItemId="root" />)
-    expect(container.querySelector('.map-marker-group__count')).toHaveStyle({ backgroundColor: '#AA3366' })
+    expect((container.querySelector('.map-marker-group__count') as HTMLElement).style.backgroundColor).toBe('')
     fireEvent.click(container.querySelector('.map-marker-group__count')!)
     expect(add).toHaveBeenCalledTimes(1)
     rerender(<MapCanvas {...props} selectedItemId={null} />)
-    expect(container.querySelector('.map-marker-group__count')).toHaveStyle({ backgroundColor: '#2F7D59' })
+    expect((container.querySelector('.map-marker-group__count') as HTMLElement).style.backgroundColor).toBe('')
     expect(ui.queryByLabelText('Punkt zur Gruppe hinzufügen')).not.toBeInTheDocument()
     expect(container.querySelector('.map-marker-group__count')).toHaveTextContent('+1')
     fireEvent.click(container.querySelector('.map-marker-group__count')!)
@@ -117,7 +107,7 @@ describe('group interface', () => {
     fireEvent.click(ui.getByRole('button', { name: 'Handy-Vorschau anzeigen' }))
     expect(ui.queryByLabelText('Punkt zur Gruppe hinzufügen')).not.toBeInTheDocument()
     rerender(<MapCanvas {...props} items={[{ ...item, groupBadgeColor: '#AA3366' }]} />)
-    expect(container.querySelector('.map-marker-group__count')).toHaveStyle({ backgroundColor: '#AA3366' })
+    expect((container.querySelector('.map-marker-group__count') as HTMLElement).style.backgroundColor).toBe('')
     expect(container.querySelector('.map-marker-group__count')).toHaveTextContent('+1')
     expect(container.querySelectorAll('.map-canvas__marker-icon')).toHaveLength(1)
     fireEvent.click(ui.getByRole('button', { name: 'Restaurant' }))

@@ -5,6 +5,7 @@ import { itemIconAssetId, itemIconColor } from '../domain/groups'
 import type { MapCategory, MapFact, MapItem } from '../domain/models'
 import { CategoryIcon, getCategoryIconUrl } from './CategoryIcon'
 import { ItemMarkerOverrides } from './ItemMarkerOverrides'
+import { FactIconPicker } from './FactIconPicker'
 
 export interface InspectorPanelProps {
   item: MapItem | null
@@ -14,7 +15,9 @@ export interface InspectorPanelProps {
   onDuplicate: () => void
   onDelete: () => void
   onUpload: (files: File[], field: 'imageGallery' | 'iconAssetId', itemId?: string) => void
-  onChooseAsset: (field: 'imageGallery' | 'iconAssetId', itemId?: string) => void
+  onChooseAsset: (field: 'imageGallery' | 'iconAssetId' | 'factIconAssetId', itemId?: string, factId?: string) => void
+  factIcons?: Array<{ id: string; label: string }>
+  onManageFactIcons?: () => void
   embedded?: boolean
   member?: boolean
   onDeselect: () => void
@@ -32,7 +35,7 @@ function TextField({ label, value, placeholder, fallback, missing = false, multi
     : <input aria-label={label} value={draft} placeholder={inputPlaceholder} onChange={(event) => setDraft(event.target.value)} onBlur={commit} onKeyDown={(event) => event.key === 'Enter' && event.currentTarget.blur()} />}</div>
 }
 
-export function InspectorPanel({ item, categories, assetUrls, onUpdate, onDuplicate, onDelete, onUpload, onChooseAsset, onDeselect, embedded = false, member = false, contentLocale = 'de', defaultLocale = 'de' }: InspectorPanelProps) {
+export function InspectorPanel({ item, categories, assetUrls, onUpdate, onDuplicate, onDelete, onUpload, onChooseAsset, onDeselect, embedded = false, member = false, contentLocale = 'de', defaultLocale = 'de', factIcons = [], onManageFactIcons }: InspectorPanelProps) {
   const [draggedImageIndex, setDraggedImageIndex] = useState<number | null>(null)
   if (!item) {
     return <aside className="sidebar inspector empty-inspector" aria-label="Inspektor"><div className="inspector-placeholder"><span className="placeholder-marker"><span /></span><h2>Kategorie oder Punkt auswählen</h2><p>Klicken Sie auf eine Kategorie oder einen Punkt, um die Einstellungen anzuzeigen.</p></div></aside>
@@ -115,13 +118,13 @@ export function InspectorPanel({ item, categories, assetUrls, onUpdate, onDuplic
         </section>
 
         <section className="inspector-section facts-section">
-          <div className="section-heading-inline"><h3>Informationen</h3><button className="text-button" onClick={addFact}><Plus size={14} />Hinzufügen</button></div>
+          <div className="section-heading-inline"><h3>Informationen</h3>{onManageFactIcons && <button className="text-button" onClick={onManageFactIcons}>Symbole verwalten</button>}<button className="text-button" onClick={addFact}><Plus size={14} />Hinzufügen</button></div>
           <div className="facts-list">
             {item.facts.map((fact) => {
               const factTranslation = fact.translations?.[contentLocale]
               const missingLabel = contentLocale !== defaultLocale && !hasTranslationValue(factTranslation, 'label')
               const missingValue = contentLocale !== defaultLocale && !hasTranslationValue(factTranslation, 'value')
-              return <div className={`fact-row${missingLabel || missingValue ? ' has-missing-translation' : ''}`} key={fact.id}><div><input aria-label="Bezeichnung der Information" value={missingLabel ? '' : contentLocale === defaultLocale ? fact.label : factTranslation?.label ?? ''} onChange={(event) => updateFact(fact.id, { label: event.target.value })} placeholder={missingLabel ? fact.label : 'Zum Beispiel Gewicht'}/><input aria-label="Wert der Information" value={missingValue ? '' : contentLocale === defaultLocale ? fact.value : factTranslation?.value ?? ''} onChange={(event) => updateFact(fact.id, { value: event.target.value })} placeholder={missingValue ? fact.value : 'Wert'}/></div><button className="icon-button subtle" onClick={() => removeFact(fact.id)} aria-label="Information löschen"><X size={14}/></button></div>
+              return <div className={`fact-row${missingLabel || missingValue ? ' has-missing-translation' : ''}`} key={fact.id}><FactIconPicker value={fact.iconAssetId} label={fact.label} assetUrls={assetUrls} onChange={(iconAssetId) => updateFact(fact.id, { iconAssetId })} customIcons={factIcons} /><div className="fact-row__fields"><input aria-label="Bezeichnung der Information" value={missingLabel ? '' : contentLocale === defaultLocale ? fact.label : factTranslation?.label ?? ''} onChange={(event) => updateFact(fact.id, { label: event.target.value })} placeholder={missingLabel ? fact.label : 'Zum Beispiel Gewicht'}/><input aria-label="Wert der Information" value={missingValue ? '' : contentLocale === defaultLocale ? fact.value : factTranslation?.value ?? ''} onChange={(event) => updateFact(fact.id, { value: event.target.value })} placeholder={missingValue ? fact.value : 'Wert'}/></div><button className="icon-button subtle" onClick={() => removeFact(fact.id)} aria-label="Information löschen"><X size={14}/></button></div>
             })}
             {item.facts.length === 0 && <p className="inline-empty">Fügen Sie Kurzinformationen für die Objektkarte hinzu.</p>}
           </div>

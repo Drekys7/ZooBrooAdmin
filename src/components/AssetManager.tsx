@@ -88,7 +88,7 @@ export function AssetManager({ open, assets, selectionMode, selectionKind, accep
         onDrop={handleDrop}
       >
         <header className="asset-header">
-          <div><span className="eyebrow">Projektmediathek</span><h2 id="assets-title">Medienverwaltung</h2></div>
+          <div><span className="eyebrow">Projektmediathek</span><h2 id="assets-title">{selectionKind === 'icon' ? 'Symbol auswählen oder hinzufügen' : 'Medienverwaltung'}</h2></div>
           <button className="icon-button" onClick={onClose} aria-label="Schließen"><X size={18}/></button>
         </header>
         <div className="asset-toolbar">
@@ -106,7 +106,7 @@ export function AssetManager({ open, assets, selectionMode, selectionKind, accep
           </article>)}
           {filteredAssets.length === 0 && <div className="asset-empty"><Image size={28}/><h3>{selectableAssets.length ? 'Keine Ergebnisse' : selectionKind === 'background' ? 'Noch keine Karte in den Ressourcen' : 'Die Mediathek ist noch leer'}</h3><p>{selectableAssets.length ? 'Versuchen Sie es mit einem anderen Suchbegriff.' : selectionKind === 'background' ? 'Laden Sie eine Karte hoch. Sie wird in den Ressourcen gespeichert und direkt ausgewählt.' : 'Laden Sie eine Karte, Fotos oder Symbole hoch.'}</p><button className="button primary" onClick={() => inputRef.current?.click()}><Upload size={15}/>Dateien hinzufügen</button></div>}
         </div>
-        <footer className="asset-footer"><p>{selectionKind === 'background' ? 'Wählen Sie eine gespeicherte Karte aus oder laden Sie eine neue hoch.' : selectionMode ? 'Wählen Sie eine Datei für dieses Feld aus.' : 'Nur Dateien, die im Projekt nicht verwendet werden, können gelöscht werden.'}</p><button className="button ghost" onClick={onClose}>Fertig</button></footer>
+        <footer className="asset-footer"><p>{selectionKind === 'icon' ? 'Symbol hochladen (PNG, WebP oder SVG) und auswählen. Es steht anschließend auch für andere Informationen bereit.' : selectionKind === 'background' ? 'Wählen Sie eine gespeicherte Karte aus oder laden Sie eine neue hoch.' : selectionMode ? 'Wählen Sie eine Datei für dieses Feld aus.' : 'Nur Dateien, die im Projekt nicht verwendet werden, können gelöscht werden.'}</p><button className="button ghost" onClick={onClose}>Fertig</button></footer>
         {draggingFiles && <div className="asset-drop-overlay" aria-live="polite"><div><Upload size={30}/><strong>{selectionKind === 'background' ? 'Karte hier ablegen' : 'Dateien hier ablegen'}</strong><span>{selectionKind === 'background' ? 'Die Karte wird gespeichert und direkt ausgewählt' : 'Die Dateien werden den Ressourcen hinzugefügt'}</span></div></div>}
       </section>
     </div>
