@@ -1,5 +1,7 @@
 import type { MapCategory, MapItem } from './models'
 
+export const DEFAULT_GROUP_BADGE_COLOR = '#2F7D59'
+
 /** Adapts members for shared editors/cards without inheriting the root's custom fields. */
 export function groupEntries(item: MapItem): MapItem[] {
   return [item, ...(item.members ?? []).map((member) => ({

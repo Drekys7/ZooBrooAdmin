@@ -26,7 +26,7 @@ import {
 import { AVAILABLE_LOCALES, localizeCategory, localizeEvent, localizeItem, localeName, translationCompletion } from '../domain/localization';
 import { getCategoryIconUrl } from './CategoryIcon';
 import { PhoneClientPreview } from './PhoneClientPreview';
-import { groupEntries, itemIconColor } from '../domain/groups';
+import { DEFAULT_GROUP_BADGE_COLOR, groupEntries, itemIconColor } from '../domain/groups';
 import { PhoneGroupPreview } from './PhoneGroupPreview';
 import { nextVisibleEventOccurrence, PhoneEventPanel } from './PhoneEventPanel';
 import { PhoneMapSearch } from './PhoneMapSearch';
@@ -567,6 +567,7 @@ function createMarkerIcon(
   if (item.members?.length) {
     const badge = document.createElement('span');
     badge.className = 'map-marker-group__count';
+    badge.style.backgroundColor = item.groupBadgeColor ?? DEFAULT_GROUP_BADGE_COLOR;
     const count = `+${item.members.length}`;
     const size = Math.max(23, count.length * 7 + 8);
     badge.style.setProperty('--group-badge-size', `${size}px`);
@@ -989,6 +990,7 @@ export function MapCanvas({
       const signature = [
         item.title,
         item.members?.length ?? 0,
+        item.groupBadgeColor ?? '',
         item.iconAssetId ?? '',
         item.colorOverride ?? '',
         JSON.stringify(item.markerOverrides ?? null),
@@ -1534,6 +1536,7 @@ export function MapCanvas({
 
         {showGroupPicker ? <PhoneGroupPreview
           entries={clientGroupEntries}
+          category={clientPreviewCategory}
           getImageUrl={(entry) => getItemImageUrls?.(entry)?.[0] ?? getItemImageUrl?.(entry)}
           onChoose={(id) => { setClientMemberId(id); setClientDetailsOpen(false); }}
           onClose={() => { setClientPreviewItemId(null); setClientMemberId(null); }}

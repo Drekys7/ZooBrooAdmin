@@ -1,7 +1,9 @@
-import { fireEvent, render } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
-import type { MapItem } from '../domain'
+import { cleanup, fireEvent, render } from '@testing-library/react'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import type { MapCategory, MapItem } from '../domain'
 import { PhoneGroupPreview } from './PhoneGroupPreview'
+
+afterEach(cleanup)
 
 const entries: MapItem[] = Array.from({ length: 5 }, (_, index) => ({
   id: `item-${index}`, title: `Punkt ${index + 1}`, categoryId: 'animals', type: 'animal',
@@ -10,6 +12,38 @@ const entries: MapItem[] = Array.from({ length: 5 }, (_, index) => ({
 }))
 
 describe('group preview scrolling', () => {
+  it.each(['animal', 'restaurant', 'restroom', 'souvenir', 'entrance', 'custom'] as const)('uses the %s category icon and live category color when a photo is missing', (type) => {
+    const category: MapCategory = { id: 'category', name: 'Kategorie', type, color: '#226688', visible: true, sortOrder: 0 }
+    const props = { entries: entries.slice(0, 2).map((entry) => ({ ...entry, type, iconAssetId: 'own-icon', markerOverrides: { color: '#ffffff' } })),
+      getImageUrl: (entry: MapItem) => entry.id === 'item-0' ? '/photo.jpg' : null, onChoose: vi.fn(), onClose: vi.fn() }
+    const { container, rerender } = render(<PhoneGroupPreview {...props} category={category} />)
+    const cards = container.querySelectorAll('.map-client-group__entry')
+    expect(cards[0].querySelector('img')).toHaveAttribute('src', '/photo.jpg')
+    expect(cards[0].querySelector('.map-client-group__category-icon')).toBeNull()
+    const fallback = cards[1].querySelector('.map-client-group__category-icon')!
+    expect(fallback).toHaveStyle({ color: '#226688' })
+    expect(cards[1].querySelector('img')).toBeNull()
+    if (type === 'custom') expect(fallback.querySelector('svg')).toBeInTheDocument()
+    else {
+      const file = type === 'animal' ? 'paw' : type
+      expect(fallback.querySelector('.zooweb-category-glyph')).toHaveStyle({ maskImage: `url(/zooweb/icons/${file}.png)` })
+    }
+    rerender(<PhoneGroupPreview {...props} category={{ ...category, color: '#993355' }} />)
+    expect(fallback).toHaveStyle({ color: '#993355' })
+  })
+  it('drags photos without opening the released card', () => {
+    const onChoose = vi.fn()
+    const { container, getByRole } = render(<PhoneGroupPreview entries={entries} getImageUrl={() => '/photo.jpg'} onChoose={onChoose} onClose={vi.fn()} />)
+    const list = container.querySelector<HTMLDivElement>('.map-client-group__list')!
+    Object.defineProperties(list, { clientWidth: { value: 300 }, scrollWidth: { value: 600 } })
+    const card = getByRole('button', { name: 'Punkt 1' })
+    fireEvent.mouseDown(card.querySelector('img')!, { button: 0, clientX: 200 })
+    fireEvent.mouseMove(window, { buttons: 1, clientX: 110 })
+    fireEvent.mouseUp(window)
+    fireEvent.click(card, { detail: 1 })
+    expect(list.scrollLeft).toBe(90)
+    expect(onChoose).not.toHaveBeenCalled()
+  })
   it.each([2, 3, 4, 5])('enables the half-card layout only for four or more entries (%s)', (count) => {
     const { container } = render(<PhoneGroupPreview entries={entries.slice(0, count)} getImageUrl={() => null} onChoose={vi.fn()} onClose={vi.fn()} />)
     expect(container.querySelector('.map-client-group__list')?.classList.contains('has-more')).toBe(count >= 4)

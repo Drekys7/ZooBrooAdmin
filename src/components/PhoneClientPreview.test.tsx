@@ -1,7 +1,9 @@
-import { fireEvent, render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { MapCategory, MapItem } from '../domain/models'
 import { PhoneClientPreview } from './PhoneClientPreview'
+
+afterEach(cleanup)
 
 const category: MapCategory = {
   id: 'animals',
@@ -35,6 +37,19 @@ const item: MapItem = {
 }
 
 describe('PhoneClientPreview', () => {
+  it('drags the expanded description vertically without closing it or changing photos', () => {
+    const onClose = vi.fn()
+    const { container } = render(<PhoneClientPreview item={item} category={category} imageUrls={['/first.jpg', '/second.jpg']} iconUrl="/icon.png" expanded onExpand={vi.fn()} onClose={onClose} />)
+    const scroll = container.querySelector<HTMLDivElement>('.map-client-preview__scroll')!
+    Object.defineProperties(scroll, { clientHeight: { value: 500 }, scrollHeight: { value: 1000 } })
+    fireEvent.mouseDown(screen.getByText(item.description), { button: 0, clientX: 100, clientY: 300 })
+    fireEvent.mouseMove(window, { buttons: 1, clientX: 100, clientY: 180 })
+    fireEvent.mouseUp(window)
+    fireEvent.click(screen.getByText(item.description), { detail: 1 })
+    expect(scroll.scrollTop).toBe(120)
+    expect(onClose).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: 'Foto 1 von 2' })).toHaveAttribute('aria-current', 'true')
+  })
   it('opens the detailed ZooBrooWeb-style view from the quick preview', () => {
     const onExpand = vi.fn()
     const onClose = vi.fn()

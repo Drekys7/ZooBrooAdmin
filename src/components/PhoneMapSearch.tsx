@@ -4,6 +4,7 @@ import { categoryColorizeIcon, categoryIconContentScale, type MapCategory, type 
 import { groupEntries, itemIconAssetId, itemIconColor } from '../domain/groups'
 import { getCategoryIconUrl } from './CategoryIcon'
 import { visitorCopy } from './visitor-i18n'
+import { useMouseDragScroll } from '../hooks/useMouseDragScroll'
 
 interface PhoneMapSearchProps {
   items: readonly MapItem[]
@@ -62,6 +63,7 @@ export function PhoneMapSearch({
   onChooseItem,
 }: PhoneMapSearchProps) {
   const copy = visitorCopy(locale)
+  const dragCategories = useMouseDragScroll('x')
   const rootRef = useRef<HTMLDivElement | null>(null)
   const [query, setQuery] = useState('')
   const [resultsOpen, setResultsOpen] = useState(false)
@@ -196,6 +198,7 @@ export function PhoneMapSearch({
 
       <div
         className="map-client-categories"
+        {...dragCategories}
         role="group"
         aria-label={copy.categories}
         onWheel={(event) => {

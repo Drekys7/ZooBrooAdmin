@@ -130,6 +130,7 @@ export const MapGroupMemberSchema = MapItemBaseSchema.pick({
 });
 export const MapItemSchema = MapItemBaseSchema.extend({
   members: z.array(MapGroupMemberSchema).optional(),
+  groupBadgeColor: z.string().regex(/^#[0-9a-f]{6}$/i).nullish(),
 });
 
 export const EventRecurrenceSchema = z

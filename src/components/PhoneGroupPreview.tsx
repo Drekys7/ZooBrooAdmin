@@ -1,16 +1,20 @@
-import { Image as ImageIcon, X } from 'lucide-react'
+import { X } from 'lucide-react'
 import { useEffect, useRef } from 'react'
-import type { MapItem } from '../domain/models'
+import type { MapCategory, MapItem } from '../domain/models'
+import { useMouseDragScroll } from '../hooks/useMouseDragScroll'
+import { CategoryIcon } from './CategoryIcon'
 
 const WHEEL_SCROLL_FACTOR = 0.2
 
-export function PhoneGroupPreview({ entries, getImageUrl, onChoose, onClose }: {
+export function PhoneGroupPreview({ entries, category, getImageUrl, onChoose, onClose }: {
   entries: MapItem[]
+  category?: MapCategory
   getImageUrl: (item: MapItem) => string | null | undefined
   onChoose: (id: string) => void
   onClose: () => void
 }) {
   const listRef = useRef<HTMLDivElement>(null)
+  const dragScroll = useMouseDragScroll('x')
   const groupId = entries[0]?.id
   useEffect(() => {
     const list = listRef.current
@@ -31,12 +35,16 @@ export function PhoneGroupPreview({ entries, getImageUrl, onChoose, onClose }: {
   }, [groupId])
 
   return <aside className="map-client-group" aria-label="Gruppe auswählen">
-    <div ref={listRef} className={`map-client-group__list${entries.length >= 4 ? ' has-more' : ''}`}>
+    <div ref={listRef} {...dragScroll} className={`map-client-group__list${entries.length >= 4 ? ' has-more' : ''}`}>
       {entries.map((entry) => {
         const image = getImageUrl(entry)
         return <button className="map-client-group__entry" key={entry.id} onClick={() => onChoose(entry.id)} aria-label={entry.title} title={entry.title}>
-          {image ? <img src={image} alt="" draggable={false}/> : <ImageIcon size={28} aria-hidden="true"/>}
-          <span>{entry.title}</span>
+          {image ? <img src={image} alt="" draggable={false}/> : (
+            <div className="map-client-group__category-icon" style={{ color: category?.color ?? '#2F7D59' }} aria-hidden="true">
+              <CategoryIcon type={category?.type ?? entry.type} size={40} />
+            </div>
+          )}
+          <span className="map-client-group__title">{entry.title}</span>
         </button>
       })}
     </div>

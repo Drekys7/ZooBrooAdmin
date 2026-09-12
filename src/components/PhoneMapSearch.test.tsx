@@ -16,6 +16,24 @@ const items: MapItem[] = [
 afterEach(cleanup)
 
 describe('PhoneMapSearch', () => {
+  it('drags the category strip without toggling a category and keeps normal clicks', () => {
+    const toggle = vi.fn()
+    const { container } = render(<PhoneMapSearch items={items} categories={categories} locale="de" hiddenCategoryIds={new Set()}
+      getItemIconUrl={() => '/icon.png'} onToggleCategory={toggle} onChooseItem={vi.fn()} />)
+    const strip = container.querySelector<HTMLDivElement>('.map-client-categories')!
+    Object.defineProperties(strip, { clientWidth: { value: 100 }, scrollWidth: { value: 300 } })
+    const category = screen.getByRole('button', { name: 'Tiere' })
+    fireEvent.mouseDown(category, { button: 0, clientX: 200 })
+    fireEvent.mouseMove(window, { buttons: 1, clientX: 130 })
+    fireEvent.mouseUp(window)
+    fireEvent.click(category, { detail: 1 })
+    expect(strip.scrollLeft).toBe(70)
+    expect(toggle).not.toHaveBeenCalled()
+    fireEvent.mouseDown(category, { button: 0, clientX: 130 })
+    fireEvent.mouseUp(window)
+    fireEvent.click(category, { detail: 1 })
+    expect(toggle).toHaveBeenCalledWith('animals')
+  })
   it('finds all group members with their own icons or the category fallback and selects them by ID', () => {
     const choose = vi.fn()
     const grouped: MapItem = { ...items[0], iconAssetId: 'group-icon', members: [

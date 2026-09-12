@@ -39,6 +39,7 @@ export const CreateItemInputSchema = z.object({
   visible: z.boolean().default(true),
   translations: MapItemSchema.shape.translations,
   members: MapItemSchema.shape.members,
+  groupBadgeColor: MapItemSchema.shape.groupBadgeColor,
   now: z.string().datetime().optional(),
 });
 
@@ -61,6 +62,7 @@ export const UpdateItemInputSchema = z.object({
       visible: z.boolean(),
       translations: MapItemSchema.shape.translations,
       members: MapItemSchema.shape.members,
+      groupBadgeColor: MapItemSchema.shape.groupBadgeColor,
     })
     .partial()
     .refine((patch) => Object.keys(patch).length > 0, "Patch cannot be empty"),

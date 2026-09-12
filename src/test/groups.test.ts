@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { createCategory, createItem, updateItem, duplicateItem, exportProjectToJson, importProjectFromJson, setBackground, buildPublishedSnapshot, updateProjectLanguages } from '../application'
 import { createEmptyProject, groupEntries, itemIconAssetId, itemIconColor, localizeItem, MapProjectSchema, type CategoryType } from '../domain'
 import { createLocalApplication } from '../infrastructure'
+import { CommandHistory } from '../application/history'
 
 const now = '2026-09-11T10:00:00.000Z'
 function groupedProject(type: CategoryType = 'animal') {
@@ -17,6 +18,36 @@ function groupedProject(type: CategoryType = 'animal') {
 }
 
 describe('map groups', () => {
+  it('ignores the removed group picker setting when loading an existing project', () => {
+    const original = groupedProject()
+    const saved = { ...original, mapSettings: { ...original.mapSettings, groupSelectionStyle: 'fan' } }
+    const loaded = importProjectFromJson(JSON.stringify(saved))
+    expect(loaded.mapSettings).toEqual(original.mapSettings)
+    expect(loaded.items).toEqual(original.items)
+    expect(loaded.mapSettings).not.toHaveProperty('groupSelectionStyle')
+  })
+  it('persists, duplicates and publishes a separate group badge color and supports undo', async () => {
+    const original = setBackground(groupedProject(), { assetId: 'map', width: 1000, height: 600, now })
+    const history = new CommandHistory()
+    const project = history.execute(original, { type: 'updateItem', affectedEntityType: 'item', affectedEntityId: 'primary' },
+      (current) => updateItem(current, { itemId: 'primary', patch: { groupBadgeColor: '#AA3366' }, now }))
+    expect(project.items[0].groupBadgeColor).toBe('#AA3366')
+    expect(project.categories).toEqual(original.categories)
+    expect(project.items[0].members).toEqual(original.items[0].members)
+    expect(importProjectFromJson(exportProjectToJson(project))).toEqual(project)
+    expect(duplicateItem(project, { itemId: 'primary', id: 'copy', now }).items[1].groupBadgeColor).toBe('#AA3366')
+    expect(buildPublishedSnapshot(project, 1, now, (id) => `/assets/${id}`).items[0].groupBadgeColor).toBe('#AA3366')
+    expect(history.undo(project)?.project.items[0].groupBadgeColor).toBeUndefined()
+    expect(history.redo(original)?.project.items[0].groupBadgeColor).toBe('#AA3366')
+    expect(updateItem(project, { itemId: 'primary', patch: { groupBadgeColor: null }, now }).items[0].groupBadgeColor).toBeNull()
+    expect(() => updateItem(project, { itemId: 'primary', patch: { groupBadgeColor: 'red' }, now })).toThrow()
+    const app = createLocalApplication(`badge-${crypto.randomUUID()}`)
+    try {
+      await app.contentRepository.save(project)
+      expect((await app.contentRepository.get(project.id))?.items[0].groupBadgeColor).toBe('#AA3366')
+    } finally { app.close() }
+  })
+
   it.each(['primary', 'member'])('resets new icon colors to white and restores category inheritance on removal (%s)', (itemId) => {
     let project = updateItem(groupedProject(), { itemId, patch: { markerOverrides: { color: '#FF0000', iconScale: 1.5 }, colorOverride: '#0000FF' }, now })
     project = updateItem(project, { itemId, patch: { iconAssetId: 'new-icon' }, now })

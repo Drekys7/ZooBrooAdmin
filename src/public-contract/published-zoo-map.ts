@@ -141,6 +141,7 @@ const PublishedMapItemBaseSchema = z
   .strict()
 
 export const PublishedMapItemSchema = PublishedMapItemBaseSchema.extend({
+  groupBadgeColor: z.string().regex(/^#[0-9a-f]{6}$/i).nullish(),
   members: z.array(PublishedMapItemBaseSchema.pick({
     id: true, title: true, subtitle: true, description: true,
     image: true, images: true, facts: true, translations: true,

@@ -2,6 +2,7 @@ import { Info, X } from 'lucide-react'
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent, type TouchEvent } from 'react'
 import type { MapCategory, MapFact, MapItem } from '../domain/models'
 import { visitorCopy } from './visitor-i18n'
+import { useMouseDragScroll } from '../hooks/useMouseDragScroll'
 
 interface PhoneClientPreviewProps {
   item: MapItem
@@ -58,6 +59,7 @@ export function PhoneClientPreview({
 }: PhoneClientPreviewProps) {
   const style = { '--client-preview-accent': previewColor(item, category) } as CSSProperties
   const copy = visitorCopy(locale)
+  const dragDescription = useMouseDragScroll('y')
   const images = imageUrls?.length ? imageUrls : imageUrl ? [imageUrl] : []
   const primaryImage = images[0] ?? null
   const [activeImageIndex, setActiveImageIndex] = useState(0)
@@ -152,7 +154,7 @@ export function PhoneClientPreview({
         <button type="button" className="map-client-preview__sheet-close" aria-label={locale === 'de' ? 'Detailansicht schließen' : copy.close} onClick={onClose}>
           <X size={15} strokeWidth={2} aria-hidden="true" />
         </button>
-        <div className="map-client-preview__scroll">
+        <div className="map-client-preview__scroll" {...dragDescription}>
           {images.length ? <div className="map-client-preview__gallery" onTouchStart={handleGalleryTouchStart} onTouchEnd={handleGalleryTouchEnd} onPointerDown={handleGalleryPointerDown} onPointerUp={handleGalleryPointerUp} onPointerCancel={() => { galleryPointerStart.current = null }}>
             <div className="map-client-preview__gallery-track" style={{ transform: `translate3d(-${activeImageIndex * 100}%, 0, 0)` }}>
               {images.map((src, index) => <img className="map-client-preview__hero-image" src={src} alt={index === 0 ? item.title : `${item.title}, Foto ${index + 1}`} draggable={false} key={`${src}-${index}`} />)}

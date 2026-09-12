@@ -115,6 +115,7 @@ export function buildPublishedSnapshot(
         facts: member.facts.map((fact) => ({ id: fact.id, label: fact.label, value: fact.value,
           icon: publishedAsset(fact.iconAssetId, resolveAssetUrl), translations: fact.translations })),
       })),
+      ...(item.groupBadgeColor ? { groupBadgeColor: item.groupBadgeColor } : {}),
       icon: publishedAsset(item.iconAssetId, resolveAssetUrl),
       image: publishedAsset(item.imageAssetIds?.[0] ?? item.imageAssetId, resolveAssetUrl),
       images: (item.imageAssetIds?.length ? item.imageAssetIds : item.imageAssetId ? [item.imageAssetId] : [])
