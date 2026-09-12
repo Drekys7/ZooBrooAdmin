@@ -14,7 +14,7 @@ export function ZoneSidebar({ settings, selectedId, onSelect, onAdd, adding, onC
   const appearance = zoneAppearance(settings)
   const sliders = [
     ['fontSize', 'Schriftgröße', 10, 72, 1, 'px'], ['fontWeight', 'Schriftstärke', 100, 900, 100, ''],
-    ['maxWidth', 'Maximale Schildbreite', 80, 500, 5, 'px'], ['borderWidth', 'Konturstärke', 1, 8, 0.5, 'px'],
+    ['maxWidth', 'Maximale Schildbreite', 80, 500, 5, 'px'], ['borderWidth', 'Konturstärke', 0, 8, 0.5, 'px'],
     ['borderRadius', 'Eckenradius', 0, 32, 1, 'px'], ['paddingX', 'Innenabstand horizontal', 2, 40, 1, 'px'], ['paddingY', 'Innenabstand vertikal', 2, 30, 1, 'px'],
   ] as const
   return <aside className="sidebar zone-sidebar" aria-label="Zonen">
@@ -33,6 +33,7 @@ export function ZoneSidebar({ settings, selectedId, onSelect, onAdd, adding, onC
     <section className="map-global-settings__section" aria-label="Gemeinsames Zonenbild">
       <strong>Darstellung aller Zonen</strong>
       <p>Einheitliche Farben und Größen für alle Zonenschilder.</p>
+      <label className="switch-row"><span>Alles in Großbuchstaben</span><input type="checkbox" checked={appearance.uppercase ?? false} onChange={event => onChange({ ...settings, appearance: { ...appearance, uppercase: event.target.checked } })}/><i/></label>
       {(['textColor', 'backgroundColor', 'borderColor'] as const).map((key, index) => <label className="zone-color" key={key}><span>{['Textfarbe', 'Hintergrundfarbe', 'Konturfarbe'][index]}</span><input type="color" value={appearance[key]} onChange={event => onChange({ ...settings, appearance: { ...appearance, [key]: event.target.value } })}/></label>)}
       {sliders.map(([key, label, min, max, step, unit]) => <label className="field zone-slider" key={key}><span>{label}<strong>{appearance[key]}{unit}</strong></span><input aria-label={label} type="range" min={min} max={max} step={step} value={appearance[key]} onChange={event => onChange({ ...settings, appearance: { ...appearance, [key]: Number(event.target.value) } })}/></label>)}
     </section>

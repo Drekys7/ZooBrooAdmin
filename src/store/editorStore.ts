@@ -27,6 +27,7 @@ import { createEmptyProject, seedProjectTranslations, type Asset, type MapCatego
 import { createLocalApplication } from '../infrastructure'
 import { exportWithFonts, importWithFonts } from '../application/font-transfer'
 import { fontMimeType } from '../domain/typography'
+import { exportStartupTemplate, loadStartupTemplate } from '../application/startup-template'
 
 type SaveStatus = 'saved' | 'dirty' | 'saving'
 type Tool = 'select' | 'add'
@@ -86,6 +87,7 @@ interface EditorState {
   updateProjectLanguages: (defaultLocale: string, enabledLocales: string[]) => void
   importProjectFile: (file: File) => Promise<void>
   exportProject: () => Promise<void>
+  saveStartupTemplate: () => Promise<void>
   publish: () => Promise<number>
 }
 
@@ -278,16 +280,20 @@ export const useEditorStore = create<EditorState>((set, get) => {
       if (initialized) return
       initialized = true
       try {
-        await ensureBuiltinAssets()
         let projects = await container.contentRepository.list()
         if (projects.length === 0) {
-          const project = buildDemoProject()
+          let project = await loadStartupTemplate(container.assetRepository)
+          if (!project) {
+            await ensureBuiltinAssets()
+            project = buildDemoProject()
+          }
           await container.contentRepository.save(project)
           projects = [project]
         }
         let project = seedProjectTranslations(projects.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0])
         await container.contentRepository.save(project)
         if (project.id === 'zooweb-main' && project.backgroundAssetId === 'builtin-zoo-map') {
+          await ensureBuiltinAssets()
           project = buildDemoProject()
           await container.contentRepository.save(project)
           projects = projects.map((entry) => entry.id === project.id ? project : entry)
@@ -474,6 +480,17 @@ export const useEditorStore = create<EditorState>((set, get) => {
       history.clear()
       set({ project, selectedItemId: project.items[0]?.id ?? null, selectedCategoryId: null, inspectedCategoryId: null, activeTool: 'select', saveStatus: 'saved', canUndo: false, canRedo: false, journal: [], error: null })
     },
+    saveStartupTemplate: async () => {
+      const project = get().project
+      if (!project) return
+      const response = await fetch('/__dev/startup-template', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-ZooWeb-Template': '1' },
+        body: await exportStartupTemplate(project, container.assetRepository),
+      })
+      if (!response.ok) throw new Error(await response.text() || 'Startvorlage konnte nicht gespeichert werden.')
+    },
+
     exportProject: async () => {
       const project = get().project
       if (!project) return

@@ -1,7 +1,7 @@
 import { act, cleanup, fireEvent, render, waitFor } from '@testing-library/react'
 import { afterEach, expect, it, vi } from 'vitest'
 import L from 'leaflet'
-import { MapCanvas } from './MapCanvas'
+import { MapCanvas, relativeZoomScale, unconstrainedFitZoom } from './MapCanvas'
 import { DEFAULT_MAP_SETTINGS, type MapItem } from '../domain'
 import { DEFAULT_ZONES, ZoneSchema } from '../domain/zones'
 import { ZoneSidebar, ZoneInspector } from './ZoneEditor'
@@ -42,6 +42,26 @@ it('updates the visitor zoom threshold from the left sidebar', () => {
 })
 
 afterEach(() => { cleanup(); vi.restoreAllMocks() })
+it.each([1, 4])('focuses a tapped visitor zone and reveals icons with threshold %s', async threshold => {
+  vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(1000)
+  vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(600)
+  const fly = vi.spyOn(L.Map.prototype, 'flyTo')
+  const select = vi.fn()
+  const zone = ZoneSchema.parse({ id: 'zone', title: 'Wald', position: { x: .6, y: .4 } })
+  const item: MapItem = { id: 'animal', categoryId: 'animals', type: 'animal', title: 'Löwe', subtitle: '', description: '', facts: [], visible: true, position: zone.position, createdAt: '2026-09-12T00:00:00.000Z', updatedAt: '2026-09-12T00:00:00.000Z' }
+  const ui = render(<MapCanvas backgroundUrl="/map.png" backgroundWidth={1000} backgroundHeight={600} items={[item]} categories={[]} zoneEditMode onSelectZone={select} mapSettings={{ ...DEFAULT_MAP_SETTINGS, maxZoomScale: 4, zones: { ...DEFAULT_ZONES, threshold, labels: [zone] } }}/>)
+  fireEvent.click(ui.getByRole('button', { name: 'Handy-Vorschau anzeigen' }))
+  await waitFor(() => expect(ui.container.querySelector('.map-zone-label')).not.toBeNull())
+  fireEvent.click(ui.container.querySelector('.map-zone-label')!)
+  expect(fly).toHaveBeenCalledTimes(1)
+  expect(select).not.toHaveBeenCalled()
+  const map = fly.mock.instances[0]
+  await waitFor(() => expect(ui.container.querySelector('.map-zone-label')).toBeNull(), { timeout: 2000 })
+  expect(ui.container.querySelectorAll('.map-canvas__marker')).toHaveLength(1)
+  expect(relativeZoomScale(map.getZoom(), unconstrainedFitZoom(map, L.latLngBounds([0, 0], [600, 1000]), [14, 14]))).toBeGreaterThan(threshold)
+  expect(map.getCenter().lng).toBeCloseTo(600, 0)
+  expect(map.getCenter().lat).toBeCloseTo(360, 0)
+})
 it('uses the selected editor layer at every zoom and automatic switching only in phone preview', async () => {
   vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(1000)
   vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(600)

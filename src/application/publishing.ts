@@ -72,7 +72,15 @@ export function buildPublishedSnapshot(
       color: project.backgroundColor,
     },
     mapSettings: {
-      ...project.mapSettings,
+      // Publish visitor settings only; factIcons is the editor's reusable icon library.
+      minZoomScale: project.mapSettings.minZoomScale,
+      maxZoomScale: project.mapSettings.maxZoomScale,
+      navigationPaddingX: project.mapSettings.navigationPaddingX,
+      navigationPaddingY: project.mapSettings.navigationPaddingY,
+      mapOutlineEnabled: project.mapSettings.mapOutlineEnabled,
+      mapOutlineWidth: project.mapSettings.mapOutlineWidth,
+      mapOutlineColor: project.mapSettings.mapOutlineColor,
+      accentColor: project.mapSettings.accentColor,
       zones: project.mapSettings.zones ? {
         ...project.mapSettings.zones,
         appearance: zoneAppearance(project.mapSettings.zones),

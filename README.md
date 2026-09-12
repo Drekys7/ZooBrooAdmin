@@ -73,6 +73,12 @@ Der Entwurf ist das aktuell bearbeitete `MapProject`. Das automatische Speichern
 
 Das öffentliche Modul wird aus `src/public-contract/index.ts` exportiert und hängt nur von Zod ab. Es enthält `PublishedZooMapSchema`, TypeScript-Typen und `validatePublishedZooMap`. Ein gültiges Beispiel steht unter `public/published-map.example.json` bereit. Die gewählte Karten-Hintergrundfarbe wird als `background.color`, Kategorien-Stil, -Größe, innere Bildgröße, Maskenradius, Symbolhintergrund und vollständige Einfärbung als `categories[].markerStyle`, `categories[].iconScale`, `categories[].iconContentScale`, `categories[].imageMaskRadius`, `categories[].iconBackgroundColor` und `categories[].colorizeIcon`, die Kontur als `categories[].outlineEnabled`, `categories[].outlineWidth` und `categories[].outlineColor` und die Schatteneinstellungen als `categories[].shadowEnabled`, `categories[].shadowBlur`, `categories[].shadowOpacity` und `categories[].shadowColor` übertragen. Seltene Abweichungen eines einzelnen Punkts stehen ausschließlich mit aktivierten Schlüsseln in `items[].markerOverrides`; `items[].colorOverride` bleibt vorläufig als rückwärtskompatibles Altfeld erhalten. Das Modul importiert weder React noch Dexie oder Firebase und kann in ein gemeinsames npm-Paket ausgelagert werden.
 
+### Startvorlage für neue Browser
+
+Im lokalen Entwicklungsserver speichert „Als Startvorlage“ die aktuell geöffnete Karte samt vollständiger Ressourcenbibliothek (Bilder, Symbole und Schriften) nach `public/startup-template.json`. Die Schaltfläche muss in dem Browser betätigt werden, der die gewünschte Karte enthält. Die vorherige Vorlage wird unter `node_modules/.startup-template-backup.json` gesichert. Nach dem Speichern ist für eine Bereitstellung ein neuer Build erforderlich; die Schaltfläche ist im Produktionsbuild ausgeblendet.
+
+Nur eine leere Projektdatenbank lädt diese Vorlage. Bereits gespeicherte Projekte bleiben erhalten. Solange die Vorlagendatei `null` enthält, startet ein neuer Browser mit der bisherigen Demo. Die Vorlage ist eine Momentaufnahme und synchronisiert keine späteren Änderungen zwischen Browsern.
+
 ### Lokaler Speicher
 
 Dexie verwaltet drei unabhängige IndexedDB-Tabellen:

@@ -1155,23 +1155,46 @@ export function MapCanvas({
       label.textContent = zoneTitle(zone, renderLocale, defaultLocale);
       Object.assign(label.style, {
         fontFamily: zoneFontFamily, fontSize: `${appearance.fontSize}px`, fontWeight: String(appearance.fontWeight),
+        textTransform: appearance.uppercase ? 'uppercase' : 'none',
         color: appearance.textColor, backgroundColor: appearance.backgroundColor,
-        border: `${appearance.borderWidth}px solid ${appearance.borderColor}`, borderRadius: `${appearance.borderRadius}px`,
+        border: appearance.borderWidth === 0 ? 'none' : `${appearance.borderWidth}px solid ${appearance.borderColor}`, borderRadius: `${appearance.borderRadius}px`,
         padding: `${appearance.paddingY}px ${appearance.paddingX}px`, maxWidth: `${appearance.maxWidth}px`,
         opacity: editingZones && !zone.visible ? '.5' : '1',
+        cursor: phonePreview ? 'pointer' : '',
       });
       const marker = L.marker(positionToLatLng(zone.position, safeDimension(backgroundWidth), safeDimension(backgroundHeight)), {
         icon: L.divIcon({ html: label, className: 'map-zone-anchor', iconSize: [0, 0], iconAnchor: [0, 0] }),
         draggable: editingZones && !disabled && selectedZoneId === zone.id,
-        interactive: editingZones && !disabled, keyboard: editingZones && !disabled,
+        interactive: phonePreview || (editingZones && !disabled), keyboard: phonePreview || (editingZones && !disabled),
+        bubblingMouseEvents: false,
         title: label.textContent, zIndexOffset: 500,
       }).addTo(map);
-      marker.on('click', () => onSelectZone?.(zone.id));
+      marker.on('click', () => {
+        if (!phonePreview) {
+          if (!disabled) onSelectZone?.(zone.id);
+          return;
+        }
+        const bounds = boundsRef.current;
+        if (!bounds) return;
+        const fitZoom = unconstrainedFitZoom(map, bounds, [14, 14]);
+        const thresholdZoom = fitZoom + Math.log2(mapSettings.zones?.threshold ?? 1);
+        const snap = L.Browser.any3d ? map.options.zoomSnap || 0.25 : 1;
+        const iconsZoom = (Math.floor(thresholdZoom / snap) + 1) * snap;
+        // Even an unreachable configured threshold must reveal the icons on a zone click.
+        if (map.getMaxZoom() < iconsZoom) map.setMaxZoom(iconsZoom);
+        const destinationZoom = Math.min(map.getMaxZoom(), Math.max(map.getZoom(), fitZoom + 1.35, iconsZoom));
+        const limits = navigationLimitPoints(safeDimension(backgroundWidth), safeDimension(backgroundHeight), mapSettings);
+        const destination = clampFocusCenter(map, marker.getLatLng(), destinationZoom, L.latLngBounds(limits.southWest, limits.northEast));
+        setClientPreviewItemId(null);
+        setClientDetailsOpen(false);
+        setClientEventsOpen(false);
+        map.flyTo(destination, destinationZoom, { animate: true, duration: 0.275, easeLinearity: 0.25 });
+      });
       marker.on('dragend', () => onMoveZone?.(zone.id, latLngToPosition(marker.getLatLng(), safeDimension(backgroundWidth), safeDimension(backgroundHeight))));
       markers.push(marker);
     }
     return () => { markers.forEach(marker => marker.removeFrom(map)); };
-  }, [zonesVisible, editingZones, mapSettings.zones, selectedZoneId, zoneFontFamily, backgroundUrl, backgroundWidth, backgroundHeight, renderLocale, defaultLocale, disabled, onSelectZone, onMoveZone]);
+  }, [zonesVisible, editingZones, phonePreview, mapSettings, selectedZoneId, zoneFontFamily, backgroundUrl, backgroundWidth, backgroundHeight, renderLocale, defaultLocale, disabled, onSelectZone, onMoveZone]);
 
   useEffect(() => {
     const map = mapRef.current;

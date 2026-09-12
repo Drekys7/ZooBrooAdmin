@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { publishProject, setBackground } from "../application";
-import { createEmptyProject } from "../domain";
+import { createEmptyProject, MapItemSchema } from "../domain";
 import { createLocalApplication } from "../infrastructure";
 
 const containers: ReturnType<typeof createLocalApplication>[] = [];
@@ -15,6 +15,24 @@ afterEach(() => {
 });
 
 describe("local repositories", () => {
+  it("publishes with an editor fact-icon library and preserves used fact icons", async () => {
+    const container = makeContainer();
+    const project = setBackground(createEmptyProject(), { assetId: "map", width: 1000, height: 600 });
+    project.mapSettings.factIcons = [{ id: "fact-icon", label: "Schutzstatus" }];
+    project.categories = [{ id: "animals", name: "Tiere", type: "animal", color: "#315F4B", defaultIconAssetId: null, visible: true, sortOrder: 0 }];
+    project.items = [MapItemSchema.parse({
+      id: "animal", categoryId: "animals", type: "animal", title: "Löwe",
+      subtitle: "", description: "", visible: true,
+      position: { x: 0.5, y: 0.5 }, createdAt: project.createdAt, updatedAt: project.updatedAt,
+      facts: [{ id: "status", label: "Status", value: "Gefährdet", iconAssetId: "fact-icon" }],
+    })];
+    const snapshot = await publishProject(project, {}, container.publishRepository);
+    const saved = await container.publishRepository.getLatest(project.id);
+    expect(saved).toEqual(snapshot);
+    expect(saved?.mapSettings).not.toHaveProperty("factIcons");
+    expect(saved?.items[0].facts[0].icon).toEqual({ assetId: "fact-icon", url: "asset://fact-icon" });
+    expect(project.mapSettings.factIcons).toEqual([{ id: "fact-icon", label: "Schutzstatus" }]);
+  });
   it("persists projects and blobs through repository interfaces", async () => {
     const container = makeContainer();
     const project = setBackground(

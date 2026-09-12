@@ -25,7 +25,8 @@ describe('zone layer', () => {
     expect(showZones({ ...settings, labels: [{ ...zone, visible: false }] }, .5)).toBe(false)
   })
   it('validates rectangles, coordinates and unique IDs', () => {
-    expect(ZoneSchema.safeParse({ ...zone, borderWidth: 0 }).success).toBe(false)
+    expect(ZoneSchema.safeParse({ ...zone, borderWidth: 0 }).success).toBe(true)
+    expect(ZoneSchema.safeParse({ ...zone, borderWidth: -1 }).success).toBe(false)
     expect(ZoneSchema.safeParse({ ...zone, position: { x: 2, y: .5 } }).success).toBe(false)
     expect(ZoneSettingsSchema.safeParse({ labels: [zone, zone] }).success).toBe(false)
   })
