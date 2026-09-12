@@ -18,6 +18,19 @@
 }
 
 .map-canvas .leaflet-container { font-family: inherit; }
+
+/* Editor controls always use the admin palette, independent of the visitor theme. */
+.map-canvas__preview-toggle,
+.map-canvas__controls,
+.map-global-settings,
+.map-canvas__empty,
+.font-settings__reset {
+  --map-accent: #2f7d59;
+  --map-accent-rgb: 47, 125, 89;
+  --map-accent-ink: #1d6043;
+  --map-accent-on: #fff;
+}
+
 .font-settings__sample { margin: 12px 0; padding: 12px; border-radius: 8px; background: #f1f5f1; font-size: 15px; line-height: 1.5; overflow-wrap: anywhere; }
 .font-settings__reset {
   display: flex;
@@ -100,7 +113,7 @@
 .map-canvas.is-phone-preview {
   background-image:
     radial-gradient(circle at 50% 45%, rgba(255, 255, 255, .75), transparent 46%),
-    linear-gradient(135deg, rgba(var(--map-accent-rgb), .055), transparent 55%);
+    linear-gradient(135deg, rgba(47, 125, 89, .055), transparent 55%);
 }
 
 .map-canvas.is-phone-preview .map-canvas__viewport-shell {
