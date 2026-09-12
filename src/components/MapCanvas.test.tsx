@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within, waitFor } from '@testing-library/react';
 import L from 'leaflet';
 import { describe, expect, it, vi } from 'vitest';
 import { DEFAULT_MAP_SETTINGS, type MapCategory, type MapEvent, type MapItem } from '../domain/models';
@@ -186,6 +186,24 @@ describe('MapCanvas rendering', () => {
     expect(filter?.querySelector('feMorphology')?.getAttribute('in')).toBe('SourceAlpha')
     expect(filter?.querySelector('feComposite[operator="out"]')).toBeInTheDocument()
     unmount()
+  })
+
+  it('keeps the map image unfiltered when its separate outline is toggled', async () => {
+    const width = vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(1000)
+    const height = vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(600)
+    const props = { backgroundUrl: '/map.png', backgroundWidth: 1672, backgroundHeight: 941, items: [], categories: [] }
+    const ui = render(<MapCanvas {...props} mapSettings={{ ...DEFAULT_MAP_SETTINGS, mapOutlineEnabled: true }}/>)
+    await waitFor(() => expect(ui.container.querySelector('img.map-canvas__background:not(.has-alpha-effects)')).not.toBeNull())
+    const image = ui.container.querySelector('img.map-canvas__background:not(.has-alpha-effects)')
+    expect(image).toHaveAttribute('src', '/map.png')
+    expect(ui.container.querySelectorAll('img.map-canvas__background-outline.has-alpha-effects')).toHaveLength(1)
+    expect(ui.container.querySelector('#map-canvas-background-alpha-effects feMergeNode[in="SourceGraphic"]')).toBeNull()
+    ui.rerender(<MapCanvas {...props} mapSettings={{ ...DEFAULT_MAP_SETTINGS, mapOutlineEnabled: false }}/>)
+    expect(ui.container.querySelector('.map-canvas__background-outline')).toBeNull()
+    expect(ui.container.querySelector('img.map-canvas__background')).toBe(image)
+    ui.unmount()
+    width.mockRestore()
+    height.mockRestore()
   })
 
   it('renders its empty state and map controls without a background', () => {

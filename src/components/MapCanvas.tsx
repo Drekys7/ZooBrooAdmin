@@ -932,7 +932,9 @@ export function MapCanvas({
     if (backgroundUrl) {
       overlayRef.current = L.imageOverlay(backgroundUrl, bounds, {
         interactive: false,
-        className: mapBackgroundClassName(current.mapSettings),
+        // Keep the actual map unfiltered: WebKit can drop large filtered images at some zooms.
+        className: 'map-canvas__background',
+        zIndex: 1,
       }).addTo(map);
     }
 
@@ -955,12 +957,16 @@ export function MapCanvas({
   }, [backgroundHeight, backgroundUrl, backgroundWidth]);
 
   useEffect(() => {
-    const backgroundElement = overlayRef.current?.getElement()
-    if (!backgroundElement) return
-    backgroundElement.classList.toggle(
-      'has-alpha-effects',
-      mapBackgroundEffectsEnabled(mapSettings),
-    )
+    const map = mapRef.current
+    const bounds = boundsRef.current
+    if (!map || !bounds || !backgroundUrl || !mapBackgroundEffectsEnabled(mapSettings)) return
+    // The filter produces only the outline, below the independent original image.
+    const outline = L.imageOverlay(backgroundUrl, bounds, {
+      interactive: false,
+      className: `${mapBackgroundClassName(mapSettings)} map-canvas__background-outline`,
+      zIndex: 0,
+    }).addTo(map)
+    return () => { outline.remove() }
   }, [
     backgroundHeight,
     backgroundUrl,
@@ -1472,10 +1478,6 @@ export function MapCanvas({
               operator="in"
               result="mapOutline"
             />
-            <feMerge>
-              {mapSettings.mapOutlineEnabled ? <feMergeNode in="mapOutline" /> : null}
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
           </filter>
           <filter
             id="map-canvas-marker-selection-outline"
