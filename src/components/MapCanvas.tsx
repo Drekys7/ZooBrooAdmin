@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
-import { CalendarClock, LocateFixed, Minus, Monitor, Palette, Plus, Settings2, Smartphone, X } from 'lucide-react';
+import { CalendarClock, LocateFixed, Minus, SquarePen, Palette, Plus, Settings2, Smartphone, X } from 'lucide-react';
 import {
   DEFAULT_MAP_SETTINGS,
   categoryIconScale,
@@ -33,6 +33,9 @@ import { PhoneMapSearch } from './PhoneMapSearch';
 import { visitorCopy } from './visitor-i18n';
 import 'leaflet/dist/leaflet.css';
 import './map-canvas.css';
+import { FontSettings } from './FontSettings';
+import { useMapFont } from './useMapFont';
+import { showZones, zoneAppearance, zoneTitle } from '../domain/zones';
 
 export interface NormalizedPosition {
   x: number;
@@ -55,10 +58,18 @@ export interface MapCanvasProps {
   backgroundHeight: number;
   backgroundColor?: string;
   mapSettings?: MapSettings;
+  zoneEditMode?: boolean;
+  selectedZoneId?: string | null;
+  onSelectZone?: (id: string) => void;
+  onMoveZone?: (id: string, position: NormalizedPosition) => void;
+  fontAssetUrls?: Record<string, string>;
+  fontAssetNames?: Record<string, string>;
+  onFontUpload?: (file: File) => Promise<string>;
   items: readonly MapItem[];
   categories: readonly MapCategory[];
   events?: readonly MapEvent[];
   defaultLocale?: string;
+  contentLocale?: string;
   enabledLocales?: readonly string[];
   selectedItemId?: string | null;
   addMode?: boolean;
@@ -647,10 +658,18 @@ export function MapCanvas({
   backgroundHeight,
   backgroundColor = '#DDDDDD',
   mapSettings = DEFAULT_VIEW_SETTINGS,
+  zoneEditMode = false,
+  selectedZoneId,
+  onSelectZone,
+  onMoveZone,
+  fontAssetUrls,
+  fontAssetNames,
+  onFontUpload,
   items: sourceItems,
   categories: sourceCategories,
   events: sourceEvents = [],
   defaultLocale = 'de',
+  contentLocale,
   enabledLocales = ['de'],
   selectedItemId = null,
   addMode = false,
@@ -674,6 +693,9 @@ export function MapCanvas({
   onSettingsEditStart,
   onSettingsEditEnd,
 }: MapCanvasProps) {
+  const fontFamily = useMapFont(mapSettings.typography, fontAssetUrls);
+  const zoneFontFamily = useMapFont(mapSettings.zones?.typography, fontAssetUrls);
+  const [zoneZoomScale, setZoneZoomScale] = useState(1);
   const [phonePreview, setPhonePreview] = useState(false);
   const [clientPreviewItemId, setClientPreviewItemId] = useState<string | null>(null);
   const [clientMemberId, setClientMemberId] = useState<string | null>(null);
@@ -697,7 +719,9 @@ export function MapCanvas({
   const settingsPreviewRef = useRef<MapSettingsPreview | null>(null);
   const mapEffectZoomRef = useRef<number | null>(null);
   const visitorLocaleInitializedRef = useRef(false);
-  const renderLocale = phonePreview ? visitorLocale : defaultLocale;
+  const renderLocale = phonePreview ? visitorLocale : contentLocale ?? defaultLocale;
+  const editingZones = zoneEditMode && !phonePreview;
+  const zonesVisible = phonePreview ? showZones(mapSettings.zones, zoneZoomScale) : zoneEditMode;
   const categories = useMemo(() => sourceCategories.map((category) => localizeCategory(category, renderLocale, defaultLocale)), [defaultLocale, renderLocale, sourceCategories]);
   const items = useMemo(() => sourceItems.map((item) => localizeItem(item, renderLocale, defaultLocale)), [defaultLocale, renderLocale, sourceItems]);
   const events = useMemo(() => sourceEvents.map((event) => localizeEvent(event, renderLocale, defaultLocale)), [defaultLocale, renderLocale, sourceEvents]);
@@ -980,6 +1004,7 @@ export function MapCanvas({
     const renderedItemIds = new Set<string>();
 
     for (const item of items) {
+      if (zonesVisible) continue;
       const category = categoriesById.get(item.categoryId);
       if (!item.visible || (category && !category.visible) || (phonePreview && hiddenVisitorCategoryIds.has(item.categoryId))) continue;
       renderedItemIds.add(item.id);
@@ -1088,6 +1113,7 @@ export function MapCanvas({
       markerSignaturesRef.current.delete(itemId);
     }
   }, [
+    zonesVisible,
     backgroundHeight,
     backgroundWidth,
     categoriesById,
@@ -1098,6 +1124,55 @@ export function MapCanvas({
     phonePreview,
     selectedItemId,
   ]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const sync = () => {
+      const bounds = boundsRef.current;
+      if (!bounds || !Number.isFinite(map.getZoom())) return;
+      setZoneZoomScale(relativeZoomScale(map.getZoom(), unconstrainedFitZoom(map, bounds, phonePreview ? [14, 14] : [30, 30])));
+    };
+    sync();
+    map.on('zoom resize moveend', sync);
+    return () => { map.off('zoom resize moveend', sync); };
+  }, [backgroundUrl, backgroundWidth, backgroundHeight, phonePreview, mapSettings]);
+
+  useEffect(() => {
+    if (!zonesVisible) return;
+    setClientPreviewItemId(null);
+    setClientDetailsOpen(false);
+  }, [zonesVisible]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !backgroundUrl || !zonesVisible) return;
+    const markers: L.Marker[] = [];
+    const appearance = zoneAppearance(mapSettings.zones);
+    for (const zone of mapSettings.zones?.labels ?? []) {
+      if (!editingZones && (!zone.visible || !zone.title.trim())) continue;
+      const label = document.createElement('span');
+      label.className = `map-zone-label${editingZones && selectedZoneId === zone.id ? ' is-selected' : ''}`;
+      label.textContent = zoneTitle(zone, renderLocale, defaultLocale);
+      Object.assign(label.style, {
+        fontFamily: zoneFontFamily, fontSize: `${appearance.fontSize}px`, fontWeight: String(appearance.fontWeight),
+        color: appearance.textColor, backgroundColor: appearance.backgroundColor,
+        border: `${appearance.borderWidth}px solid ${appearance.borderColor}`, borderRadius: `${appearance.borderRadius}px`,
+        padding: `${appearance.paddingY}px ${appearance.paddingX}px`, maxWidth: `${appearance.maxWidth}px`,
+        opacity: editingZones && !zone.visible ? '.5' : '1',
+      });
+      const marker = L.marker(positionToLatLng(zone.position, safeDimension(backgroundWidth), safeDimension(backgroundHeight)), {
+        icon: L.divIcon({ html: label, className: 'map-zone-anchor', iconSize: [0, 0], iconAnchor: [0, 0] }),
+        draggable: editingZones && !disabled && selectedZoneId === zone.id,
+        interactive: editingZones && !disabled, keyboard: editingZones && !disabled,
+        title: label.textContent, zIndexOffset: 500,
+      }).addTo(map);
+      marker.on('click', () => onSelectZone?.(zone.id));
+      marker.on('dragend', () => onMoveZone?.(zone.id, latLngToPosition(marker.getLatLng(), safeDimension(backgroundWidth), safeDimension(backgroundHeight))));
+      markers.push(marker);
+    }
+    return () => { markers.forEach(marker => marker.removeFrom(map)); };
+  }, [zonesVisible, editingZones, mapSettings.zones, selectedZoneId, zoneFontFamily, backgroundUrl, backgroundWidth, backgroundHeight, renderLocale, defaultLocale, disabled, onSelectZone, onMoveZone]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -1310,7 +1385,7 @@ export function MapCanvas({
       safeDimension(backgroundHeight),
     );
     const fitZoom = boundsRef.current ? map.getBoundsZoom(boundsRef.current) : map.getZoom();
-    const destinationZoom = Math.min(map.getMaxZoom(), Math.max(map.getZoom(), fitZoom + 1.35));
+    const destinationZoom = Math.min(map.getMaxZoom(), Math.max(map.getZoom(), fitZoom + 1.35, mapSettings.zones?.enabled ? fitZoom + Math.log2(mapSettings.zones.threshold) + .25 : -Infinity));
     const limits = navigationLimitPoints(
       safeDimension(backgroundWidth),
       safeDimension(backgroundHeight),
@@ -1338,7 +1413,7 @@ export function MapCanvas({
     <section
       className={rootClassName}
       aria-label={ariaLabel}
-      style={{ backgroundColor: phonePreview ? '#D9DFDC' : backgroundColor }}
+      style={{ backgroundColor: phonePreview ? '#D9DFDC' : backgroundColor, fontFamily }}
     >
       <svg
         className="map-canvas__filter-definitions"
@@ -1576,7 +1651,7 @@ export function MapCanvas({
         type="button"
         className="map-canvas__preview-toggle"
         aria-label={phonePreview ? 'Desktopansicht anzeigen' : 'Handy-Vorschau anzeigen'}
-        title={phonePreview ? 'Desktopansicht anzeigen' : 'Handy-Vorschau anzeigen'}
+        title={phonePreview ? 'Zurück zum Karteneditor' : 'Handy-Vorschau anzeigen'}
         aria-pressed={phonePreview}
         onClick={() => {
           settingsPreviewRef.current = null;
@@ -1586,7 +1661,7 @@ export function MapCanvas({
         }}
       >
         {phonePreview ? (
-          <Monitor size={19} strokeWidth={1.8} aria-hidden="true" />
+          <SquarePen size={19} strokeWidth={1.8} aria-hidden="true" />
         ) : (
           <Smartphone size={19} strokeWidth={1.8} aria-hidden="true" />
         )}
@@ -1647,6 +1722,7 @@ export function MapCanvas({
               </div>
             </div>
 
+            <FontSettings value={mapSettings.typography} fontFamily={fontFamily} names={fontAssetNames} onUpload={onFontUpload} onChange={typography => onMapSettingsChange?.({ typography })} />
             <div className="map-global-settings__section">
               <strong>Darstellung</strong>
               <label className="map-global-settings__color">
@@ -1785,7 +1861,7 @@ export function MapCanvas({
 
       {addMode && backgroundUrl ? (
         <div className="map-canvas__mode-hint" aria-live="polite">
-          Klicken Sie auf die Karte, um einen Punkt hinzuzufügen
+          {editingZones ? 'Klicken Sie auf die Karte, um eine Zone hinzuzufügen' : 'Klicken Sie auf die Karte, um einen Punkt hinzuzufügen'}
         </div>
       ) : null}
 

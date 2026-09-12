@@ -9,8 +9,6 @@ import {
   deleteEvents,
   deleteItem,
   duplicateItem,
-  exportProjectToJson,
-  importProjectFromJson,
   moveItem,
   publishProject,
   setBackground,
@@ -26,6 +24,8 @@ import {
 } from '../application'
 import { createEmptyProject, seedProjectTranslations, type Asset, type MapCategory, type MapEvent, type MapItem, type MapProject, type MapSettings, type NormalizedPosition } from '../domain'
 import { createLocalApplication } from '../infrastructure'
+import { exportWithFonts, importWithFonts } from '../application/font-transfer'
+import { fontMimeType } from '../domain/typography'
 
 type SaveStatus = 'saved' | 'dirty' | 'saving'
 type Tool = 'select' | 'add'
@@ -83,7 +83,7 @@ interface EditorState {
   updateMapSettings: (patch: Partial<MapSettings>) => void
   updateProjectLanguages: (defaultLocale: string, enabledLocales: string[]) => void
   importProjectFile: (file: File) => Promise<void>
-  exportProject: () => void
+  exportProject: () => Promise<void>
   publish: () => Promise<number>
 }
 
@@ -412,8 +412,8 @@ export const useEditorStore = create<EditorState>((set, get) => {
       syncHistory()
     },
     uploadAsset: async (file, kind) => {
-      const dimensions = await imageDimensions(file)
-      const asset = await container.assetRepository.put({ blob: file, name: file.name, mimeType: file.type, kind, ...dimensions })
+      const dimensions = kind === 'font' ? { width: null, height: null } : await imageDimensions(file)
+      const asset = await container.assetRepository.put({ blob: file, name: file.name, mimeType: kind === 'font' ? fontMimeType(file.name) : file.type, kind, ...dimensions })
       const stored = await container.assetRepository.get(asset.id)
       set((state) => ({ assets: [asset, ...state.assets], assetUrls: { ...state.assetUrls, [asset.id]: stored ? URL.createObjectURL(stored.blob) : '' } }))
       return asset
@@ -422,7 +422,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
       const project = get().project
       if (!project) return
       const used = project.backgroundAssetId === id || project.categories.some((category) => category.defaultIconAssetId === id) || project.items.some((item) => [item, ...(item.members ?? [])].some((entry) => entry.iconAssetId === id || entry.imageAssetId === id || entry.imageAssetIds?.includes(id) || entry.facts.some((fact) => fact.iconAssetId === id)))
-      if (used) throw new Error('Diese Ressource wird vom Projekt verwendet')
+      if (used || [project.mapSettings.typography, project.mapSettings.zones?.typography].some(font => font?.regularAssetId === id || font?.boldAssetId === id)) throw new Error('Diese Ressource wird vom Projekt verwendet')
       await container.assetRepository.delete(id)
       const url = get().assetUrls[id]
       if (url) URL.revokeObjectURL(url)
@@ -463,21 +463,31 @@ export const useEditorStore = create<EditorState>((set, get) => {
       (project) => updateProjectLanguages(project, { defaultLocale, enabledLocales }),
     ),
     importProjectFile: async (file) => {
-      const project = importProjectFromJson(await file.text())
+      const project = await importWithFonts(await file.text(), container.assetRepository)
+      const assets = await container.assetRepository.list()
+      const assetUrls = await loadAssetUrls(assets)
+      set({ assets, assetUrls })
       await container.contentRepository.save(project)
       history.clear()
       set({ project, selectedItemId: project.items[0]?.id ?? null, selectedCategoryId: null, inspectedCategoryId: null, activeTool: 'select', saveStatus: 'saved', canUndo: false, canRedo: false, journal: [], error: null })
     },
-    exportProject: () => {
+    exportProject: async () => {
       const project = get().project
       if (!project) return
       const safeTitle = project.title.replace(/[^a-zäöüß0-9]+/gi, '-').replace(/^-|-$/g, '').toLocaleLowerCase('de-DE')
-      download(`${safeTitle || 'zoo-map'}.json`, exportProjectToJson(project))
+      download(`${safeTitle || 'zoo-map'}.json`, await exportWithFonts(project, container.assetRepository))
     },
     publish: async () => {
       const project = get().project
       if (!project) throw new Error('Projekt ist nicht geladen')
       if (!project.backgroundAssetId) throw new Error('Laden Sie zuerst eine Hintergrundkarte hoch')
+      const font = project.mapSettings.typography
+      const zoneFont = project.mapSettings.zones?.typography
+      if (zoneFont?.preset === 'custom' && !zoneFont.regularAssetId) throw new Error('Bitte eine Zonenschrift hochladen oder eine integrierte Schrift wählen.')
+      if (font?.preset === 'custom' && !font.regularAssetId) throw new Error('Bitte eine Schrift hochladen oder eine integrierte Schrift wählen.')
+      for (const id of [font?.regularAssetId, font?.boldAssetId, zoneFont?.regularAssetId, zoneFont?.boldAssetId]) {
+        if (id && (await container.assetRepository.get(id))?.asset.kind !== 'font') throw new Error('Eine verwendete Schriftdatei fehlt.')
+      }
       const resolveUrl = (assetId: string) => `assets/${assetId}`
       const snapshot = await publishProject(project, {}, container.publishRepository, resolveUrl)
       set({ lastPublishedAt: snapshot.publishedAt, publishedVersion: snapshot.version })

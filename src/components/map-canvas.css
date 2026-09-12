@@ -1,4 +1,5 @@
 .map-canvas {
+  font-synthesis: weight;
   position: relative;
   width: 100%;
   height: 100%;
@@ -8,6 +9,35 @@
   isolation: isolate;
   background: #dfe8ca;
 }
+
+.map-canvas .leaflet-container { font-family: inherit; }
+.font-settings__sample { margin: 12px 0; padding: 12px; border-radius: 8px; background: #f1f5f1; font-size: 15px; line-height: 1.5; overflow-wrap: anywhere; }
+.font-settings__reset {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  min-height: 40px;
+  padding: 10px 12px;
+  border: 1px solid rgba(47, 125, 89, .16);
+  border-radius: 11px;
+  background: #f1f7f2;
+  color: #38664d;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+.font-settings__reset > svg { flex: none; }
+.font-settings__reset:hover:not(:disabled) { background: #e5f0e7; border-color: rgba(47, 125, 89, .32); color: #24583b; }
+.font-settings__reset:active:not(:disabled) { background: #dbeadd; }
+.font-settings__reset:focus-visible { outline: 2px solid #a9d5b9; outline-offset: 2px; }
+.font-settings__reset:disabled { opacity: .5; cursor: not-allowed; }
+.map-global-settings input[type="file"] { max-width: 100%; font-size: 11px; }
 
 .map-canvas__viewport-shell {
   position: absolute;
@@ -48,8 +78,7 @@
   backdrop-filter: blur(20px) saturate(1.15);
 }
 
-.map-canvas__preview-toggle:hover,
-.map-canvas__preview-toggle[aria-pressed='true'] {
+.map-canvas__preview-toggle:hover {
   color: #fffefa;
   background: #2f7d59;
 }
@@ -676,7 +705,7 @@
 
 .map-marker-group { position: relative; display: block; width: 100%; height: 100%; overflow: visible; }
 .map-marker-group__count, .map-marker-group__add { position: absolute; z-index: 5; top: -7px; right: -8px; display: grid; place-items: center; box-sizing: border-box; width: var(--group-badge-size, 23px); height: var(--group-badge-size, 23px); padding: 0; border: 2px solid #fffefa; border-radius: 50%; color: #fff; background: #2f7d59; box-shadow: 0 2px 5px #162e3033; }
-.map-marker-group__count > svg { display: block; width: 100%; height: 100%; overflow: visible; fill: currentColor; font: 600 12px Arial, sans-serif; }
+.map-marker-group__count > svg { display: block; width: 100%; height: 100%; overflow: visible; fill: currentColor; font-family: inherit; font-weight: 600; font-size: 12px; }
 .map-marker-group__add { cursor: pointer; pointer-events: auto; }
 .map-marker-group__add > svg { display: block; width: 100%; height: 100%; shape-rendering: geometricPrecision; pointer-events: none; }
 .map-marker-group__add:hover { background: #20563e; }
@@ -1165,6 +1194,7 @@
 }
 
 .map-global-settings__panel {
+  font-family: 'Manrope Variable', Manrope, system-ui, sans-serif;
   grid-row: 1;
   width: min(360px, calc(100vw - 60px));
   max-height: 100%;
@@ -1211,7 +1241,7 @@
 }
 .map-global-settings__panel > header button:hover { color: #18201c; background: rgba(47, 125, 89, .08); }
 
-.map-global-settings__section { display: grid; gap: 14px; padding: 17px 18px; border-bottom: 1px solid rgba(24, 32, 28, .08); }
+.map-global-settings__section { display: grid; min-width: 0; gap: 14px; padding: 17px 18px; border-bottom: 1px solid rgba(24, 32, 28, .08); }
 .map-global-settings__section:last-child { border-bottom: 0; }
 .map-global-settings__section > strong { color: #607068; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
 .map-global-settings__section > p { margin: -8px 0 0; color: #87928c; font-size: 11px; line-height: 1.4; }

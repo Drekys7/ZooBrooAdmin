@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { zoneAppearance } from '../domain/zones';
 import {
   categoryIconScale,
   categoryIconContentScale,
@@ -70,7 +71,25 @@ export function buildPublishedSnapshot(
       height: project.backgroundHeight,
       color: project.backgroundColor,
     },
-    mapSettings: project.mapSettings,
+    mapSettings: {
+      ...project.mapSettings,
+      zones: project.mapSettings.zones ? {
+        ...project.mapSettings.zones,
+        appearance: zoneAppearance(project.mapSettings.zones),
+        typography: project.mapSettings.zones.typography ? {
+          preset: project.mapSettings.zones.typography.preset,
+          regular: publishedAsset(project.mapSettings.zones.typography.regularAssetId, resolveAssetUrl),
+          bold: publishedAsset(project.mapSettings.zones.typography.boldAssetId, resolveAssetUrl),
+          variable: project.mapSettings.zones.typography.variable,
+        } : undefined,
+      } : undefined,
+      typography: project.mapSettings.typography ? {
+        preset: project.mapSettings.typography.preset,
+        regular: publishedAsset(project.mapSettings.typography.regularAssetId, resolveAssetUrl),
+        bold: publishedAsset(project.mapSettings.typography.boldAssetId, resolveAssetUrl),
+        variable: project.mapSettings.typography.variable,
+      } : undefined,
+    },
     defaultLocale: project.defaultLocale,
     enabledLocales: project.enabledLocales,
     categories: project.categories.map((category) => ({

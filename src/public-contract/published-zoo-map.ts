@@ -1,4 +1,6 @@
 import { z } from 'zod'
+import { FontPresetSchema } from '../domain/typography'
+import { ZoneSettingsSchema } from '../domain/zones'
 
 const idSchema = z.string().trim().min(1)
 const dateTimeSchema = z.string().datetime({ offset: true })
@@ -40,7 +42,16 @@ export const PublishedBackgroundSchema = PublishedAssetSchema.extend({
   color: z.string().regex(/^#[0-9a-f]{6}$/i).default('#DDDDDD'),
 }).strict()
 
+export const PublishedTypographySchema = z.object({
+    preset: FontPresetSchema,
+    regular: PublishedAssetSchema.nullable(),
+    bold: PublishedAssetSchema.nullable(),
+    variable: z.boolean(),
+  }).strict()
+
 export const PublishedMapSettingsSchema = z.object({
+  typography: PublishedTypographySchema.optional(),
+  zones: ZoneSettingsSchema.omit({ typography: true }).extend({ typography: PublishedTypographySchema.optional() }).optional(),
   minZoomScale: z.number().finite().positive().default(defaultMapSettings.minZoomScale),
   maxZoomScale: z.number().finite().positive().default(defaultMapSettings.maxZoomScale),
   navigationPaddingX: z.number().finite().min(0).max(1).default(defaultMapSettings.navigationPaddingX),

@@ -28,6 +28,10 @@ import { useEditorStore } from './store/editorStore'
 import { useColorEditHistory } from './hooks/useColorEditHistory'
 import { localizeCategory, localizeEvent, localizeFact, localizeItem, localeName, translationCompletion, type MapCategory, type MapEvent, type MapItem } from './domain'
 import './styles.css'
+import './components/zones.css'
+import { validateFont } from './domain/typography'
+import { DEFAULT_ZONES, ZoneSchema, type Zone } from './domain/zones'
+import { ZoneSidebar, ZoneInspector } from './components/ZoneEditor'
 
 type AssetSelectionField = 'imageGallery' | 'iconAssetId' | 'categoryIconAssetId' | 'backgroundAssetId'
 
@@ -38,6 +42,9 @@ function formatDate(value: string | null) {
 
 function App() {
   const editor = useEditorStore()
+  const [zoneMode, setZoneMode] = useState(false)
+  const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null)
+  const [addingZone, setAddingZone] = useState(false)
   useColorEditHistory(editor.beginContinuousEdit, editor.endContinuousEdit)
   const [assetManagerOpen, setAssetManagerOpen] = useState(false)
   const [eventManagerOpen, setEventManagerOpen] = useState(false)
@@ -87,6 +94,7 @@ function App() {
     const handleKeyDown = (event: KeyboardEvent) => {
       const editable = event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.target instanceof HTMLSelectElement
       if (event.key === 'Escape') {
+        setAddingZone(false)
         if (eventManagerOpen) return
         else if (assetManagerOpen) { setAssetManagerOpen(false); setAssetSelectionField(null) }
         else if (deleteDialogOpen) setDeleteDialogOpen(false)
@@ -210,7 +218,7 @@ function App() {
     return ids
   }, [project])
 
-  const assetViews: AssetView[] = editor.assets.map((asset) => ({
+  const assetViews: AssetView[] = editor.assets.filter(asset => asset.kind !== 'font').map((asset) => ({
     id: asset.id,
     name: asset.name,
     mimeType: asset.mimeType,
@@ -219,7 +227,7 @@ function App() {
     height: asset.height ?? undefined,
     url: editor.assetUrls[asset.id],
     used: usedAssetIds.has(asset.id),
-    kind: asset.kind,
+    kind: asset.kind as AssetView['kind'],
   }))
 
   const addGroupMember = (id: string) => {
@@ -275,6 +283,14 @@ function App() {
   if (!project) return <div className="loading-screen"><div className="loading-box"><strong>Projekt konnte nicht geöffnet werden</strong><span>{editor.error ?? 'Bitte laden Sie die Anwendung neu'}</span></div></div>
 
   const backgroundUrl = project.backgroundAssetId ? editor.assetUrls[project.backgroundAssetId] ?? null : null
+  const zones = project.mapSettings.zones ?? DEFAULT_ZONES
+  const fontNames = Object.fromEntries(editor.assets.filter(asset => asset.kind === 'font').map(asset => [asset.id, asset.name]))
+  const uploadFont = async (file: File) => { await validateFont(file); return (await editor.uploadAsset(file, 'font')).id }
+  const updateZone = (id: string, patch: Partial<Zone>) => {
+    const current = useEditorStore.getState().project?.mapSettings.zones ?? DEFAULT_ZONES
+    editor.updateMapSettings({ zones: { ...current, labels: current.labels.map(zone => zone.id === id ? { ...zone, ...patch } : zone) } })
+  }
+  const selectZone = (zone: Zone) => { setSelectedZoneId(zone.id); setMapFocusRequest({ requestId: ++mapFocusRequestId.current, position: zone.position }) }
   const saveLabel = editor.saveStatus === 'saved' ? 'Gespeichert' : editor.saveStatus === 'saving' ? 'Wird gespeichert …' : 'Ungespeicherte Änderungen'
 
   return (
@@ -308,7 +324,7 @@ function App() {
           <span className="topbar-divider"/>
           <button className="button topbar-plain" onClick={() => importRef.current?.click()}><FileUp size={15}/><span className="optional-label">Importieren</span></button>
           <input ref={importRef} hidden type="file" accept="application/json,.json" onChange={async (event) => { const file = event.target.files?.[0]; if (!file) return; try { await editor.importProjectFile(file); toast('Projekt importiert') } catch (error) { toast(error instanceof Error ? error.message : 'Importfehler', 'error') } event.target.value = '' }}/>
-          <button className="button topbar-plain" onClick={editor.exportProject}><Download size={15}/><span className="optional-label">Exportieren</span></button>
+          <button className="button topbar-plain" onClick={async () => { try { await editor.exportProject() } catch (error) { toast(error instanceof Error ? error.message : 'Exportfehler', 'error') } }}><Download size={15}/><span className="optional-label">Exportieren</span></button>
           <button className="button topbar-plain" onClick={() => { setAssetSelectionField('backgroundAssetId'); setAssetManagerOpen(true) }}><ImageIcon size={15}/><span className="optional-label">Karte</span></button>
           <button className="button topbar-plain" aria-label="Veranstaltungen" title="Veranstaltungen" onClick={() => setEventManagerOpen(true)}><CalendarDays size={15}/><span className="optional-label">Veranstaltungen</span>{project.events.length > 0 && <em className="topbar-count">{project.events.length}</em>}</button>
           <button className="button topbar-plain" onClick={() => { setAssetSelectionField(null); setAssetManagerOpen(true) }}><Archive size={15}/><span className="optional-label">Ressourcen</span></button>
@@ -317,7 +333,12 @@ function App() {
       </header>
 
       <main className="main-grid">
-        <LeftSidebar
+        <div className="content-sidebar">
+        <nav className="content-tabs" aria-label="Kartenebenen">
+          <button className={!zoneMode ? 'is-active' : ''} onClick={() => { setZoneMode(false); setAddingZone(false) }}>Kartenpunkte</button>
+          <button className={zoneMode ? 'is-active' : ''} onClick={() => { setZoneMode(true); editor.setSelectedItemId(null); editor.setInspectedCategoryId(null); editor.setActiveTool('select') }}>Zonen <span>{zones.labels.length}</span></button>
+        </nav>
+        {zoneMode ? <ZoneSidebar locale={contentLocale} defaultLocale={project.defaultLocale} maxZoomScale={project.mapSettings.maxZoomScale} settings={zones} selectedId={selectedZoneId} onSelect={selectZone} onAdd={() => setAddingZone(!addingZone)} adding={addingZone} onChange={settings => editor.updateMapSettings({ zones: settings })} fontUrls={editor.assetUrls} fontNames={fontNames} onFontUpload={uploadFont}/> : <LeftSidebar
           categories={localizedCategories}
           items={localizedItems}
           selectedItemId={editor.selectedItemId}
@@ -339,7 +360,8 @@ function App() {
           }}
           onFocusItem={focusItemOnMap}
           onAddItem={() => editor.setActiveTool(editor.activeTool === 'add' ? 'select' : 'add')}
-        />
+        />}
+        </div>
         <section className="map-workspace">
           <MapCanvas
             backgroundUrl={backgroundUrl}
@@ -347,13 +369,21 @@ function App() {
             backgroundHeight={project.backgroundHeight ?? 1}
             backgroundColor={project.backgroundColor}
             mapSettings={project.mapSettings}
+            zoneEditMode={zoneMode}
+            selectedZoneId={selectedZoneId}
+            onSelectZone={setSelectedZoneId}
+            onMoveZone={(id, position) => updateZone(id, { position })}
+            fontAssetUrls={editor.assetUrls}
+            fontAssetNames={Object.fromEntries(editor.assets.filter(asset => asset.kind === 'font').map(asset => [asset.id, asset.name]))}
+            onFontUpload={async file => { await validateFont(file); return (await editor.uploadAsset(file, 'font')).id }}
             items={project.items}
             categories={project.categories}
             events={project.events}
             defaultLocale={project.defaultLocale}
+            contentLocale={contentLocale}
             enabledLocales={project.enabledLocales}
             selectedItemId={editor.selectedItemId}
-            addMode={editor.activeTool === 'add'}
+            addMode={zoneMode ? addingZone : editor.activeTool === 'add'}
             focusRequest={mapFocusRequest}
             phonePreviewRequest={phonePreviewRequest}
             getItemIconUrl={(item, category) => {
@@ -366,9 +396,14 @@ function App() {
               return ids.map((id) => editor.assetUrls[id]).filter(Boolean)
             }}
             getFactIconUrl={(fact) => fact.iconAssetId ? editor.assetUrls[fact.iconAssetId] : null}
-            onSelect={(id) => { setInspectorEntry(null); editor.setSelectedItemId(id) }}
+            onSelect={(id) => { if (!zoneMode) { setInspectorEntry(null); editor.setSelectedItemId(id) } }}
             onAddGroupMember={addGroupMember}
-            onAdd={editor.createItemAt}
+            onAdd={position => {
+              if (!zoneMode) { editor.createItemAt(position); return }
+              const zone = ZoneSchema.parse({ id: crypto.randomUUID(), title: 'Neue Zone', position })
+              editor.updateMapSettings({ zones: { ...zones, labels: [...zones.labels, zone] } })
+              setSelectedZoneId(zone.id); setAddingZone(false)
+            }}
             onMove={editor.moveItem}
             onDragPreview={editor.previewMoveItem}
             onBackgroundColorChange={editor.setBackgroundColor}
@@ -378,7 +413,12 @@ function App() {
             onSettingsEditEnd={editor.endContinuousEdit}
           />
         </section>
-        {selectedItem ? <GroupInspector
+        {zoneMode ? <ZoneInspector zone={zones.labels.find(zone => zone.id === selectedZoneId)} locale={contentLocale} defaultLocale={project.defaultLocale} onChange={patch => { if (selectedZoneId) updateZone(selectedZoneId, patch) }} onDelete={() => { editor.updateMapSettings({ zones: { ...zones, labels: zones.labels.filter(zone => zone.id !== selectedZoneId) } }); setSelectedZoneId(null) }} onDuplicate={() => {
+          const source = zones.labels.find(zone => zone.id === selectedZoneId)
+          if (!source) return
+          const zone = { ...source, id: crypto.randomUUID(), title: `${source.title} (Kopie)`, position: { x: Math.min(1, source.position.x + .03), y: Math.min(1, source.position.y + .03) } }
+          editor.updateMapSettings({ zones: { ...zones, labels: [...zones.labels, zone] } }); setSelectedZoneId(zone.id)
+        }}/> : selectedItem ? <GroupInspector
             focusEntry={inspectorEntry?.rootId === selectedItem.id ? inspectorEntry : undefined}
             onAddMember={addGroupMember}
             onRemoveMember={(parentId, memberId) => {

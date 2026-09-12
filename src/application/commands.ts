@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { zoneAppearance } from '../domain/zones';
 import {
   CategoryTypeSchema,
   EntityIdSchema,
@@ -405,6 +406,9 @@ export function updateMapSettings(
 ): MapProject {
   const project = checkedProject(projectValue);
   const input = UpdateMapSettingsInputSchema.parse(inputValue);
+  if (input.patch.zones && !input.patch.zones.appearance) {
+    input.patch.zones.appearance = zoneAppearance(project.mapSettings.zones ?? input.patch.zones);
+  }
   const now = timestamp(input.now);
   return finish({
     ...project,

@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { TypographySchema } from './typography';
+import { ZoneSettingsSchema } from './zones';
 
 export const CURRENT_SCHEMA_VERSION = 1 as const;
 export const DEFAULT_MAP_BACKGROUND_COLOR = "#DDDDDD";
@@ -44,6 +46,8 @@ export const MapBackgroundColorSchema = z
   .default(DEFAULT_MAP_BACKGROUND_COLOR);
 
 export const MapSettingsSchema = z.object({
+  zones: ZoneSettingsSchema.optional(),
+  typography: TypographySchema.optional(),
   minZoomScale: z.number().finite().positive().default(DEFAULT_MAP_SETTINGS.minZoomScale),
   maxZoomScale: z.number().finite().positive().default(DEFAULT_MAP_SETTINGS.maxZoomScale),
   navigationPaddingX: z.number().finite().min(0).max(1).default(DEFAULT_MAP_SETTINGS.navigationPaddingX),
@@ -240,7 +244,7 @@ export const MapProjectSchema = z
     }
   });
 
-export const AssetKindSchema = z.enum(["background", "image", "icon"]);
+export const AssetKindSchema = z.enum(["background", "image", "icon", "font"]);
 
 export const AssetSchema = z.object({
   id: EntityIdSchema,
