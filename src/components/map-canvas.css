@@ -1117,9 +1117,7 @@
   -webkit-user-drag: none;
 }
 
-.map-canvas__background.has-alpha-effects {
-  filter: url('#map-canvas-background-alpha-effects');
-}
+.map-canvas__background-outline { pointer-events: none; filter: none; }
 
 .map-canvas__controls {
   position: absolute;

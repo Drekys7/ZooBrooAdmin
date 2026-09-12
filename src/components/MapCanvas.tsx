@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
+import { createBackgroundOutline } from './background-outline';
 import { CalendarClock, LocateFixed, Minus, SquarePen, Palette, Plus, Settings2, Smartphone, X } from 'lucide-react';
 import {
   DEFAULT_MAP_SETTINGS,
@@ -706,7 +707,6 @@ export function MapCanvas({
   const [visitorLocale, setVisitorLocale] = useState(defaultLocale);
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
   const [hiddenVisitorCategoryIds, setHiddenVisitorCategoryIds] = useState<Set<string>>(() => new Set());
-  const [mapEffectZoomScale, setMapEffectZoomScale] = useState(() => mapSettings.minZoomScale);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const globalSettingsRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -717,7 +717,6 @@ export function MapCanvas({
   const navigationPreviewOriginRef = useRef<{ center: L.LatLng; zoom: number } | null>(null);
   const viewportTransitionRef = useRef<{ center: L.LatLng; zoomScale: number } | null>(null);
   const settingsPreviewRef = useRef<MapSettingsPreview | null>(null);
-  const mapEffectZoomRef = useRef<number | null>(null);
   const visitorLocaleInitializedRef = useRef(false);
   const renderLocale = phonePreview ? visitorLocale : contentLocale ?? defaultLocale;
   const editingZones = zoneEditMode && !phonePreview;
@@ -745,19 +744,6 @@ export function MapCanvas({
     window.localStorage.setItem('zooweb-map-locale', locale);
     setLanguageMenuOpen(false);
   };
-
-  const syncMapEffectZoomScale = () => {
-    const map = mapRef.current
-    if (!map) return
-    const nextZoom = map.getZoom()
-    const previousZoom = mapEffectZoomRef.current
-    mapEffectZoomRef.current = nextZoom
-    if (previousZoom === null || !Number.isFinite(previousZoom) || !Number.isFinite(nextZoom)) return
-    const zoomDeltaScale = 2 ** (nextZoom - previousZoom)
-    setMapEffectZoomScale((currentScale) => (
-      Math.abs(zoomDeltaScale - 1) < 0.001 ? currentScale : currentScale * zoomDeltaScale
-    ))
-  }
 
   const captureViewportTransition = () => {
     const map = mapRef.current;
@@ -872,7 +858,6 @@ export function MapCanvas({
         latLngToPosition(event.latlng, current.width, current.height),
       );
     });
-    map.on('zoomend resize', syncMapEffectZoomScale)
 
     const resizeObserver =
       typeof ResizeObserver === 'undefined'
@@ -895,7 +880,6 @@ export function MapCanvas({
     resizeObserver?.observe(container);
 
     return () => {
-      map.off('zoomend resize', syncMapEffectZoomScale)
       resizeObserver?.disconnect();
       markersRef.current.clear();
       markerSignaturesRef.current.clear();
@@ -950,8 +934,6 @@ export function MapCanvas({
         next.phonePreview ? [14, 14] : [30, 30],
       );
       map.fitBounds(bounds, { animate: false, padding: next.phonePreview ? [14, 14] : [30, 30] });
-      mapEffectZoomRef.current = map.getZoom()
-      setMapEffectZoomScale(next.mapSettings.minZoomScale)
     });
     return () => cancelAnimationFrame(frame);
   }, [backgroundHeight, backgroundUrl, backgroundWidth]);
@@ -960,18 +942,27 @@ export function MapCanvas({
     const map = mapRef.current
     const bounds = boundsRef.current
     if (!map || !bounds || !backgroundUrl || !mapBackgroundEffectsEnabled(mapSettings)) return
-    // The filter produces only the outline, below the independent original image.
-    const outline = L.imageOverlay(backgroundUrl, bounds, {
-      interactive: false,
-      className: `${mapBackgroundClassName(mapSettings)} map-canvas__background-outline`,
-      zIndex: 0,
-    }).addTo(map)
-    return () => { outline.remove() }
+    let cancelled = false
+    let outline: L.ImageOverlay | undefined
+    let outlineUrl: string | undefined
+    // Bake alpha dilation into a PNG once; zooming then uses ordinary image scaling in every browser.
+    void createBackgroundOutline(backgroundUrl, mapSettings.mapOutlineWidth, mapSettings.mapOutlineColor).then(result => {
+      if (cancelled) return
+      outlineUrl = URL.createObjectURL(result.blob)
+      const dx = safeDimension(backgroundWidth) * result.paddingX
+      const dy = safeDimension(backgroundHeight) * result.paddingY
+      outline = L.imageOverlay(outlineUrl, L.latLngBounds([-dy, -dx], [safeDimension(backgroundHeight) + dy, safeDimension(backgroundWidth) + dx]), {
+        interactive: false, className: 'map-canvas__background-outline', zIndex: 0,
+      }).addTo(map)
+    }).catch(error => { if (!cancelled) console.error('Kartenkontur:', error) })
+    return () => { cancelled = true; outline?.remove(); if (outlineUrl) URL.revokeObjectURL(outlineUrl) }
   }, [
     backgroundHeight,
     backgroundUrl,
     backgroundWidth,
     mapSettings.mapOutlineEnabled,
+    mapSettings.mapOutlineWidth,
+    mapSettings.mapOutlineColor,
   ])
 
   useEffect(() => {
@@ -1221,8 +1212,6 @@ export function MapCanvas({
   }, [backgroundHeight, backgroundWidth, focusRequest]);
 
   useEffect(() => {
-    mapEffectZoomRef.current = null
-    setMapEffectZoomScale(mapSettings.minZoomScale)
     const frame = requestAnimationFrame(() => {
       const map = mapRef.current;
       const bounds = boundsRef.current;
@@ -1265,8 +1254,6 @@ export function MapCanvas({
             padding: phonePreview ? [14, 14] : [30, 30],
           });
         }
-        mapEffectZoomRef.current = map.getZoom()
-        setMapEffectZoomScale(mapSettings.minZoomScale)
       }
     });
     return () => cancelAnimationFrame(frame);
@@ -1451,34 +1438,6 @@ export function MapCanvas({
         focusable="false"
       >
         <defs>
-          <filter
-            id="map-canvas-background-alpha-effects"
-            x="-50%"
-            y="-50%"
-            width="200%"
-            height="200%"
-            colorInterpolationFilters="sRGB"
-          >
-            <feMorphology
-              in="SourceAlpha"
-              operator="dilate"
-              radius={scaledMapEffectValue(mapSettings.mapOutlineWidth, mapEffectZoomScale)}
-              result="mapExpandedAlpha"
-            />
-            <feComposite
-              in="mapExpandedAlpha"
-              in2="SourceAlpha"
-              operator="out"
-              result="mapOutlineAlpha"
-            />
-            <feFlood floodColor={mapSettings.mapOutlineColor} result="mapOutlineColor" />
-            <feComposite
-              in="mapOutlineColor"
-              in2="mapOutlineAlpha"
-              operator="in"
-              result="mapOutline"
-            />
-          </filter>
           <filter
             id="map-canvas-marker-selection-outline"
             x="-25%"

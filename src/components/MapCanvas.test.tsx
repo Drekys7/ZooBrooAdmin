@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, within, waitFor } from '@testing-library/react';
 import L from 'leaflet';
+vi.mock('./background-outline', () => ({ createBackgroundOutline: async () => ({ blob: new Blob(['outline']), paddingX: .01, paddingY: .01 }) }));
 import { describe, expect, it, vi } from 'vitest';
 import { DEFAULT_MAP_SETTINGS, type MapCategory, type MapEvent, type MapItem } from '../domain/models';
 import {
@@ -183,12 +184,15 @@ describe('MapCanvas rendering', () => {
     )
 
     const filter = container.querySelector('#map-canvas-background-alpha-effects')
-    expect(filter?.querySelector('feMorphology')?.getAttribute('in')).toBe('SourceAlpha')
-    expect(filter?.querySelector('feComposite[operator="out"]')).toBeInTheDocument()
+    expect(filter).toBeNull()
     unmount()
   })
 
   it('keeps the map image unfiltered when its separate outline is toggled', async () => {
+    vi.stubGlobal('URL', class extends URL {
+      static createObjectURL() { return 'blob:test-outline' }
+      static revokeObjectURL() {}
+    })
     const width = vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(1000)
     const height = vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(600)
     const props = { backgroundUrl: '/map.png', backgroundWidth: 1672, backgroundHeight: 941, items: [], categories: [] }
@@ -196,7 +200,8 @@ describe('MapCanvas rendering', () => {
     await waitFor(() => expect(ui.container.querySelector('img.map-canvas__background:not(.has-alpha-effects)')).not.toBeNull())
     const image = ui.container.querySelector('img.map-canvas__background:not(.has-alpha-effects)')
     expect(image).toHaveAttribute('src', '/map.png')
-    expect(ui.container.querySelectorAll('img.map-canvas__background-outline.has-alpha-effects')).toHaveLength(1)
+    await waitFor(() => expect(ui.container.querySelectorAll('img.map-canvas__background-outline')).toHaveLength(1))
+    expect(ui.container.querySelector('.map-canvas__background-outline')).not.toHaveClass('has-alpha-effects')
     expect(ui.container.querySelector('#map-canvas-background-alpha-effects feMergeNode[in="SourceGraphic"]')).toBeNull()
     ui.rerender(<MapCanvas {...props} mapSettings={{ ...DEFAULT_MAP_SETTINGS, mapOutlineEnabled: false }}/>)
     expect(ui.container.querySelector('.map-canvas__background-outline')).toBeNull()
@@ -204,6 +209,7 @@ describe('MapCanvas rendering', () => {
     ui.unmount()
     width.mockRestore()
     height.mockRestore()
+    vi.unstubAllGlobals()
   })
 
   it('renders its empty state and map controls without a background', () => {
