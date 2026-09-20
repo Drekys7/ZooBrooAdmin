@@ -60,7 +60,9 @@ export function PhoneClientPreview({
   const dragDescription = useMouseDragScroll('y')
   const images = imageUrls?.length ? imageUrls : imageUrl ? [imageUrl] : []
   const primaryImage = images[0] ?? null
+  const photoIds = item.imageAssetIds?.length ? item.imageAssetIds : item.imageAssetId ? [item.imageAssetId] : []
   const [activeImageIndex, setActiveImageIndex] = useState(0)
+  const photoCredit = item.imageCredits?.[photoIds[activeImageIndex]]
   const galleryTouchStart = useRef<{ x: number; y: number } | null>(null)
   const galleryPointerStart = useRef<{ id: number; x: number; y: number } | null>(null)
 
@@ -81,6 +83,8 @@ export function PhoneClientPreview({
     if (Math.abs(deltaX) >= 42 && Math.abs(deltaX) > Math.abs(deltaY)) showImage(activeImageIndex + (deltaX < 0 ? 1 : -1))
   }
   const handleGalleryPointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    // Capturing a dot's pointer retargets its click to the gallery, swallowing navigation.
+    if ((event.target as Element).closest('button')) return
     if (event.pointerType === 'touch' || !event.isPrimary) return
     galleryPointerStart.current = { id: event.pointerId, x: event.clientX, y: event.clientY }
     event.currentTarget.setPointerCapture(event.pointerId)
@@ -115,7 +119,9 @@ export function PhoneClientPreview({
           {item.facts.length > 0 ? (
             <div className="map-client-preview__quick-facts">
               {item.facts.slice(0, 3).map((fact) => (
-                <span key={fact.id}>{fact.label}: {fact.value}</span>
+                <div className="map-client-preview__quick-fact" key={fact.id}>
+                  <span>{fact.label}: {fact.value}</span>
+                </div>
               ))}
             </div>
           ) : (
@@ -162,6 +168,10 @@ export function PhoneClientPreview({
             </div>}
           </div> : <PreviewVisual imageUrl={null} iconUrl={iconUrl} large />}
           <div className="map-client-preview__content">
+            {images.length > 0 && photoCredit && <p className="map-client-preview__photo-credit">
+              <a href={photoCredit.source} target="_blank" rel="noreferrer">© {photoCredit.author}</a>
+              {' · '}<a href={photoCredit.licenseUrl} target="_blank" rel="noreferrer">{photoCredit.license}</a>
+            </p>}
             <h2 id="map-client-preview-title">{item.title}</h2>
             {item.type !== 'animal' && item.subtitle ? <p className="map-client-preview__sheet-subtitle">{item.subtitle}</p> : null}
             {item.facts.length > 0 ? (

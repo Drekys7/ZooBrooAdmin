@@ -130,9 +130,11 @@ export function buildPublishedSnapshot(
       title: item.title,
       subtitle: item.type === 'animal' ? '' : item.subtitle,
       description: item.description,
+      imageCredits: item.imageCredits,
       members: item.members?.map((member) => ({
         id: member.id, title: member.title, subtitle: item.type === 'animal' ? '' : member.subtitle,
         description: member.description, translations: member.translations,
+        imageCredits: member.imageCredits,
         icon: publishedAsset(member.iconAssetId, resolveAssetUrl),
         colorOverride: member.colorOverride ?? null,
         markerOverrides: member.markerOverrides ?? (member.colorOverride ? { color: member.colorOverride } : null),

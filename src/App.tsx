@@ -395,6 +395,7 @@ function App() {
               const assetId = itemIconAssetId(item, category)
               return assetId ? editor.assetUrls[assetId] : null
             }}
+            getCategoryIconUrl={(category) => category.defaultIconAssetId ? editor.assetUrls[category.defaultIconAssetId] : null}
             getItemImageUrl={(item) => item.imageAssetId ? editor.assetUrls[item.imageAssetId] : null}
             getItemImageUrls={(item) => {
               const ids = item.imageAssetIds?.length ? item.imageAssetIds : item.imageAssetId ? [item.imageAssetId] : []

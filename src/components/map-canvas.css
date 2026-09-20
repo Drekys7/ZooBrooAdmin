@@ -709,12 +709,11 @@
   bottom: 29px;
   left: 20px;
   display: grid;
-  grid-template-columns: 82px minmax(0, 1fr);
+  grid-template-columns: clamp(44px, 24%, 82px) minmax(0, 1fr);
   align-items: center;
   gap: 9px;
-  height: 132px;
-  min-height: 0;
-  padding: 8px 32px 8px 8px;
+  min-height: 132px;
+  padding: 8px;
   overflow: hidden;
   border: 1px solid rgba(24, 32, 28, .09);
   border-radius: 18px;
@@ -734,7 +733,8 @@
 .map-client-group { position: absolute; z-index: 620; left: 20px; right: 20px; bottom: 29px; height: 132px; padding: 8px; border-radius: 18px; background: rgba(255,255,252,.97); box-shadow: 0 16px 40px #121b1633; }
 .map-client-group__list { display: flex; gap: 7px; height: 100%; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; overscroll-behavior-x: contain; }
 .map-client-group__list::-webkit-scrollbar { display: none; }
-.map-client-group__list.has-more > .map-client-group__entry { flex-basis: calc((100% - 21px) / 3.5); }
+/* Keep a recognisable ~4:5 photo instead of squeezing 3.5 narrow strips into a phone. */
+.map-client-group__list.has-more > .map-client-group__entry { flex-basis: 93px; }
 .map-client-group__entry { position: relative; flex: 0 0 calc((100% - 14px) / 3); min-width: 0; display: grid; place-items: center; overflow: hidden; padding: 0; border: 0; border-radius: 12px; color: #76917d; background: #e8eee5; cursor: pointer; scroll-snap-align: start; }
 .map-client-group__entry:first-child:nth-last-child(2), .map-client-group__entry:first-child:nth-last-child(2) ~ .map-client-group__entry { flex-basis: calc((100% - 7px) / 2); }
 .map-client-group__entry img { width: 100%; height: 100%; object-fit: cover; }
@@ -764,8 +764,10 @@
 
 .map-client-preview__image,
 .map-client-preview__icon-visual {
-  width: 82px;
-  height: 116px;
+  width: 100%;
+  height: 100%;
+  min-height: 80px;
+  align-self: stretch;
   border-radius: 14px;
 }
 
@@ -801,15 +803,23 @@
   align-content: center;
 }
 
+.map-client-preview__photo-credit {
+  margin: 0 0 12px;
+  font-size: 10px;
+  line-height: 1.4;
+  color: #59615d;
+  overflow-wrap: anywhere;
+}
+.map-client-preview__photo-credit a { color: inherit; text-decoration: underline; }
+
 .map-client-preview__quick-content h2 {
   margin: 0;
-  overflow: hidden;
+  padding-right: 21px;
   color: #18201c;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 650;
   line-height: 1.08;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .map-client-preview__quick-facts {
@@ -822,12 +832,33 @@
   line-height: 1.22;
 }
 
-.map-client-preview__quick-facts span,
+.map-client-preview__quick-fact > span:last-child,
 .map-client-preview__subtitle,
 .map-client-preview__quick-description {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.map-client-preview__quick-fact {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  min-width: 0;
+}
+
+.map-client-preview__quick-fact > span:last-child {
+  white-space: normal;
+  overflow: visible;
+  overflow-wrap: anywhere;
+}
+
+.map-client-preview__quick-fact .map-client-preview__fact-icon,
+.map-client-preview__quick-fact .map-client-preview__fact-icon-image {
+  flex: 0 0 12px;
+  width: 12px;
+  height: 12px;
+  margin-top: 1px;
 }
 
 .map-client-preview__subtitle {
@@ -1520,7 +1551,7 @@
 }
 
 .leaflet-container .leaflet-marker-pane
-  .map-canvas__marker.is-circle.is-animal
+  .map-canvas__marker.is-circle
   .map-canvas__marker-image {
   width: 76%;
   height: 76%;

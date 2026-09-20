@@ -1,0 +1,2281 @@
+{
+  "title": "Naturwelten Zoo",
+  "items": {
+    "map128-wolf": {
+      "de": {
+        "title": "Wolf",
+        "subtitle": "Canis lupus",
+        "description": "Wölfe leben meist in Familienverbänden und verständigen sich durch Körpersprache, Gerüche und Laute. Ihr Heulen hilft ihnen, über größere Entfernungen Kontakt zu halten. Beobachten Sie, wie aufmerksam die Tiere ihre Umgebung wahrnehmen."
+      },
+      "en": {
+        "title": "Grey Wolf",
+        "subtitle": "Canis lupus",
+        "description": "Wolves usually live in family groups and communicate through body language, scent and sound. Howling helps them stay in contact over long distances. Watch how carefully they observe their surroundings."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Wissenschaftlicher Name",
+            "value": "Canis lupus"
+          },
+          "en": {
+            "label": "Scientific name",
+            "value": "Canis lupus"
+          }
+        },
+        {
+          "de": {
+            "label": "Verbreitung",
+            "value": "Europa, Asien und Nordamerika"
+          },
+          "en": {
+            "label": "Range",
+            "value": "Europe, Asia and North America"
+          }
+        },
+        {
+          "de": {
+            "label": "Lebensraum",
+            "value": "Wälder, Grasland und Tundra"
+          },
+          "en": {
+            "label": "Habitat",
+            "value": "Forests, grasslands and tundra"
+          }
+        },
+        {
+          "de": {
+            "label": "Nahrung",
+            "value": "Vor allem Huftiere und kleinere Säugetiere"
+          },
+          "en": {
+            "label": "Diet",
+            "value": "Mainly hoofed mammals and smaller mammals"
+          }
+        }
+      ]
+    },
+    "map128-brown-bear": {
+      "de": {
+        "title": "Braunbär",
+        "subtitle": "Ursus arctos",
+        "description": "Braunbären erkunden ihre Umgebung mit einer besonders feinen Nase. Ihre Nahrung verändert sich mit den Jahreszeiten: Beeren, Wurzeln und tierische Kost ergänzen sich. Die kräftigen Krallen helfen beim Graben und bei der Nahrungssuche."
+      },
+      "en": {
+        "title": "Brown Bear",
+        "subtitle": "Ursus arctos",
+        "description": "Brown bears explore their surroundings with a highly sensitive nose. Their diet changes with the seasons, combining berries, roots and animal food. Strong claws help them dig and search for food."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Wissenschaftlicher Name",
+            "value": "Ursus arctos"
+          },
+          "en": {
+            "label": "Scientific name",
+            "value": "Ursus arctos"
+          }
+        },
+        {
+          "de": {
+            "label": "Verbreitung",
+            "value": "Europa, Asien und Nordamerika"
+          },
+          "en": {
+            "label": "Range",
+            "value": "Europe, Asia and North America"
+          }
+        },
+        {
+          "de": {
+            "label": "Lebensraum",
+            "value": "Wälder, Gebirge und offene Landschaften"
+          },
+          "en": {
+            "label": "Habitat",
+            "value": "Forests, mountains and open landscapes"
+          }
+        },
+        {
+          "de": {
+            "label": "Nahrung",
+            "value": "Pflanzen, Früchte, Insekten, Fisch und Fleisch"
+          },
+          "en": {
+            "label": "Diet",
+            "value": "Plants, fruit, insects, fish and meat"
+          }
+        }
+      ]
+    },
+    "map128-moose": {
+      "de": {
+        "title": "Elch",
+        "subtitle": "Alces alces",
+        "description": "Elche sind die größten heute lebenden Hirsche. Ihre langen Beine erleichtern das Wandern durch sumpfiges Gelände, und ihre bewegliche Oberlippe hilft beim Abstreifen von Blättern. Ein Geweih tragen nur die männlichen Tiere."
+      },
+      "en": {
+        "title": "Moose",
+        "subtitle": "Alces alces",
+        "description": "Moose are the largest living members of the deer family. Long legs help them move through marshy ground, while a flexible upper lip helps strip leaves from branches. Only males grow antlers."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Wissenschaftlicher Name",
+            "value": "Alces alces"
+          },
+          "en": {
+            "label": "Scientific name",
+            "value": "Alces alces"
+          }
+        },
+        {
+          "de": {
+            "label": "Verbreitung",
+            "value": "Nördliches Europa und Asien"
+          },
+          "en": {
+            "label": "Range",
+            "value": "Northern Europe and Asia"
+          }
+        },
+        {
+          "de": {
+            "label": "Lebensraum",
+            "value": "Wälder mit Seen, Mooren und Flüssen"
+          },
+          "en": {
+            "label": "Habitat",
+            "value": "Forests with lakes, wetlands and rivers"
+          }
+        },
+        {
+          "de": {
+            "label": "Nahrung",
+            "value": "Blätter, Zweige und Wasserpflanzen"
+          },
+          "en": {
+            "label": "Diet",
+            "value": "Leaves, twigs and aquatic plants"
+          }
+        }
+      ]
+    },
+    "map128-lynx": {
+      "de": {
+        "title": "Eurasischer Luchs",
+        "subtitle": "Lynx lynx",
+        "description": "Ohrpinsel, Backenbart und ein kurzer Schwanz machen den Luchs unverwechselbar. Er lebt überwiegend allein und schleicht sich leise an seine Beute heran. Sein geflecktes Fell lässt ihn zwischen Licht und Schatten des Waldes verschwinden."
+      },
+      "en": {
+        "title": "Eurasian Lynx",
+        "subtitle": "Lynx lynx",
+        "description": "Ear tufts, a facial ruff and a short tail make this lynx easy to recognise. It usually lives alone and stalks prey quietly. Its spotted coat blends into the changing light and shade of the forest."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Wissenschaftlicher Name",
+            "value": "Lynx lynx"
+          },
+          "en": {
+            "label": "Scientific name",
+            "value": "Lynx lynx"
+          }
+        },
+        {
+          "de": {
+            "label": "Verbreitung",
+            "value": "Europa und Asien"
+          },
+          "en": {
+            "label": "Range",
+            "value": "Europe and Asia"
+          }
+        },
+        {
+          "de": {
+            "label": "Lebensraum",
+            "value": "Wälder und felsige Gebirgsregionen"
+          },
+          "en": {
+            "label": "Habitat",
+            "value": "Forests and rocky mountain regions"
+          }
+        },
+        {
+          "de": {
+            "label": "Nahrung",
+            "value": "Rehe, Hasen und andere Säugetiere"
+          },
+          "en": {
+            "label": "Diet",
+            "value": "Roe deer, hares and other mammals"
+          }
+        }
+      ]
+    },
+    "map128-mountain-goat": {
+      "de": {
+        "title": "Schneeziege",
+        "subtitle": "Oreamnos americanus",
+        "description": "Schneeziegen bewegen sich sicher auf steilen Felshängen. Ihre gespaltenen Hufe besitzen griffige Sohlen, während das dichte weiße Fell gegen Kälte schützt. Beide Geschlechter tragen kurze, dunkle Hörner."
+      },
+      "en": {
+        "title": "Mountain Goat",
+        "subtitle": "Oreamnos americanus",
+        "description": "Mountain goats move confidently across steep rocky slopes. Their cloven hooves have gripping pads, while a thick white coat protects them from cold. Both males and females have short, dark horns."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Wissenschaftlicher Name",
+            "value": "Oreamnos americanus"
+          },
+          "en": {
+            "label": "Scientific name",
+            "value": "Oreamnos americanus"
+          }
+        },
+        {
+          "de": {
+            "label": "Verbreitung",
+            "value": "Westliches Nordamerika"
+          },
+          "en": {
+            "label": "Range",
+            "value": "Western North America"
+          }
+        },
+        {
+          "de": {
+            "label": "Lebensraum",
+            "value": "Steile Felsen und alpine Bergwiesen"
+          },
+          "en": {
+            "label": "Habitat",
+            "value": "Steep cliffs and alpine meadows"
+          }
+        },
+        {
+          "de": {
+            "label": "Nahrung",
+            "value": "Gräser, Kräuter, Blätter und Zweige"
+          },
+          "en": {
+            "label": "Diet",
+            "value": "Grasses, herbs, leaves and twigs"
+          }
+        }
+      ]
+    },
+    "map128-red-fox": {
+      "de": {
+        "title": "Rotfuchs",
+        "subtitle": "Vulpes vulpes",
+        "description": "Der Rotfuchs ist ein anpassungsfähiger Bewohner sehr unterschiedlicher Landschaften. Mit seinem guten Gehör ortet er kleine Beutetiere auch unter dichter Vegetation. Der buschige Schwanz hilft beim Balancieren und dient in Ruhe als wärmende Decke."
+      },
+      "en": {
+        "title": "Red Fox",
+        "subtitle": "Vulpes vulpes",
+        "description": "Red foxes adapt to many different landscapes. Their sharp hearing helps them locate small prey beneath thick vegetation. A bushy tail aids balance and provides warmth when they curl up to rest."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Wissenschaftlicher Name",
+            "value": "Vulpes vulpes"
+          },
+          "en": {
+            "label": "Scientific name",
+            "value": "Vulpes vulpes"
+          }
+        },
+        {
+          "de": {
+            "label": "Verbreitung",
+            "value": "Große Teile der Nordhalbkugel"
+          },
+          "en": {
+            "label": "Range",
+            "value": "Much of the Northern Hemisphere"
+          }
+        },
+        {
+          "de": {
+            "label": "Lebensraum",
+            "value": "Wälder, Wiesen, Kulturlandschaften und Städte"
+          },
+          "en": {
+            "label": "Habitat",
+            "value": "Forests, meadows, farmland and towns"
+          }
+        },
+        {
+          "de": {
+            "label": "Nahrung",
+            "value": "Kleinsäuger, Insekten, Früchte und weitere Nahrung"
+          },
+          "en": {
+            "label": "Diet",
+            "value": "Small mammals, insects, fruit and other foods"
+          }
+        }
+      ]
+    },
+    "map128-ostrich": {
+      "de": {
+        "title": "Afrikanischer Strauß",
+        "subtitle": "Struthio camelus",
+        "description": "Der Strauß ist der größte lebende Vogel. Fliegen kann er nicht, dafür tragen ihn seine kräftigen Beine schnell über offene Landschaften. Achten Sie auf die Füße: Anders als die meisten Vögel besitzt er nur zwei Zehen."
+      },
+      "en": {
+        "title": "Common Ostrich",
+        "subtitle": "Struthio camelus",
+        "description": "The ostrich is the largest living bird. It cannot fly, but powerful legs carry it swiftly across open country. Look at its feet: unlike most birds, it has only two toes."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Wissenschaftlicher Name",
+            "value": "Struthio camelus"
+          },
+          "en": {
+            "label": "Scientific name",
+            "value": "Struthio camelus"
+          }
+        },
+        {
+          "de": {
+            "label": "Verbreitung",
+            "value": "Afrika"
+          },
+          "en": {
+            "label": "Range",
+            "value": "Africa"
+          }
+        },
+        {
+          "de": {
+            "label": "Lebensraum",
+            "value": "Savannen und trockene, offene Landschaften"
+          },
+          "en": {
+            "label": "Habitat",
+            "value": "Savannas and dry open landscapes"
+          }
+        },
+        {
+          "de": {
+            "label": "Nahrung",
+            "value": "Vorwiegend Pflanzen, Samen und Früchte"
+          },
+          "en": {
+            "label": "Diet",
+            "value": "Mostly plants, seeds and fruit"
+          }
+        }
+      ]
+    },
+    "map128-camel": {
+      "de": {
+        "title": "Dromedar",
+        "subtitle": "Camelus dromedarius",
+        "description": "Das Dromedar besitzt einen Höcker, in dem es Fett als Energiereserve speichert. Breite Füße erleichtern das Laufen auf Sand, lange Wimpern schützen die Augen. Diese domestizierte Kamelart ist seit Jahrtausenden ein Begleiter des Menschen."
+      },
+      "en": {
+        "title": "Dromedary Camel",
+        "subtitle": "Camelus dromedarius",
+        "description": "Dromedaries have one hump, which stores fat as an energy reserve. Broad feet help them walk on sand, and long eyelashes protect their eyes. This domesticated camel has accompanied people for thousands of years."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Wissenschaftlicher Name",
+            "value": "Camelus dromedarius"
+          },
+          "en": {
+            "label": "Scientific name",
+            "value": "Camelus dromedarius"
+          }
+        },
+        {
+          "de": {
+            "label": "Verbreitung",
+            "value": "Als Haustier vor allem Nordafrika und Westasien"
+          },
+          "en": {
+            "label": "Range",
+            "value": "Domesticated mainly in North Africa and western Asia"
+          }
+        },
+        {
+          "de": {
+            "label": "Lebensraum",
+            "value": "Heiße Wüsten und Halbwüsten"
+          },
+          "en": {
+            "label": "Habitat",
+            "value": "Hot deserts and semi-deserts"
+          }
+        },
+        {
+          "de": {
+            "label": "Nahrung",
+            "value": "Gräser, Blätter und trockene Sträucher"
+          },
+          "en": {
+            "label": "Diet",
+            "value": "Grasses, leaves and dry shrubs"
+          }
+        }
+      ]
+    },
+    "map128-fennec": {
+      "de": {
+        "title": "Fennek",
+        "subtitle": "Vulpes zerda",
+        "description": "Der Fennek ist ein kleiner Wüstenfuchs mit auffallend großen Ohren. Sie helfen beim Aufspüren von Beute und bei der Abgabe überschüssiger Wärme. Tagsüber zieht er sich häufig in einen Bau zurück und wird vor allem nachts aktiv."
+      },
+      "en": {
+        "title": "Fennec Fox",
+        "subtitle": "Vulpes zerda",
+        "description": "The fennec is a small desert fox with remarkably large ears. They help it detect prey and release excess heat. It often shelters in a burrow during the day and becomes active mainly at night."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Wissenschaftlicher Name",
+            "value": "Vulpes zerda"
+          },
+          "en": {
+            "label": "Scientific name",
+            "value": "Vulpes zerda"
+          }
+        },
+        {
+          "de": {
+            "label": "Verbreitung",
+            "value": "Nordafrika"
+          },
+          "en": {
+            "label": "Range",
+            "value": "North Africa"
+          }
+        },
+        {
+          "de": {
+            "label": "Lebensraum",
+            "value": "Sandwüsten und trockene Halbwüsten"
+          },
+          "en": {
+            "label": "Habitat",
+            "value": "Sandy deserts and dry semi-deserts"
+          }
+        },
+        {
+          "de": {
+            "label": "Nahrung",
+            "value": "Insekten, kleine Wirbeltiere und Pflanzenkost"
+          },
+          "en": {
+            "label": "Diet",
+            "value": "Insects, small vertebrates and plant foods"
+          }
+        }
+      ]
+    },
+    "map128-meerkat": {
+      "de": {
+        "title": "Erdmännchen",
+        "subtitle": "Suricata suricatta",
+        "description": "Erdmännchen leben in Gruppen und nutzen weit verzweigte Baue. Während einige Tiere nach Nahrung graben, halten andere Ausschau nach Gefahren. Ihre aufrechte Haltung bietet einen guten Überblick über die Umgebung."
+      },
+      "en": {
+        "title": "Meerkat",
+        "subtitle": "Suricata suricatta",
+        "description": "Meerkats live in groups and use extensive burrow systems. While some dig for food, others watch for danger. Standing upright gives them a clear view of their surroundings."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Wissenschaftlicher Name",
+            "value": "Suricata suricatta"
+          },
+          "en": {
+            "label": "Scientific name",
+            "value": "Suricata suricatta"
+          }
+        },
+        {
+          "de": {
+            "label": "Verbreitung",
+            "value": "Südliches Afrika"
+          },
+          "en": {
+            "label": "Range",
+            "value": "Southern Africa"
+          }
+        },
+        {
+          "de": {
+            "label": "Lebensraum",
+            "value": "Trockene Grasländer und Halbwüsten"
+          },
+          "en": {
+            "label": "Habitat",
+            "value": "Dry grasslands and semi-deserts"
+          }
+        },
+        {
+          "de": {
+            "label": "Nahrung",
+            "value": "Insekten und andere kleine Tiere"
+          },
+          "en": {
+            "label": "Diet",
+            "value": "Insects and other small animals"
+          }
+        }
+      ]
+    },
+    "map128-seal": {
+      "de": {
+        "title": "Seehund",
+        "subtitle": "Phoca vitulina",
+        "description": "Seehunde sind im Wasser wendige Jäger und ruhen an Land oft auf Sandbänken. Ihre empfindlichen Tasthaare helfen ihnen, Bewegungen im Wasser wahrzunehmen. Zum Atmen müssen sie regelmäßig an die Oberfläche kommen."
+      },
+      "en": {
+        "title": "Harbour Seal",
+        "subtitle": "Phoca vitulina",
+        "description": "Harbour seals are agile hunters in the water and often rest on sandbanks on land. Sensitive whiskers help them detect movements in the water. They must return to the surface regularly to breathe."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Wissenschaftlicher Name",
+            "value": "Phoca vitulina"
+          },
+          "en": {
+            "label": "Scientific name",
+            "value": "Phoca vitulina"
+          }
+        },
+        {
+          "de": {
+            "label": "Verbreitung",
+            "value": "Küsten des Nordatlantiks und Nordpazifiks"
+          },
+          "en": {
+            "label": "Range",
+            "value": "North Atlantic and North Pacific coasts"
+          }
+        },
+        {
+          "de": {
+            "label": "Lebensraum",
+            "value": "Küstengewässer, Sandbänke und Felsküsten"
+          },
+          "en": {
+            "label": "Habitat",
+            "value": "Coastal waters, sandbanks and rocky shores"
+          }
+        },
+        {
+          "de": {
+            "label": "Nahrung",
+            "value": "Fische, Krebstiere und Kopffüßer"
+          },
+          "en": {
+            "label": "Diet",
+            "value": "Fish, crustaceans and cephalopods"
+          }
+        }
+      ]
+    },
+    "map128-penguin": {
+      "de": {
+        "title": "Königspinguin",
+        "subtitle": "Aptenodytes patagonicus",
+        "description": "Königspinguine nutzen ihre Flügel wie Flossen und bewegen sich unter Wasser besonders elegant. An Land fallen ihr aufrechter Gang und die gelb-orangen Halsflecken auf. Ein einzelnes Ei wird auf den Füßen unter einer Bauchfalte warm gehalten."
+      },
+      "en": {
+        "title": "King Penguin",
+        "subtitle": "Aptenodytes patagonicus",
+        "description": "King penguins use their wings as flippers and move gracefully underwater. On land, their upright walk and yellow-orange neck patches stand out. A single egg is kept warm on the feet beneath a fold of skin."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Wissenschaftlicher Name",
+            "value": "Aptenodytes patagonicus"
+          },
+          "en": {
+            "label": "Scientific name",
+            "value": "Aptenodytes patagonicus"
+          }
+        },
+        {
+          "de": {
+            "label": "Verbreitung",
+            "value": "Subantarktische Inseln"
+          },
+          "en": {
+            "label": "Range",
+            "value": "Subantarctic islands"
+          }
+        },
+        {
+          "de": {
+            "label": "Lebensraum",
+            "value": "Kühle Meere und eisfreie Inselküsten"
+          },
+          "en": {
+            "label": "Habitat",
+            "value": "Cold seas and ice-free island shores"
+          }
+        },
+        {
+          "de": {
+            "label": "Nahrung",
+            "value": "Fische und Tintenfische"
+          },
+          "en": {
+            "label": "Diet",
+            "value": "Fish and squid"
+          }
+        }
+      ]
+    },
+    "map128-pelican": {
+      "de": {
+        "title": "Rosapelikan",
+        "subtitle": "Pelecanus onocrotalus",
+        "description": "Rosapelikane fangen Fische mit ihrem langen Schnabel und dem dehnbaren Kehlsack. Häufig arbeiten mehrere Vögel beim Fischen zusammen. Im Flug tragen breite Flügel die großen Wasservögel über weite Strecken."
+      },
+      "en": {
+        "title": "Great White Pelican",
+        "subtitle": "Pelecanus onocrotalus",
+        "description": "Great white pelicans catch fish with their long bills and expandable throat pouches. Several birds often work together when fishing. Broad wings carry these large waterbirds over long distances."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Wissenschaftlicher Name",
+            "value": "Pelecanus onocrotalus"
+          },
+          "en": {
+            "label": "Scientific name",
+            "value": "Pelecanus onocrotalus"
+          }
+        },
+        {
+          "de": {
+            "label": "Verbreitung",
+            "value": "Teile Europas, Asiens und Afrikas"
+          },
+          "en": {
+            "label": "Range",
+            "value": "Parts of Europe, Asia and Africa"
+          }
+        },
+        {
+          "de": {
+            "label": "Lebensraum",
+            "value": "Flache Seen, Feuchtgebiete und Lagunen"
+          },
+          "en": {
+            "label": "Habitat",
+            "value": "Shallow lakes, wetlands and lagoons"
+          }
+        },
+        {
+          "de": {
+            "label": "Nahrung",
+            "value": "Vor allem Fische"
+          },
+          "en": {
+            "label": "Diet",
+            "value": "Mainly fish"
+          }
+        }
+      ]
+    },
+    "map128-otter": {
+      "de": {
+        "title": "Europäischer Fischotter",
+        "subtitle": "Lutra lutra",
+        "description": "Fischotter sind geschickte Schwimmer mit einem stromlinienförmigen Körper. Ihr dichtes Fell hält eine isolierende Luftschicht fest. Bei der Nahrungssuche helfen ihnen empfindliche Tasthaare rund um die Schnauze."
+      },
+      "en": {
+        "title": "Eurasian Otter",
+        "subtitle": "Lutra lutra",
+        "description": "Otters are skilled swimmers with streamlined bodies. Dense fur traps an insulating layer of air. Sensitive whiskers around the muzzle help them find food in the water."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Wissenschaftlicher Name",
+            "value": "Lutra lutra"
+          },
+          "en": {
+            "label": "Scientific name",
+            "value": "Lutra lutra"
+          }
+        },
+        {
+          "de": {
+            "label": "Verbreitung",
+            "value": "Europa, Teile Asiens und Nordafrikas"
+          },
+          "en": {
+            "label": "Range",
+            "value": "Europe, parts of Asia and North Africa"
+          }
+        },
+        {
+          "de": {
+            "label": "Lebensraum",
+            "value": "Flüsse, Seen, Feuchtgebiete und Küsten"
+          },
+          "en": {
+            "label": "Habitat",
+            "value": "Rivers, lakes, wetlands and coasts"
+          }
+        },
+        {
+          "de": {
+            "label": "Nahrung",
+            "value": "Vor allem Fische, außerdem Amphibien und Krebstiere"
+          },
+          "en": {
+            "label": "Diet",
+            "value": "Mainly fish, also amphibians and crustaceans"
+          }
+        }
+      ]
+    },
+    "map128-orangutan": {
+      "de": {
+        "title": "Borneo-Orang-Utan",
+        "subtitle": "Pongo pygmaeus",
+        "description": "Orang-Utans verbringen viel Zeit in den Bäumen und greifen mit Händen und Füßen nach Ästen. Für die Nachtruhe bauen sie Nester aus Zweigen und Blättern. Jungtiere bleiben lange bei ihrer Mutter und lernen von ihr, geeignete Nahrung zu finden."
+      },
+      "en": {
+        "title": "Bornean Orangutan",
+        "subtitle": "Pongo pygmaeus",
+        "description": "Orangutans spend much of their time in trees, gripping branches with both hands and feet. They build sleeping nests from branches and leaves. Youngsters stay with their mothers for years and learn how to find suitable food."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Wissenschaftlicher Name",
+            "value": "Pongo pygmaeus"
+          },
+          "en": {
+            "label": "Scientific name",
+            "value": "Pongo pygmaeus"
+          }
+        },
+        {
+          "de": {
+            "label": "Verbreitung",
+            "value": "Borneo"
+          },
+          "en": {
+            "label": "Range",
+            "value": "Borneo"
+          }
+        },
+        {
+          "de": {
+            "label": "Lebensraum",
+            "value": "Tropische Regen- und Sumpfwälder"
+          },
+          "en": {
+            "label": "Habitat",
+            "value": "Tropical rainforests and swamp forests"
+          }
+        },
+        {
+          "de": {
+            "label": "Nahrung",
+            "value": "Vor allem Früchte, außerdem Blätter und weitere Nahrung"
+          },
+          "en": {
+            "label": "Diet",
+            "value": "Mostly fruit, also leaves and other foods"
+          }
+        }
+      ]
+    },
+    "map128-tiger": {
+      "de": {
+        "title": "Tiger",
+        "subtitle": "Panthera tigris",
+        "description": "Jeder Tiger besitzt ein individuelles Streifenmuster. Die Zeichnung hilft ihm, in dichter Vegetation unauffällig zu bleiben. Tiger leben meist allein und sind gute Schwimmer, die an warmen Tagen gern Wasser aufsuchen."
+      },
+      "en": {
+        "title": "Tiger",
+        "subtitle": "Panthera tigris",
+        "description": "Every tiger has a distinctive stripe pattern. This coat helps it remain hidden in dense vegetation. Tigers usually live alone and are strong swimmers that readily enter the water on warm days."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Wissenschaftlicher Name",
+            "value": "Panthera tigris"
+          },
+          "en": {
+            "label": "Scientific name",
+            "value": "Panthera tigris"
+          }
+        },
+        {
+          "de": {
+            "label": "Verbreitung",
+            "value": "Asien"
+          },
+          "en": {
+            "label": "Range",
+            "value": "Asia"
+          }
+        },
+        {
+          "de": {
+            "label": "Lebensraum",
+            "value": "Wälder, Grasländer und Feuchtgebiete"
+          },
+          "en": {
+            "label": "Habitat",
+            "value": "Forests, grasslands and wetlands"
+          }
+        },
+        {
+          "de": {
+            "label": "Nahrung",
+            "value": "Vor allem größere Säugetiere"
+          },
+          "en": {
+            "label": "Diet",
+            "value": "Mainly large mammals"
+          }
+        }
+      ]
+    },
+    "map128-leopard": {
+      "de": {
+        "title": "Leopard",
+        "subtitle": "Panthera pardus",
+        "description": "Leoparden sind kräftige Kletterer und können Beute auf Bäume tragen. Ihr Fell zeigt dunkle Rosetten, die eine gute Tarnung bilden. Die einzelgängerischen Katzen bewegen sich oft in der Dämmerung oder nachts durch ihr Revier."
+      },
+      "en": {
+        "title": "Leopard",
+        "subtitle": "Panthera pardus",
+        "description": "Leopards are powerful climbers and can carry prey into trees. Dark rosettes on their coats provide effective camouflage. These solitary cats often move through their territories at dusk or during the night."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Wissenschaftlicher Name",
+            "value": "Panthera pardus"
+          },
+          "en": {
+            "label": "Scientific name",
+            "value": "Panthera pardus"
+          }
+        },
+        {
+          "de": {
+            "label": "Verbreitung",
+            "value": "Afrika und Teile Asiens"
+          },
+          "en": {
+            "label": "Range",
+            "value": "Africa and parts of Asia"
+          }
+        },
+        {
+          "de": {
+            "label": "Lebensraum",
+            "value": "Wälder, Savannen und felsige Landschaften"
+          },
+          "en": {
+            "label": "Habitat",
+            "value": "Forests, savannas and rocky landscapes"
+          }
+        },
+        {
+          "de": {
+            "label": "Nahrung",
+            "value": "Säugetiere und Vögel"
+          },
+          "en": {
+            "label": "Diet",
+            "value": "Mammals and birds"
+          }
+        }
+      ]
+    },
+    "map128-tapir": {
+      "de": {
+        "title": "Flachlandtapir",
+        "subtitle": "Tapirus terrestris",
+        "description": "Der kurze, bewegliche Rüssel des Tapirs besteht aus Nase und Oberlippe. Mit ihm greift das Tier nach Blättern und Trieben. Tapire schwimmen gut und tragen durch ausgeschiedene Samen zur Verbreitung von Pflanzen bei."
+      },
+      "en": {
+        "title": "Lowland Tapir",
+        "subtitle": "Tapirus terrestris",
+        "description": "A tapir’s short, flexible trunk is formed by its nose and upper lip. It uses this to grasp leaves and shoots. Tapirs swim well and help spread plants by passing seeds in their dung."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Wissenschaftlicher Name",
+            "value": "Tapirus terrestris"
+          },
+          "en": {
+            "label": "Scientific name",
+            "value": "Tapirus terrestris"
+          }
+        },
+        {
+          "de": {
+            "label": "Verbreitung",
+            "value": "Südamerika"
+          },
+          "en": {
+            "label": "Range",
+            "value": "South America"
+          }
+        },
+        {
+          "de": {
+            "label": "Lebensraum",
+            "value": "Tropische Wälder und Feuchtgebiete"
+          },
+          "en": {
+            "label": "Habitat",
+            "value": "Tropical forests and wetlands"
+          }
+        },
+        {
+          "de": {
+            "label": "Nahrung",
+            "value": "Blätter, Triebe und Früchte"
+          },
+          "en": {
+            "label": "Diet",
+            "value": "Leaves, shoots and fruit"
+          }
+        }
+      ]
+    },
+    "map128-gorilla": {
+      "de": {
+        "title": "Westlicher Flachlandgorilla",
+        "subtitle": "Gorilla gorilla gorilla",
+        "description": "Gorillas leben in sozialen Gruppen mit engen Beziehungen zwischen den Tieren. Erwachsene Männchen entwickeln den typischen silbrigen Rücken. Trotz ihrer Kraft besteht die Nahrung überwiegend aus Pflanzen; Ruhephasen und gegenseitige Aufmerksamkeit prägen den Alltag."
+      },
+      "en": {
+        "title": "Western Lowland Gorilla",
+        "subtitle": "Gorilla gorilla gorilla",
+        "description": "Gorillas live in social groups with close bonds between individuals. Adult males develop the characteristic silver back. Despite their strength, they eat mainly plants, and their day includes rest and attentive social interactions."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Wissenschaftlicher Name",
+            "value": "Gorilla gorilla gorilla"
+          },
+          "en": {
+            "label": "Scientific name",
+            "value": "Gorilla gorilla gorilla"
+          }
+        },
+        {
+          "de": {
+            "label": "Verbreitung",
+            "value": "Westliches Zentralafrika"
+          },
+          "en": {
+            "label": "Range",
+            "value": "Western Central Africa"
+          }
+        },
+        {
+          "de": {
+            "label": "Lebensraum",
+            "value": "Tropische Tiefland- und Sumpfwälder"
+          },
+          "en": {
+            "label": "Habitat",
+            "value": "Tropical lowland and swamp forests"
+          }
+        },
+        {
+          "de": {
+            "label": "Nahrung",
+            "value": "Früchte, Blätter, Triebe und gelegentlich Insekten"
+          },
+          "en": {
+            "label": "Diet",
+            "value": "Fruit, leaves, shoots and occasional insects"
+          }
+        }
+      ]
+    },
+    "map128-hippopotamus": {
+      "de": {
+        "title": "Flusspferd",
+        "subtitle": "Hippopotamus amphibius",
+        "description": "Flusspferde verbringen einen großen Teil des Tages im Wasser. Augen, Ohren und Nasenlöcher liegen weit oben am Kopf, sodass sie ihre Umgebung auch fast vollständig untergetaucht wahrnehmen können. Zur Nahrungssuche verlassen sie das Wasser meist nachts."
+      },
+      "en": {
+        "title": "Hippopotamus",
+        "subtitle": "Hippopotamus amphibius",
+        "description": "Hippos spend much of the day in water. Their eyes, ears and nostrils sit high on the head, allowing them to sense their surroundings while almost submerged. They usually leave the water to graze at night."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Wissenschaftlicher Name",
+            "value": "Hippopotamus amphibius"
+          },
+          "en": {
+            "label": "Scientific name",
+            "value": "Hippopotamus amphibius"
+          }
+        },
+        {
+          "de": {
+            "label": "Verbreitung",
+            "value": "Afrika südlich der Sahara"
+          },
+          "en": {
+            "label": "Range",
+            "value": "Sub-Saharan Africa"
+          }
+        },
+        {
+          "de": {
+            "label": "Lebensraum",
+            "value": "Flüsse und Seen mit angrenzendem Grasland"
+          },
+          "en": {
+            "label": "Habitat",
+            "value": "Rivers and lakes beside grassland"
+          }
+        },
+        {
+          "de": {
+            "label": "Nahrung",
+            "value": "Vorwiegend Gräser"
+          },
+          "en": {
+            "label": "Diet",
+            "value": "Mostly grasses"
+          }
+        }
+      ]
+    },
+    "map128-flamingo": {
+      "de": {
+        "title": "Rosaflamingo",
+        "subtitle": "Phoenicopterus roseus",
+        "description": "Flamingos filtern Nahrung mit einem speziell geformten Schnabel aus dem Wasser. Farbstoffe aus ihrer Nahrung tragen zur rosa Färbung des Gefieders bei. In der Gruppe verständigen sich die Vögel mit Rufen und auffälligen gemeinsamen Bewegungen."
+      },
+      "en": {
+        "title": "Greater Flamingo",
+        "subtitle": "Phoenicopterus roseus",
+        "description": "Flamingos filter food from water using specially shaped bills. Pigments in their diet contribute to their pink plumage. Within a flock, birds communicate through calls and striking coordinated movements."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Wissenschaftlicher Name",
+            "value": "Phoenicopterus roseus"
+          },
+          "en": {
+            "label": "Scientific name",
+            "value": "Phoenicopterus roseus"
+          }
+        },
+        {
+          "de": {
+            "label": "Verbreitung",
+            "value": "Teile Europas, Afrikas und Asiens"
+          },
+          "en": {
+            "label": "Range",
+            "value": "Parts of Europe, Africa and Asia"
+          }
+        },
+        {
+          "de": {
+            "label": "Lebensraum",
+            "value": "Flache Salzseen, Lagunen und Küstenfeuchtgebiete"
+          },
+          "en": {
+            "label": "Habitat",
+            "value": "Shallow salt lakes, lagoons and coastal wetlands"
+          }
+        },
+        {
+          "de": {
+            "label": "Nahrung",
+            "value": "Kleine Krebstiere, Algen und weitere Kleinstorganismen"
+          },
+          "en": {
+            "label": "Diet",
+            "value": "Small crustaceans, algae and other tiny organisms"
+          }
+        }
+      ]
+    },
+    "map128-crocodile": {
+      "de": {
+        "title": "Nilkrokodil",
+        "subtitle": "Crocodylus niloticus",
+        "description": "Nilkrokodile warten oft reglos am oder im Wasser auf Beute. Ihr kräftiger Schwanz treibt sie beim Schwimmen an. Als wechselwarme Tiere wechseln sie zwischen sonnigen und schattigen Plätzen, um ihre Körpertemperatur zu regulieren."
+      },
+      "en": {
+        "title": "Nile Crocodile",
+        "subtitle": "Crocodylus niloticus",
+        "description": "Nile crocodiles often wait motionless beside or beneath the water for prey. A powerful tail propels them when swimming. As ectothermic animals, they move between sunny and shaded places to regulate their body temperature."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Wissenschaftlicher Name",
+            "value": "Crocodylus niloticus"
+          },
+          "en": {
+            "label": "Scientific name",
+            "value": "Crocodylus niloticus"
+          }
+        },
+        {
+          "de": {
+            "label": "Verbreitung",
+            "value": "Afrika"
+          },
+          "en": {
+            "label": "Range",
+            "value": "Africa"
+          }
+        },
+        {
+          "de": {
+            "label": "Lebensraum",
+            "value": "Flüsse, Seen und Sumpfgebiete"
+          },
+          "en": {
+            "label": "Habitat",
+            "value": "Rivers, lakes and swamps"
+          }
+        },
+        {
+          "de": {
+            "label": "Nahrung",
+            "value": "Fische und andere Wirbeltiere"
+          },
+          "en": {
+            "label": "Diet",
+            "value": "Fish and other vertebrates"
+          }
+        }
+      ]
+    },
+    "map128-capybara": {
+      "de": {
+        "title": "Wasserschwein",
+        "subtitle": "Hydrochoerus hydrochaeris",
+        "description": "Wasserschweine sind die größten lebenden Nagetiere und halten sich gern in Wassernähe auf. Sie leben in Gruppen und können gut schwimmen. Ihre hoch sitzenden Augen und Nasenlöcher sind beim Aufenthalt im Wasser besonders praktisch."
+      },
+      "en": {
+        "title": "Capybara",
+        "subtitle": "Hydrochoerus hydrochaeris",
+        "description": "Capybaras are the largest living rodents and stay close to water. They live in groups and are capable swimmers. Eyes and nostrils positioned high on the head are especially useful when they are in the water."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Wissenschaftlicher Name",
+            "value": "Hydrochoerus hydrochaeris"
+          },
+          "en": {
+            "label": "Scientific name",
+            "value": "Hydrochoerus hydrochaeris"
+          }
+        },
+        {
+          "de": {
+            "label": "Verbreitung",
+            "value": "Südamerika"
+          },
+          "en": {
+            "label": "Range",
+            "value": "South America"
+          }
+        },
+        {
+          "de": {
+            "label": "Lebensraum",
+            "value": "Flussufer, Sümpfe und überschwemmte Grasländer"
+          },
+          "en": {
+            "label": "Habitat",
+            "value": "Riverbanks, swamps and flooded grasslands"
+          }
+        },
+        {
+          "de": {
+            "label": "Nahrung",
+            "value": "Gräser und Wasserpflanzen"
+          },
+          "en": {
+            "label": "Diet",
+            "value": "Grasses and aquatic plants"
+          }
+        }
+      ]
+    },
+    "map128-lion": {
+      "de": {
+        "title": "Afrikanischer Löwe",
+        "subtitle": "Panthera leo",
+        "description": "Löwen leben als eine der wenigen Katzenarten in Rudeln. Gemeinsame Ruhezeiten, Körperkontakt und Rufe festigen die Beziehungen. Die Mähne erwachsener Männchen kann sehr unterschiedlich aussehen; bei der Jagd spielt Zusammenarbeit häufig eine wichtige Rolle."
+      },
+      "en": {
+        "title": "African Lion",
+        "subtitle": "Panthera leo",
+        "description": "Lions are among the few cats that live in social groups called prides. Resting together, physical contact and calls strengthen their bonds. Adult males vary greatly in mane appearance, and cooperation often plays an important role during hunts."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Wissenschaftlicher Name",
+            "value": "Panthera leo"
+          },
+          "en": {
+            "label": "Scientific name",
+            "value": "Panthera leo"
+          }
+        },
+        {
+          "de": {
+            "label": "Verbreitung",
+            "value": "Afrika südlich der Sahara"
+          },
+          "en": {
+            "label": "Range",
+            "value": "Sub-Saharan Africa"
+          }
+        },
+        {
+          "de": {
+            "label": "Lebensraum",
+            "value": "Savannen, Grasländer und lichte Wälder"
+          },
+          "en": {
+            "label": "Habitat",
+            "value": "Savannas, grasslands and open woodlands"
+          }
+        },
+        {
+          "de": {
+            "label": "Nahrung",
+            "value": "Vor allem mittelgroße und große Huftiere"
+          },
+          "en": {
+            "label": "Diet",
+            "value": "Mainly medium-sized and large hoofed mammals"
+          }
+        }
+      ]
+    },
+    "map128-rhinoceros": {
+      "de": {
+        "title": "Breitmaulnashorn",
+        "subtitle": "Ceratotherium simum",
+        "description": "Breitmaulnashörner nutzen ihre breite, gerade Oberlippe zum Abweiden von Gras. Ihr Geruchssinn und ihr Gehör helfen ihnen, die Umgebung zu erkunden. Schlammbäder kühlen die Haut und können vor Sonne und Insekten schützen."
+      },
+      "en": {
+        "title": "White Rhinoceros",
+        "subtitle": "Ceratotherium simum",
+        "description": "White rhinoceroses use a broad, square upper lip to graze on grass. Smell and hearing help them explore their surroundings. Mud baths cool the skin and can provide protection from sun and insects."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Wissenschaftlicher Name",
+            "value": "Ceratotherium simum"
+          },
+          "en": {
+            "label": "Scientific name",
+            "value": "Ceratotherium simum"
+          }
+        },
+        {
+          "de": {
+            "label": "Verbreitung",
+            "value": "Südliches Afrika und angesiedelte Bestände in weiteren Regionen"
+          },
+          "en": {
+            "label": "Range",
+            "value": "Southern Africa, with introduced populations elsewhere"
+          }
+        },
+        {
+          "de": {
+            "label": "Lebensraum",
+            "value": "Grasland und Savannen"
+          },
+          "en": {
+            "label": "Habitat",
+            "value": "Grasslands and savannas"
+          }
+        },
+        {
+          "de": {
+            "label": "Nahrung",
+            "value": "Vorwiegend Gräser"
+          },
+          "en": {
+            "label": "Diet",
+            "value": "Mostly grasses"
+          }
+        }
+      ]
+    },
+    "map128-hyena": {
+      "de": {
+        "title": "Tüpfelhyäne",
+        "subtitle": "Crocuta crocuta",
+        "description": "Tüpfelhyänen leben in komplexen Clans, in denen Weibchen meist die höheren Ränge einnehmen. Sie sind erfolgreiche Jäger und verwerten auch Aas. Ihre vielfältigen Rufe dienen der Verständigung und sind weit mehr als das bekannte „Lachen“."
+      },
+      "en": {
+        "title": "Spotted Hyena",
+        "subtitle": "Crocuta crocuta",
+        "description": "Spotted hyenas live in complex clans in which females usually hold the higher ranks. They are successful hunters and also feed on carrion. Their varied calls communicate information and include far more than the familiar “laugh”."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Wissenschaftlicher Name",
+            "value": "Crocuta crocuta"
+          },
+          "en": {
+            "label": "Scientific name",
+            "value": "Crocuta crocuta"
+          }
+        },
+        {
+          "de": {
+            "label": "Verbreitung",
+            "value": "Afrika südlich der Sahara"
+          },
+          "en": {
+            "label": "Range",
+            "value": "Sub-Saharan Africa"
+          }
+        },
+        {
+          "de": {
+            "label": "Lebensraum",
+            "value": "Savannen, Grasländer und offene Wälder"
+          },
+          "en": {
+            "label": "Habitat",
+            "value": "Savannas, grasslands and open woodlands"
+          }
+        },
+        {
+          "de": {
+            "label": "Nahrung",
+            "value": "Fleisch und Aas"
+          },
+          "en": {
+            "label": "Diet",
+            "value": "Meat and carrion"
+          }
+        }
+      ]
+    },
+    "map128-zebra": {
+      "de": {
+        "title": "Steppenzebra",
+        "subtitle": "Equus quagga",
+        "description": "Kein Steppenzebra besitzt genau dasselbe Streifenmuster wie ein anderes. Die Tiere leben in Familiengruppen, die sich zu größeren Herden zusammenschließen können. Aufmerksame Ohren und der Zusammenhalt der Gruppe helfen, Gefahren früh zu bemerken."
+      },
+      "en": {
+        "title": "Plains Zebra",
+        "subtitle": "Equus quagga",
+        "description": "No two plains zebras have exactly the same stripe pattern. They live in family groups that can join larger herds. Alert ears and close group bonds help them notice danger early."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Wissenschaftlicher Name",
+            "value": "Equus quagga"
+          },
+          "en": {
+            "label": "Scientific name",
+            "value": "Equus quagga"
+          }
+        },
+        {
+          "de": {
+            "label": "Verbreitung",
+            "value": "Östliches und südliches Afrika"
+          },
+          "en": {
+            "label": "Range",
+            "value": "Eastern and southern Africa"
+          }
+        },
+        {
+          "de": {
+            "label": "Lebensraum",
+            "value": "Savannen und offene Grasländer"
+          },
+          "en": {
+            "label": "Habitat",
+            "value": "Savannas and open grasslands"
+          }
+        },
+        {
+          "de": {
+            "label": "Nahrung",
+            "value": "Vorwiegend Gräser"
+          },
+          "en": {
+            "label": "Diet",
+            "value": "Mostly grasses"
+          }
+        }
+      ]
+    },
+    "map128-giraffe": {
+      "de": {
+        "title": "Giraffe",
+        "subtitle": "Giraffa spp.",
+        "description": "Giraffen erreichen mit ihrem langen Hals Nahrung, an die viele andere Pflanzenfresser nicht gelangen. Mit der beweglichen Zunge zupfen sie Blätter zwischen den Zweigen hervor. Ihr Fleckenmuster ist individuell und begleitet sie ein Leben lang."
+      },
+      "en": {
+        "title": "Giraffe",
+        "subtitle": "Giraffa spp.",
+        "description": "A giraffe’s long neck gives it access to food beyond the reach of many other plant-eaters. A flexible tongue plucks leaves from between branches. Each animal has an individual coat pattern that lasts throughout its life."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Wissenschaftlicher Name",
+            "value": "Giraffa spp."
+          },
+          "en": {
+            "label": "Scientific name",
+            "value": "Giraffa spp."
+          }
+        },
+        {
+          "de": {
+            "label": "Verbreitung",
+            "value": "Afrika südlich der Sahara"
+          },
+          "en": {
+            "label": "Range",
+            "value": "Sub-Saharan Africa"
+          }
+        },
+        {
+          "de": {
+            "label": "Lebensraum",
+            "value": "Savannen und lichte Wälder"
+          },
+          "en": {
+            "label": "Habitat",
+            "value": "Savannas and open woodlands"
+          }
+        },
+        {
+          "de": {
+            "label": "Nahrung",
+            "value": "Blätter, Triebe und Knospen von Bäumen"
+          },
+          "en": {
+            "label": "Diet",
+            "value": "Leaves, shoots and buds from trees"
+          }
+        }
+      ]
+    },
+    "map128-elephant": {
+      "de": {
+        "title": "Afrikanischer Savannenelefant",
+        "subtitle": "Loxodonta africana",
+        "description": "Elefanten erkunden ihre Welt mit dem Rüssel, der zugleich Nase und vielseitiges Greiforgan ist. Weibchen und Jungtiere leben in Familiengruppen und pflegen enge soziale Beziehungen. Die großen Ohren helfen, überschüssige Wärme abzugeben."
+      },
+      "en": {
+        "title": "African Savanna Elephant",
+        "subtitle": "Loxodonta africana",
+        "description": "Elephants explore the world with a trunk that serves as both a nose and a versatile grasping organ. Females and young live in family groups with strong social bonds. Large ears help release excess body heat."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Wissenschaftlicher Name",
+            "value": "Loxodonta africana"
+          },
+          "en": {
+            "label": "Scientific name",
+            "value": "Loxodonta africana"
+          }
+        },
+        {
+          "de": {
+            "label": "Verbreitung",
+            "value": "Afrika südlich der Sahara"
+          },
+          "en": {
+            "label": "Range",
+            "value": "Sub-Saharan Africa"
+          }
+        },
+        {
+          "de": {
+            "label": "Lebensraum",
+            "value": "Savannen, Wälder und Buschlandschaften"
+          },
+          "en": {
+            "label": "Habitat",
+            "value": "Savannas, woodlands and scrublands"
+          }
+        },
+        {
+          "de": {
+            "label": "Nahrung",
+            "value": "Gräser, Blätter, Rinde und Früchte"
+          },
+          "en": {
+            "label": "Diet",
+            "value": "Grasses, leaves, bark and fruit"
+          }
+        }
+      ]
+    },
+    "map128-restaurant": {
+      "de": {
+        "title": "Waldrestaurant",
+        "subtitle": "Warme Küche am Tropenwald",
+        "description": "Im Waldrestaurant legen Sie eine entspannte Pause auf Ihrem Rundgang ein. Auf der Beispielkarte stehen warme Gerichte, vegetarische Angebote und kleinere Portionen für Kinder. Fragen zu Zutaten und Allergenen beantwortet das Team vor der Bestellung."
+      },
+      "en": {
+        "title": "Forest Restaurant",
+        "subtitle": "Hot meals beside the tropical forest",
+        "description": "Take a relaxing break at the Forest Restaurant. The sample menu offers hot meals, vegetarian options and smaller portions for children. Ask the team about ingredients and allergens before ordering."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Angebot",
+            "value": "Warme Gerichte und Salate"
+          },
+          "en": {
+            "label": "Food",
+            "value": "Hot meals and salads"
+          }
+        },
+        {
+          "de": {
+            "label": "Vegetarisch",
+            "value": "Vegetarische Auswahl"
+          },
+          "en": {
+            "label": "Vegetarian",
+            "value": "Vegetarian options"
+          }
+        },
+        {
+          "de": {
+            "label": "Für Familien",
+            "value": "Kleine Kinderportionen"
+          },
+          "en": {
+            "label": "Families",
+            "value": "Smaller children’s portions"
+          }
+        },
+        {
+          "de": {
+            "label": "Standort",
+            "value": "Am Rand des Tropenwaldes"
+          },
+          "en": {
+            "label": "Location",
+            "value": "Beside the tropical forest"
+          }
+        }
+      ]
+    },
+    "map128-restaurant-south": {
+      "de": {
+        "title": "Restaurant Flussblick",
+        "subtitle": "Familienpause in den Flusswelten",
+        "description": "Das Restaurant Flussblick liegt am Rundweg durch die Flusswelten. Die Beispielauswahl umfasst leichte Gerichte, warme Snacks und alkoholfreie Getränke. Nehmen Sie sich Zeit für eine Pause, bevor Sie Ihren Besuch in der Savanne fortsetzen."
+      },
+      "en": {
+        "title": "Riverside Restaurant",
+        "subtitle": "A family break in River Worlds",
+        "description": "The Riverside Restaurant sits beside the River Worlds walking route. Its sample selection includes light meals, hot snacks and soft drinks. Enjoy a break before continuing your visit towards the savanna."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Angebot",
+            "value": "Leichte Gerichte und warme Snacks"
+          },
+          "en": {
+            "label": "Food",
+            "value": "Light meals and hot snacks"
+          }
+        },
+        {
+          "de": {
+            "label": "Getränke",
+            "value": "Wasser, Saft und Heißgetränke"
+          },
+          "en": {
+            "label": "Drinks",
+            "value": "Water, juice and hot drinks"
+          }
+        },
+        {
+          "de": {
+            "label": "Für Familien",
+            "value": "Kinderportionen erhältlich"
+          },
+          "en": {
+            "label": "Families",
+            "value": "Children’s portions available"
+          }
+        },
+        {
+          "de": {
+            "label": "Standort",
+            "value": "Südlicher Rundweg der Flusswelten"
+          },
+          "en": {
+            "label": "Location",
+            "value": "Southern River Worlds route"
+          }
+        }
+      ]
+    },
+    "map128-cafe": {
+      "de": {
+        "title": "Café Küstenpause",
+        "subtitle": "Kaffee und Kuchen am Wasser",
+        "description": "Im Café Küstenpause finden Sie eine kleine Stärkung zwischen den Wasseranlagen. Zum Beispielangebot gehören Kaffee, Tee, Kuchen und Eis. Für Informationen zu Zutaten oder pflanzlichen Alternativen wenden Sie sich bitte an das Café-Team."
+      },
+      "en": {
+        "title": "Coastal Café",
+        "subtitle": "Coffee and cake beside the water",
+        "description": "Enjoy a small treat between the aquatic exhibits at the Coastal Café. The sample menu includes coffee, tea, cake and ice cream. Ask the café team about ingredients or plant-based alternatives."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Angebot",
+            "value": "Kuchen, Eis und kleine Snacks"
+          },
+          "en": {
+            "label": "Food",
+            "value": "Cake, ice cream and light snacks"
+          }
+        },
+        {
+          "de": {
+            "label": "Heißgetränke",
+            "value": "Kaffee und Tee"
+          },
+          "en": {
+            "label": "Hot drinks",
+            "value": "Coffee and tea"
+          }
+        },
+        {
+          "de": {
+            "label": "Standort",
+            "value": "Im Bereich Wasser & Küste"
+          },
+          "en": {
+            "label": "Location",
+            "value": "In Water & Coast"
+          }
+        },
+        {
+          "de": {
+            "label": "Allergene",
+            "value": "Auskunft beim Team"
+          },
+          "en": {
+            "label": "Allergens",
+            "value": "Ask the team"
+          }
+        }
+      ]
+    },
+    "map128-restroom": {
+      "de": {
+        "title": "Toiletten",
+        "subtitle": "Besucherservice am Wasserbereich",
+        "description": "Die Toiletten liegen am Hauptweg zwischen Tropenwald und Wasserbereich. In diesem Beispielstandort sind auch ein barrierefreies WC und eine Wickelmöglichkeit vorgesehen. Bitte helfen Sie mit, die Anlagen für alle Gäste sauber zu halten."
+      },
+      "en": {
+        "title": "Toilets",
+        "subtitle": "Visitor facilities beside the aquatic area",
+        "description": "The toilets are on the main path between the tropical forest and aquatic area. This example facility includes an accessible toilet and a baby-changing space. Please help keep the facilities clean for every visitor."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Ausstattung",
+            "value": "Damen- und Herrentoiletten"
+          },
+          "en": {
+            "label": "Facilities",
+            "value": "Women’s and men’s toilets"
+          }
+        },
+        {
+          "de": {
+            "label": "Barrierefreiheit",
+            "value": "Barrierefreies WC"
+          },
+          "en": {
+            "label": "Accessibility",
+            "value": "Accessible toilet"
+          }
+        },
+        {
+          "de": {
+            "label": "Familien",
+            "value": "Wickelmöglichkeit"
+          },
+          "en": {
+            "label": "Families",
+            "value": "Baby-changing facilities"
+          }
+        },
+        {
+          "de": {
+            "label": "Standort",
+            "value": "Zwischen Tropenwald und Wasserbereich"
+          },
+          "en": {
+            "label": "Location",
+            "value": "Between the tropical forest and aquatic area"
+          }
+        }
+      ]
+    },
+    "map128-first-aid": {
+      "de": {
+        "title": "Erste Hilfe",
+        "subtitle": "Anlaufstelle bei gesundheitlichen Problemen",
+        "description": "Wenn Sie sich unwohl fühlen oder Hilfe benötigen, wenden Sie sich an das Zooteam oder die Erste-Hilfe-Station. Der markierte Standort liegt am Weg zwischen Nordwald und Tropenwald. Bei einem akuten Notfall verständigen Sie sofort den Rettungsdienst über 112 und informieren Sie das Personal."
+      },
+      "en": {
+        "title": "First Aid",
+        "subtitle": "Assistance if you feel unwell",
+        "description": "If you feel unwell or need assistance, contact the zoo team or the first-aid station. The marked location is beside the path between Northern Forest and Tropical Forest. In an emergency, call 112 immediately and alert a member of staff."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Service",
+            "value": "Erste Hilfe und Unterstützung"
+          },
+          "en": {
+            "label": "Service",
+            "value": "First aid and assistance"
+          }
+        },
+        {
+          "de": {
+            "label": "Kontakt",
+            "value": "Zoopersonal vor Ort ansprechen"
+          },
+          "en": {
+            "label": "Contact",
+            "value": "Speak to a member of staff"
+          }
+        },
+        {
+          "de": {
+            "label": "Notruf",
+            "value": "112"
+          },
+          "en": {
+            "label": "Emergency",
+            "value": "112"
+          }
+        },
+        {
+          "de": {
+            "label": "Standort",
+            "value": "Am Weg zwischen Nordwald und Tropenwald"
+          },
+          "en": {
+            "label": "Location",
+            "value": "On the path between Northern Forest and Tropical Forest"
+          }
+        }
+      ]
+    },
+    "map128-aquarium": {
+      "de": {
+        "title": "Aquarium",
+        "subtitle": "Einblicke in die Unterwasserwelt",
+        "description": "Entdecken Sie im Aquarium die Vielfalt der Unterwasserwelt. Die Beispielausstellung zeigt Fische in unterschiedlich gestalteten Lebensräumen und erklärt ihre Anpassungen an das Leben im Wasser. Nehmen Sie sich an den Scheiben Zeit und vermeiden Sie Klopfen und Blitzlicht."
+      },
+      "en": {
+        "title": "Aquarium",
+        "subtitle": "Discover life beneath the surface",
+        "description": "Discover the variety of underwater life in the aquarium. This example exhibition presents fish in different habitat settings and explains their adaptations to aquatic life. Take your time at the windows and avoid tapping the glass or using flash."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Ausstellung",
+            "value": "Fische und ihre Lebensräume"
+          },
+          "en": {
+            "label": "Exhibition",
+            "value": "Fish and their habitats"
+          }
+        },
+        {
+          "de": {
+            "label": "Bereich",
+            "value": "Wasser & Küste"
+          },
+          "en": {
+            "label": "Area",
+            "value": "Water & Coast"
+          }
+        },
+        {
+          "de": {
+            "label": "Besuchsdauer",
+            "value": "Etwa 20–30 Minuten"
+          },
+          "en": {
+            "label": "Suggested visit",
+            "value": "Around 20–30 minutes"
+          }
+        },
+        {
+          "de": {
+            "label": "Besuchshinweis",
+            "value": "Nicht an Scheiben klopfen"
+          },
+          "en": {
+            "label": "Visitor tip",
+            "value": "Do not tap the glass"
+          }
+        }
+      ]
+    },
+    "map128-terrarium": {
+      "de": {
+        "title": "Terrarienhaus",
+        "subtitle": "Reptilien aus warmen Lebensräumen",
+        "description": "Im Terrarienhaus lernen Sie Reptilien und ihre unterschiedlichen Lebensräume kennen. Beobachten Sie, wie die Tiere zwischen warmen Sonnenplätzen und geschützten Rückzugsorten wählen. Die Beispielausstellung erläutert Tarnung, Häutung und die Bedeutung passender Temperaturen."
+      },
+      "en": {
+        "title": "Reptile House",
+        "subtitle": "Reptiles from warm habitats",
+        "description": "Meet reptiles and discover their varied habitats in the Reptile House. Observe how they choose between warm basking spots and sheltered retreats. The example exhibition explores camouflage, shedding and the importance of suitable temperatures."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Schwerpunkt",
+            "value": "Reptilien und ihre Anpassungen"
+          },
+          "en": {
+            "label": "Focus",
+            "value": "Reptiles and their adaptations"
+          }
+        },
+        {
+          "de": {
+            "label": "Standort",
+            "value": "Glashaus im Wasserbereich"
+          },
+          "en": {
+            "label": "Location",
+            "value": "Glasshouse in the aquatic area"
+          }
+        },
+        {
+          "de": {
+            "label": "Besuchsdauer",
+            "value": "Etwa 15–20 Minuten"
+          },
+          "en": {
+            "label": "Suggested visit",
+            "value": "Around 15–20 minutes"
+          }
+        },
+        {
+          "de": {
+            "label": "Besuchshinweis",
+            "value": "Ruhig beobachten, kein Blitzlicht"
+          },
+          "en": {
+            "label": "Visitor tip",
+            "value": "Observe quietly; no flash"
+          }
+        }
+      ]
+    },
+    "map128-spider-house": {
+      "de": {
+        "title": "Spinnenhaus",
+        "subtitle": "Acht Beine, viele Fähigkeiten",
+        "description": "Das Spinnenhaus lädt dazu ein, Spinnen aus nächster Nähe zu beobachten. Erfahren Sie in dieser Beispielausstellung, wozu Spinnseide dient und warum nicht jede Spinne ein Fangnetz baut. Vergleichen Sie Körperformen und Bewegungen und entdecken Sie die Vielfalt dieser Tiere."
+      },
+      "en": {
+        "title": "Spider House",
+        "subtitle": "Eight legs, many remarkable skills",
+        "description": "The Spider House invites you to observe spiders up close. This example exhibition explains the uses of silk and why not every spider builds a web to catch prey. Compare body shapes and movements and discover the variety of these animals."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Tiergruppe",
+            "value": "Spinnentiere"
+          },
+          "en": {
+            "label": "Animal group",
+            "value": "Arachnids"
+          }
+        },
+        {
+          "de": {
+            "label": "Beine",
+            "value": "Acht"
+          },
+          "en": {
+            "label": "Legs",
+            "value": "Eight"
+          }
+        },
+        {
+          "de": {
+            "label": "Besuchsdauer",
+            "value": "Etwa 10–15 Minuten"
+          },
+          "en": {
+            "label": "Suggested visit",
+            "value": "Around 10–15 minutes"
+          }
+        },
+        {
+          "de": {
+            "label": "Standort",
+            "value": "Haus am Übergang zur Savanne"
+          },
+          "en": {
+            "label": "Location",
+            "value": "Building on the approach to the savanna"
+          }
+        }
+      ]
+    },
+    "map128-entrance": {
+      "de": {
+        "title": "Haupteingang",
+        "subtitle": "Hier beginnt Ihr Zoobesuch",
+        "description": "Am Haupteingang beginnt und endet der Rundgang durch den Beispielzoo. Halten Sie Ihr Ticket für die Einlasskontrolle bereit. Information und Souvenirshop liegen in der Nähe; das Team hilft Ihnen bei der Orientierung und bei Fragen zu Ihrem Besuch."
+      },
+      "en": {
+        "title": "Main Entrance",
+        "subtitle": "Start your zoo visit here",
+        "description": "Your route through the example zoo begins and ends at the main entrance. Have your ticket ready for admission. The information point and gift shop are nearby, and the team can help you find your way and answer questions about your visit."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Funktion",
+            "value": "Ein- und Ausgang"
+          },
+          "en": {
+            "label": "Purpose",
+            "value": "Entrance and exit"
+          }
+        },
+        {
+          "de": {
+            "label": "Einlass",
+            "value": "Ticket bereithalten"
+          },
+          "en": {
+            "label": "Admission",
+            "value": "Have your ticket ready"
+          }
+        },
+        {
+          "de": {
+            "label": "In der Nähe",
+            "value": "Information und Souvenirshop"
+          },
+          "en": {
+            "label": "Nearby",
+            "value": "Information point and gift shop"
+          }
+        },
+        {
+          "de": {
+            "label": "Orientierung",
+            "value": "Startpunkt des Rundwegs"
+          },
+          "en": {
+            "label": "Orientation",
+            "value": "Starting point of the walking route"
+          }
+        }
+      ]
+    },
+    "map128-information": {
+      "de": {
+        "title": "Besucherinformation",
+        "subtitle": "Fragen, Orientierung und Fundsachen",
+        "description": "Die Besucherinformation ist Ihre erste Anlaufstelle für Fragen zum Rundgang. Das Team erklärt die Karte, hilft bei der Suche nach Einrichtungen und nimmt Hinweise auf verlorene Gegenstände entgegen. Auch wenn Sie Ihre Begleitung aus den Augen verloren haben, unterstützt Sie das Personal."
+      },
+      "en": {
+        "title": "Visitor Information",
+        "subtitle": "Questions, directions and lost property",
+        "description": "Visitor Information is your first stop for questions about your route. The team explains the map, helps you locate facilities and handles reports of lost property. Staff can also assist if you become separated from your companions."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Service",
+            "value": "Auskunft und Orientierung"
+          },
+          "en": {
+            "label": "Service",
+            "value": "Information and directions"
+          }
+        },
+        {
+          "de": {
+            "label": "Fundsachen",
+            "value": "Abgabe und Nachfrage beim Team"
+          },
+          "en": {
+            "label": "Lost property",
+            "value": "Hand in or enquire with the team"
+          }
+        },
+        {
+          "de": {
+            "label": "Treffpunkt",
+            "value": "Information am Haupteingang"
+          },
+          "en": {
+            "label": "Meeting point",
+            "value": "Information point by the main entrance"
+          }
+        },
+        {
+          "de": {
+            "label": "Sprachen",
+            "value": "Deutsch und Englisch"
+          },
+          "en": {
+            "label": "Languages",
+            "value": "German and English"
+          }
+        }
+      ]
+    },
+    "map128-souvenir": {
+      "de": {
+        "title": "Zooshop",
+        "subtitle": "Erinnerungen an Ihren Besuch",
+        "description": "Im Zooshop finden Sie kleine Erinnerungen an Ihren Rundgang. Das Beispielsortiment umfasst Plüschtiere, Postkarten und Bücher über die Tierwelt. Der Shop liegt am Hauptausgang und lässt sich bequem zum Abschluss des Besuchs einplanen."
+      },
+      "en": {
+        "title": "Zoo Gift Shop",
+        "subtitle": "Something to remember your visit",
+        "description": "Find a small reminder of your visit in the zoo gift shop. The sample range includes soft toys, postcards and wildlife books. Located beside the main exit, the shop is a convenient final stop on your route."
+      },
+      "facts": [
+        {
+          "de": {
+            "label": "Sortiment",
+            "value": "Plüschtiere, Bücher und Postkarten"
+          },
+          "en": {
+            "label": "Range",
+            "value": "Soft toys, books and postcards"
+          }
+        },
+        {
+          "de": {
+            "label": "Für Kinder",
+            "value": "Tiermotive und kleine Mitbringsel"
+          },
+          "en": {
+            "label": "For children",
+            "value": "Animal-themed gifts and small souvenirs"
+          }
+        },
+        {
+          "de": {
+            "label": "Standort",
+            "value": "Neben dem Hauptausgang"
+          },
+          "en": {
+            "label": "Location",
+            "value": "Beside the main exit"
+          }
+        },
+        {
+          "de": {
+            "label": "Beratung",
+            "value": "Das Shopteam hilft bei der Auswahl"
+          },
+          "en": {
+            "label": "Help",
+            "value": "Ask the shop team for help choosing"
+          }
+        }
+      ]
+    }
+  },
+  "categories": {
+    "animals": {
+      "de": {
+        "name": "Tiere"
+      },
+      "en": {
+        "name": "Animals"
+      }
+    },
+    "exhibits": {
+      "de": {
+        "name": "Tierhäuser"
+      },
+      "en": {
+        "name": "Animal Houses"
+      }
+    },
+    "restaurants": {
+      "de": {
+        "name": "Essen & Trinken"
+      },
+      "en": {
+        "name": "Food & Drink"
+      }
+    },
+    "restrooms": {
+      "de": {
+        "name": "Toiletten"
+      },
+      "en": {
+        "name": "Toilets"
+      }
+    },
+    "first-aid": {
+      "de": {
+        "name": "Erste Hilfe"
+      },
+      "en": {
+        "name": "First Aid"
+      }
+    },
+    "information": {
+      "de": {
+        "name": "Information"
+      },
+      "en": {
+        "name": "Information"
+      }
+    },
+    "entrances": {
+      "de": {
+        "name": "Ein- & Ausgang"
+      },
+      "en": {
+        "name": "Entrance & Exit"
+      }
+    },
+    "souvenirs": {
+      "de": {
+        "name": "Zooshop"
+      },
+      "en": {
+        "name": "Gift Shop"
+      }
+    }
+  },
+  "events": {
+    "4d5cd0ab-364f-408b-90be-7ce22eccfa98": {
+      "de": {
+        "title": "Zoo-Workshop",
+        "description": "Entdecken Sie bei einem betreuten Mitmachangebot, wie Tiere an ihre Lebensräume angepasst sind. Der Workshop richtet sich an neugierige Kinder und Erwachsene.",
+        "location": "Treffpunkt Besucherinformation"
+      },
+      "en": {
+        "title": "Zoo Workshop",
+        "description": "Discover how animals adapt to their habitats in a guided hands-on activity. Curious children and adults are welcome.",
+        "location": "Meet at Visitor Information"
+      }
+    },
+    "6bf1db4e-171a-471e-8077-4a2ae10616f8": {
+      "de": {
+        "title": "Löwenfütterung",
+        "description": "Begleiten Sie das Tierpflege-Team bei einer kommentierten Fütterung und erfahren Sie mehr über Nahrung und Zusammenleben der Löwen. Bitte bleiben Sie auf dem Besucherweg.",
+        "location": "Löwenanlage in Afrikas Savanne"
+      },
+      "en": {
+        "title": "Lion Feeding",
+        "description": "Join the keepers for a feeding talk and learn about the lions’ diet and social lives. Please stay on the visitor path.",
+        "location": "Lion habitat in African Savanna"
+      }
+    },
+    "19f968bf-2ae5-4c28-8965-187fc29a859e": {
+      "de": {
+        "title": "Pinguinfütterung",
+        "description": "Beobachten Sie die Pinguine bei der Fütterung und erfahren Sie, wie das Team ihre Versorgung organisiert. Die Moderation erklärt besondere Anpassungen an das Leben im Wasser.",
+        "location": "Pinguinanlage im Bereich Wasser & Küste"
+      },
+      "en": {
+        "title": "Penguin Feeding",
+        "description": "Watch the penguins being fed and discover how their keepers organise daily care. The talk introduces special adaptations to life in the water.",
+        "location": "Penguin habitat in Water & Coast"
+      }
+    },
+    "7f263940-ac64-42a2-a9eb-83714b2c88e6": {
+      "de": {
+        "title": "Tierpfleger-Treffpunkt",
+        "description": "Im Gespräch mit dem Tierpflege-Team erfahren Sie mehr über Beschäftigung, Fütterung und den Alltag im Zoo. Bringen Sie Ihre Fragen mit.",
+        "location": "Treffpunkt Besucherinformation"
+      },
+      "en": {
+        "title": "Meet the Keepers",
+        "description": "Talk to the keepers about enrichment, feeding and daily zoo life. Bring your questions along.",
+        "location": "Meet at Visitor Information"
+      }
+    }
+  }
+}

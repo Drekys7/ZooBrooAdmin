@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <g fill="currentColor">
+    <circle cx="142" cy="86" r="48"/>
+    <path d="M58 211c0-34 22-54 54-54h60c32 0 54 20 54 54v127h-42v142h-84V338H58z"/>
+    <circle cx="370" cy="86" r="48"/>
+    <path d="M318 151h104l73 219h-86v110h-57V370h-107z"/>
+  </g>
+</svg>

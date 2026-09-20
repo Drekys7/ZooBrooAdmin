@@ -96,6 +96,48 @@ const history = new CommandHistory(150)
 let saveTimer: ReturnType<typeof setTimeout> | null = null
 let initialized = false
 
+const legacyBackground = {
+  id: '3d21d264-6909-4d31-bf66-9202f77027fc',
+  width: 1672,
+  height: 941,
+} as const
+
+const currentBackground = {
+  url: '/zoo-maps/zoo-map-cartoon-1-reference-zone-colors-realesrgan-4x-v40.jpg',
+  name: 'zoo-map-clean-reference-colors-5016.jpg',
+  width: 5016,
+  height: 5016,
+} as const
+
+async function migrateLegacyBackground(project: MapProject): Promise<MapProject> {
+  if (
+    project.id !== 'zooweb-main'
+    || project.backgroundAssetId !== legacyBackground.id
+    || project.backgroundWidth !== legacyBackground.width
+    || project.backgroundHeight !== legacyBackground.height
+  ) return project
+
+  const response = await fetch(currentBackground.url, { cache: 'no-store' })
+  if (!response.ok) throw new Error('Die aktuelle Hintergrundkarte konnte nicht geladen werden.')
+  const blob = await response.blob()
+  await container.assetRepository.delete(legacyBackground.id)
+  await container.assetRepository.put({
+    id: legacyBackground.id,
+    blob,
+    name: currentBackground.name,
+    mimeType: 'image/jpeg',
+    kind: 'background',
+    width: currentBackground.width,
+    height: currentBackground.height,
+  })
+
+  return setBackground(project, {
+    assetId: legacyBackground.id,
+    width: currentBackground.width,
+    height: currentBackground.height,
+  })
+}
+
 const demoCategories: Array<Omit<MapCategory, 'sortOrder'>> = [
   { id: 'animals', name: 'Tiere', type: 'animal', color: '#4F8F64', defaultIconAssetId: 'zooweb-icon-paw', visible: true },
   { id: 'restaurants', name: 'Gastronomie', type: 'restaurant', color: '#2F7D59', defaultIconAssetId: 'zooweb-icon-restaurant', visible: true },
@@ -280,6 +322,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
       if (initialized) return
       initialized = true
       try {
+        await container.migrateMapMarkers()
         let projects = await container.contentRepository.list()
         if (projects.length === 0) {
           let project = await loadStartupTemplate(container.assetRepository)
@@ -288,9 +331,12 @@ export const useEditorStore = create<EditorState>((set, get) => {
             project = buildDemoProject()
           }
           await container.contentRepository.save(project)
+          await container.migrateMapMarkers()
+          project = await container.contentRepository.get(project.id) ?? project
           projects = [project]
         }
         let project = seedProjectTranslations(projects.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0])
+        project = await migrateLegacyBackground(project)
         await container.contentRepository.save(project)
         if (project.id === 'zooweb-main' && project.backgroundAssetId === 'builtin-zoo-map') {
           await ensureBuiltinAssets()

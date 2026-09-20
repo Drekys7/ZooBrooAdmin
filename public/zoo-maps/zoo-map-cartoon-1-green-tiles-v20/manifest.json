@@ -1,0 +1,26 @@
+{
+  "format": "zooweb-raster-tile-pyramid-v1",
+  "source": "../zoo-map-cartoon-1-green-realesrgan-4x-v20.jpg",
+  "baseWidth": 1254,
+  "baseHeight": 1254,
+  "masterWidth": 5016,
+  "masterHeight": 5016,
+  "tileSize": 512,
+  "minNativeZoom": 0,
+  "maxNativeZoom": 2,
+  "backgroundColor": "#DEEBB9",
+  "formatExtension": "jpg",
+  "jpegQuality": 94,
+  "urlTemplate": "{z}/{x}/{y}.jpg",
+  "levels": [
+    { "z": 0, "width": 1254, "height": 1254, "columns": 3, "rows": 3 },
+    { "z": 1, "width": 2508, "height": 2508, "columns": 5, "rows": 5 },
+    { "z": 2, "width": 5016, "height": 5016, "columns": 10, "rows": 10 }
+  ],
+  "upscaler": {
+    "engine": "Real-ESRGAN ncnn Vulkan",
+    "model": "realesrgan-x4plus-anime",
+    "scale": 4,
+    "tta": true
+  }
+}

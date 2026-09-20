@@ -37,6 +37,28 @@ const item: MapItem = {
 }
 
 describe('PhoneClientPreview', () => {
+  it('does not capture pointer input intended for photo navigation buttons', () => {
+    render(<PhoneClientPreview item={item} category={category} imageUrls={['/1.jpg','/2.jpg','/3.jpg']} iconUrl="/icon.png" expanded onExpand={vi.fn()} onClose={vi.fn()}/>)
+    const gallery=document.querySelector<HTMLElement>('.map-client-preview__gallery')!
+    const capture=vi.fn(); gallery.setPointerCapture=capture
+    const third=screen.getByRole('button',{name:'Foto 3 von 3'})
+    const down=new Event('pointerdown',{bubbles:true})
+    Object.assign(down,{pointerId:1,pointerType:'mouse',isPrimary:true,clientX:10,clientY:10})
+    fireEvent(third,down)
+    expect(capture).not.toHaveBeenCalled()
+    fireEvent.click(third)
+    expect(third).toHaveAttribute('aria-current','true')
+  })
+  it('keeps author and license without displaying processing notes', () => {
+    const credited={...item,imageAssetId:'photo',imageAssetIds:['photo'],imageCredits:{photo:{author:'Test Author',source:'https://commons.wikimedia.org/wiki/File:Test.jpg',license:'CC BY-SA 4.0',licenseUrl:'https://creativecommons.org/licenses/by-sa/4.0/',changes:'crop-resize-compress'}}}
+    for(const locale of ['de','en']){
+      const view=render(<PhoneClientPreview item={credited} locale={locale} category={category} imageUrls={['/photo.jpg']} iconUrl="/icon.png" expanded onExpand={vi.fn()} onClose={vi.fn()}/>)
+      expect(screen.getByText('© Test Author')).toBeInTheDocument()
+      expect(screen.getByText('CC BY-SA 4.0')).toBeInTheDocument()
+      expect(view.container.textContent).not.toMatch(/skaliert|komprimiert|zugeschnitten|compressed|resized|cropped/i)
+      view.unmount()
+    }
+  })
   it('drags the expanded description vertically without closing it or changing photos', () => {
     const onClose = vi.fn()
     const { container } = render(<PhoneClientPreview item={item} category={category} imageUrls={['/first.jpg', '/second.jpg']} iconUrl="/icon.png" expanded onExpand={vi.fn()} onClose={onClose} />)
@@ -63,7 +85,9 @@ describe('PhoneClientPreview', () => {
       onExpand,
       onClose,
     }
-    const { rerender } = render(<PhoneClientPreview {...props} expanded={false} />)
+    const { rerender, container } = render(<PhoneClientPreview {...props} expanded={false} />)
+    expect(container.querySelector('.map-client-preview__quick-facts svg')).toBeNull()
+    expect(container.querySelector('.map-client-preview__quick-facts .map-client-preview__fact-icon-image')).toBeNull()
 
     expect(screen.getByLabelText('Bär Vorschau')).toBeInTheDocument()
     expect(screen.getByText('Region: Europa und Asien')).toBeInTheDocument()
@@ -75,6 +99,7 @@ describe('PhoneClientPreview', () => {
     expect(onExpand).toHaveBeenCalledOnce()
 
     rerender(<PhoneClientPreview {...props} expanded />)
+    expect(container.querySelectorAll('.map-client-preview__facts .map-client-preview__fact-icon')).toHaveLength(2)
     expect(screen.getByRole('dialog', { name: 'Bär' })).toBeInTheDocument()
     expect(screen.queryByText(item.subtitle)).not.toBeInTheDocument()
     expect(screen.getByText('80–300 kg')).toBeInTheDocument()

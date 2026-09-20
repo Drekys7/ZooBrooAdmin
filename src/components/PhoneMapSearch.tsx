@@ -9,12 +9,14 @@ import { useMouseDragScroll } from '../hooks/useMouseDragScroll'
 interface PhoneMapSearchProps {
   items: readonly MapItem[]
   categories: readonly MapCategory[]
+  showCategories?: boolean
   locale: string
   enabledLocales?: readonly string[]
   languageMenuOpen?: boolean
   hiddenCategoryIds: ReadonlySet<string>
   getLocaleName?: (locale: string) => string
   getItemIconUrl: (item: MapItem, category: MapCategory | undefined) => string
+  getCategoryIconUrl?: (category: MapCategory) => string | null | undefined
   onLanguageMenuOpenChange?: (open: boolean) => void
   onChooseLocale?: (locale: string) => void
   onToggleCategory: (categoryId: string) => void
@@ -51,12 +53,14 @@ export function searchScore(item: MapItem, category: MapCategory | undefined, qu
 export function PhoneMapSearch({
   items,
   categories,
+  showCategories = true,
   locale,
   enabledLocales = [locale],
   languageMenuOpen = false,
   hiddenCategoryIds,
   getLocaleName = (code) => code.toUpperCase(),
   getItemIconUrl,
+  getCategoryIconUrl: resolveCategoryIconUrl,
   onLanguageMenuOpenChange,
   onChooseLocale,
   onToggleCategory,
@@ -196,7 +200,7 @@ export function PhoneMapSearch({
         </div>
       ) : null}
 
-      <div
+      {showCategories && <div
         className="map-client-categories"
         {...dragCategories}
         role="group"
@@ -207,6 +211,8 @@ export function PhoneMapSearch({
       >
         {visibleCategories.map((category) => {
           const active = !hiddenCategoryIds.has(category.id)
+          const customIconUrl = resolveCategoryIconUrl?.(category)
+          const iconUrl = customIconUrl || getCategoryIconUrl(category.type)
           return (
             <button
               type="button"
@@ -216,16 +222,21 @@ export function PhoneMapSearch({
               title={category.name}
               onClick={() => onToggleCategory(category.id)}
             >
-              <span
+              {customIconUrl && !categoryColorizeIcon(category) ? <img
+                className="map-client-categories__icon"
+                src={customIconUrl}
+                alt=""
+                style={{ objectFit: 'contain' }}
+              /> : <span
                 className="map-client-categories__icon"
                 aria-hidden="true"
-                style={{ backgroundColor: category.color, WebkitMaskImage: `url("${getCategoryIconUrl(category.type)}")`, maskImage: `url("${getCategoryIconUrl(category.type)}")` } as CSSProperties}
-              />
+                style={{ backgroundColor: category.color, WebkitMaskImage: `url("${iconUrl}")`, maskImage: `url("${iconUrl}")` } as CSSProperties}
+              />}
               <span>{category.name}</span>
             </button>
           )
         })}
-      </div>
+      </div>}
     </div>
   )
 }

@@ -138,6 +138,10 @@ const PublishedMapItemBaseSchema = z
     title: z.string().trim().min(1),
     subtitle: z.string(),
     description: z.string(),
+    imageCredits: z.record(z.object({
+      author: z.string(), source: z.string().url().startsWith('https://'), license: z.string(),
+      licenseUrl: z.string().url().startsWith('https://'), changes: z.string(),
+    })).optional(),
     icon: PublishedAssetSchema.nullable(),
     image: PublishedAssetSchema.nullable(),
     images: z.array(PublishedAssetSchema).optional(),
@@ -156,7 +160,7 @@ export const PublishedMapItemSchema = PublishedMapItemBaseSchema.extend({
   groupBadgeColor: z.string().regex(/^#[0-9a-f]{6}$/i).nullish(),
   members: z.array(PublishedMapItemBaseSchema.pick({
     id: true, title: true, subtitle: true, description: true,
-    image: true, images: true, facts: true, translations: true,
+    image: true, images: true, imageCredits: true, facts: true, translations: true,
     colorOverride: true, markerOverrides: true,
   }).extend({ icon: PublishedAssetSchema.nullable().optional() })).optional(),
 }).strict()

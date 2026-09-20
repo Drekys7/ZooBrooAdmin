@@ -108,6 +108,11 @@ export const MarkerOverridesSchema = z.object({
   shadowColor: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
 });
 
+export const PhotoCreditSchema = z.object({
+  author: z.string(), source: z.string().url().startsWith('https://'),
+  license: z.string(), licenseUrl: z.string().url().startsWith('https://'), changes: z.string(),
+});
+
 const MapItemBaseSchema = z.object({
   id: EntityIdSchema,
   categoryId: EntityIdSchema,
@@ -118,6 +123,7 @@ const MapItemBaseSchema = z.object({
   iconAssetId: EntityIdSchema.nullish(),
   imageAssetId: EntityIdSchema.nullish(),
   imageAssetIds: z.array(EntityIdSchema).optional(),
+  imageCredits: z.record(PhotoCreditSchema).optional(),
   colorOverride: z.string().regex(/^#[0-9a-f]{6}$/i).nullish(),
   markerOverrides: MarkerOverridesSchema.nullish(),
   position: NormalizedPositionSchema,
@@ -131,7 +137,7 @@ const MapItemBaseSchema = z.object({
 // Members have their own content and icon styling, but share the parent's map location.
 export const MapGroupMemberSchema = MapItemBaseSchema.pick({
   id: true, title: true, subtitle: true, description: true,
-  imageAssetId: true, imageAssetIds: true, facts: true, translations: true,
+  imageAssetId: true, imageAssetIds: true, imageCredits: true, facts: true, translations: true,
   iconAssetId: true, colorOverride: true, markerOverrides: true,
 });
 export const MapItemSchema = MapItemBaseSchema.extend({

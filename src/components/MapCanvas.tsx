@@ -81,6 +81,7 @@ export interface MapCanvasProps {
   className?: string;
   ariaLabel?: string;
   getItemIconUrl?: (item: MapItem, category: MapCategory | undefined) => string | null | undefined;
+  getCategoryIconUrl?: (category: MapCategory) => string | null | undefined;
   getItemImageUrl?: (item: MapItem) => string | null | undefined;
   getItemImageUrls?: (item: MapItem) => string[];
   getFactIconUrl?: (fact: MapFact, item: MapItem) => string | null | undefined;
@@ -551,7 +552,7 @@ function createMarkerIcon(
       } else {
         contentHost.append(mask);
       }
-    } else if (isAnimal && item.iconAssetId) {
+    } else if (item.iconAssetId || effectiveCategory?.defaultIconAssetId) {
       const image = document.createElement('img');
       image.className = 'map-canvas__marker-image';
       image.src = resolvedIconUrl;
@@ -680,6 +681,7 @@ export function MapCanvas({
   className,
   ariaLabel = 'Interaktive Zoo-Karte',
   getItemIconUrl,
+  getCategoryIconUrl: resolveCategoryIconUrl,
   getItemImageUrl,
   getItemImageUrls,
   getFactIconUrl,
@@ -1535,6 +1537,8 @@ export function MapCanvas({
                   hiddenCategoryIds={hiddenVisitorCategoryIds}
                   getLocaleName={localeName}
                   getItemIconUrl={(item, category) => resolveMarkerIconUrl(getItemIconUrl?.(item, category), category?.type ?? item.type)}
+                  getCategoryIconUrl={resolveCategoryIconUrl}
+                  showCategories={!zonesVisible}
                   onLanguageMenuOpenChange={setLanguageMenuOpen}
                   onChooseLocale={chooseVisitorLocale}
                   onToggleCategory={(categoryId) => setHiddenVisitorCategoryIds((current) => {

@@ -1,0 +1,16 @@
+import {readFileSync,writeFileSync,existsSync} from 'node:fs'
+const dir='prepared-assets/animal-photos'
+const candidates=JSON.parse(readFileSync(`${dir}/candidates.json`,'utf8'))
+const selection=JSON.parse(readFileSync(`${dir}/selection.json`,'utf8'))
+const downloaded=existsSync(`${dir}/manifest.json`)?JSON.parse(readFileSync(`${dir}/manifest.json`,'utf8')):[]
+const esc=s=>String(s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;')
+const entries=Object.values(candidates).map(a=>{
+  const p=a.options[selection[a.id]??0]
+  const saved=downloaded.find(d=>d.id===a.id&&d.source===p.page)
+  return {id:a.id,de:a.de,en:a.en,species:a.species,...p,width:saved?.width||p.width,height:saved?.height||p.height,local:saved?.file||null}
+})
+writeFileSync(`${dir}/selected-photos.json`,JSON.stringify(entries,null,2))
+writeFileSync(`${dir}/gallery.html`,`<!doctype html><html lang="en"><meta charset="utf-8"><title>Animal photos — review</title><style>body{font:16px system-ui;background:#eef2e8;padding:20px;color:#213e30}main{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}article{background:white;padding:12px;border-radius:12px}img{width:100%;height:230px;object-fit:contain;background:#edf0ed}h2{font-size:16px;margin:8px 0}p{font-size:12px;margin:5px 0}a{color:#266346}</style><h1>Animal photo selection — 29 species</h1><p>Separate preparation only. Nothing added to the zoo map. Some files await download due to Wikimedia rate limits.</p><main>${entries.map(p=>`<article id="${p.id}"><img src="${esc(p.local||p.preview)}" alt="${esc(p.en)}"><h2>${esc(p.en)}</h2><p>${esc(p.species)} · ${p.width}×${p.height}</p><p>${esc(p.author)}</p><p><a href="${esc(p.page)}">Source</a> · <a href="${esc(p.licenseUrl||p.page)}">${esc(p.license)}</a></p><p>${p.local?'Saved locally':'Download pending'} · <a href="${esc(p.url)}">Original JPEG</a></p></article>`).join('')}</main></html>`)
+writeFileSync(`${dir}/README.md`,`# Animal photo selection\n\n29 square or portrait candidate photographs for the 29 animal species on the map. None inserted in the admin project.\n\nOpen gallery.html. selected-photos.json includes source, author, license, dimensions and local path when available. Wikimedia rate limits interrupted downloads; entries with local=null are not downloaded yet. photos/ may contain superseded candidates; use only files marked local in selected-photos.json.\n\nBefore public use, retain the author credit, source and license link. These are example species photos, not photos of animals at the fictional zoo.\n\n`+entries.map(p=>`## ${p.en}\n\n[Original source](${p.page}) — ${p.author} — [${p.license}](${p.licenseUrl||p.page})\n\n${p.width}×${p.height}; ${p.local||'download pending'}.\n`).join('\n'))
+console.log(entries.length,'selected;',entries.filter(p=>p.local).length,'downloaded matching selections')
+writeFileSync(`${dir}/alternatives.html`,`<!doctype html><meta charset="utf-8"><style>body{font:14px system-ui}main{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}img{width:100%;height:230px;object-fit:contain}</style><main>${['fennec','otter','orangutan'].flatMap(id=>candidates[id].options.map((p,i)=>`<article><img src="${esc(p.preview)}"><p>${id} ${i}: ${esc(p.title)}</p></article>`)).join('')}</main>`)

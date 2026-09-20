@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <g fill="currentColor">
+    <path d="M75 218h312c0 149-79 229-156 229S82 367 75 218z"/>
+    <path fill-rule="evenodd" d="M354 245h67c63 0 91 36 91 87s-38 99-133 99h-42v-54h46c51 0 75-16 75-45 0-27-15-37-47-37h-57z"/>
+    <rect x="88" y="437" width="318" height="38" rx="19"/>
+  </g>
+  <g fill="none" stroke="currentColor" stroke-width="30" stroke-linecap="round">
+    <path d="M178 173c-35-49 30-71 2-130"/>
+    <path d="M284 173c-35-49 30-71 2-130"/>
+  </g>
+</svg>

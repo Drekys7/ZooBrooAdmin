@@ -1,0 +1,1602 @@
+{
+  "map128-wolf": {
+    "facts": [
+      {
+        "key": "region",
+        "iconAssetId": "zooweb-fact-region",
+        "de": {
+          "label": "Region",
+          "value": "Nordhalbkugel"
+        },
+        "en": {
+          "label": "Region",
+          "value": "Northern hemisphere"
+        }
+      },
+      {
+        "key": "lifespan",
+        "iconAssetId": "zooweb-fact-lifespan",
+        "de": {
+          "label": "Lebensdauer",
+          "value": "bis 16 Jahre"
+        },
+        "en": {
+          "label": "Lifespan",
+          "value": "up to 16 years"
+        }
+      },
+      {
+        "key": "weight",
+        "iconAssetId": "zooweb-fact-weight",
+        "de": {
+          "label": "Gewicht",
+          "value": "20–60 kg"
+        },
+        "en": {
+          "label": "Weight",
+          "value": "20–60 kg"
+        }
+      }
+    ]
+  },
+  "map128-brown-bear": {
+    "facts": [
+      {
+        "key": "region",
+        "iconAssetId": "zooweb-fact-region",
+        "de": {
+          "label": "Region",
+          "value": "Nordhalbkugel"
+        },
+        "en": {
+          "label": "Region",
+          "value": "Northern hemisphere"
+        }
+      },
+      {
+        "key": "lifespan",
+        "iconAssetId": "zooweb-fact-lifespan",
+        "de": {
+          "label": "Lebensdauer",
+          "value": "bis 30 Jahre"
+        },
+        "en": {
+          "label": "Lifespan",
+          "value": "up to 30 years"
+        }
+      },
+      {
+        "key": "weight",
+        "iconAssetId": "zooweb-fact-weight",
+        "de": {
+          "label": "Gewicht",
+          "value": "100–600 kg"
+        },
+        "en": {
+          "label": "Weight",
+          "value": "100–600 kg"
+        }
+      }
+    ]
+  },
+  "map128-moose": {
+    "facts": [
+      {
+        "key": "region",
+        "iconAssetId": "zooweb-fact-region",
+        "de": {
+          "label": "Region",
+          "value": "Eurasien"
+        },
+        "en": {
+          "label": "Region",
+          "value": "Eurasia"
+        }
+      },
+      {
+        "key": "lifespan",
+        "iconAssetId": "zooweb-fact-lifespan",
+        "de": {
+          "label": "Lebensdauer",
+          "value": "bis 20 Jahre"
+        },
+        "en": {
+          "label": "Lifespan",
+          "value": "up to 20 years"
+        }
+      },
+      {
+        "key": "weight",
+        "iconAssetId": "zooweb-fact-weight",
+        "de": {
+          "label": "Gewicht",
+          "value": "200–600 kg"
+        },
+        "en": {
+          "label": "Weight",
+          "value": "200–600 kg"
+        }
+      }
+    ]
+  },
+  "map128-lynx": {
+    "facts": [
+      {
+        "key": "region",
+        "iconAssetId": "zooweb-fact-region",
+        "de": {
+          "label": "Region",
+          "value": "Eurasien"
+        },
+        "en": {
+          "label": "Region",
+          "value": "Eurasia"
+        }
+      },
+      {
+        "key": "lifespan",
+        "iconAssetId": "zooweb-fact-lifespan",
+        "de": {
+          "label": "Lebensdauer",
+          "value": "bis 24 Jahre"
+        },
+        "en": {
+          "label": "Lifespan",
+          "value": "up to 24 years"
+        }
+      },
+      {
+        "key": "weight",
+        "iconAssetId": "zooweb-fact-weight",
+        "de": {
+          "label": "Gewicht",
+          "value": "18–30 kg"
+        },
+        "en": {
+          "label": "Weight",
+          "value": "18–30 kg"
+        }
+      }
+    ]
+  },
+  "map128-mountain-goat": {
+    "facts": [
+      {
+        "key": "region",
+        "iconAssetId": "zooweb-fact-region",
+        "de": {
+          "label": "Region",
+          "value": "Nordamerika"
+        },
+        "en": {
+          "label": "Region",
+          "value": "North America"
+        }
+      },
+      {
+        "key": "lifespan",
+        "iconAssetId": "zooweb-fact-lifespan",
+        "de": {
+          "label": "Lebensdauer",
+          "value": "bis 18 Jahre"
+        },
+        "en": {
+          "label": "Lifespan",
+          "value": "up to 18 years"
+        }
+      },
+      {
+        "key": "weight",
+        "iconAssetId": "zooweb-fact-weight",
+        "de": {
+          "label": "Gewicht",
+          "value": "45–140 kg"
+        },
+        "en": {
+          "label": "Weight",
+          "value": "45–140 kg"
+        }
+      }
+    ]
+  },
+  "map128-red-fox": {
+    "facts": [
+      {
+        "key": "region",
+        "iconAssetId": "zooweb-fact-region",
+        "de": {
+          "label": "Region",
+          "value": "Nordhalbkugel"
+        },
+        "en": {
+          "label": "Region",
+          "value": "Northern hemisphere"
+        }
+      },
+      {
+        "key": "lifespan",
+        "iconAssetId": "zooweb-fact-lifespan",
+        "de": {
+          "label": "Lebensdauer",
+          "value": "bis 14 Jahre"
+        },
+        "en": {
+          "label": "Lifespan",
+          "value": "up to 14 years"
+        }
+      },
+      {
+        "key": "weight",
+        "iconAssetId": "zooweb-fact-weight",
+        "de": {
+          "label": "Gewicht",
+          "value": "3–14 kg"
+        },
+        "en": {
+          "label": "Weight",
+          "value": "3–14 kg"
+        }
+      }
+    ]
+  },
+  "map128-ostrich": {
+    "facts": [
+      {
+        "key": "region",
+        "iconAssetId": "zooweb-fact-region",
+        "de": {
+          "label": "Region",
+          "value": "Afrika"
+        },
+        "en": {
+          "label": "Region",
+          "value": "Africa"
+        }
+      },
+      {
+        "key": "lifespan",
+        "iconAssetId": "zooweb-fact-lifespan",
+        "de": {
+          "label": "Lebensdauer",
+          "value": "bis 40 Jahre"
+        },
+        "en": {
+          "label": "Lifespan",
+          "value": "up to 40 years"
+        }
+      },
+      {
+        "key": "weight",
+        "iconAssetId": "zooweb-fact-weight",
+        "de": {
+          "label": "Gewicht",
+          "value": "90–150 kg"
+        },
+        "en": {
+          "label": "Weight",
+          "value": "90–150 kg"
+        }
+      }
+    ]
+  },
+  "map128-camel": {
+    "facts": [
+      {
+        "key": "region",
+        "iconAssetId": "zooweb-fact-region",
+        "de": {
+          "label": "Region",
+          "value": "Afrika & Asien"
+        },
+        "en": {
+          "label": "Region",
+          "value": "Africa & Asia"
+        }
+      },
+      {
+        "key": "lifespan",
+        "iconAssetId": "zooweb-fact-lifespan",
+        "de": {
+          "label": "Lebensdauer",
+          "value": "bis 40 Jahre"
+        },
+        "en": {
+          "label": "Lifespan",
+          "value": "up to 40 years"
+        }
+      },
+      {
+        "key": "weight",
+        "iconAssetId": "zooweb-fact-weight",
+        "de": {
+          "label": "Gewicht",
+          "value": "400–600 kg"
+        },
+        "en": {
+          "label": "Weight",
+          "value": "400–600 kg"
+        }
+      }
+    ]
+  },
+  "map128-fennec": {
+    "facts": [
+      {
+        "key": "region",
+        "iconAssetId": "zooweb-fact-region",
+        "de": {
+          "label": "Region",
+          "value": "Nordafrika"
+        },
+        "en": {
+          "label": "Region",
+          "value": "North Africa"
+        }
+      },
+      {
+        "key": "lifespan",
+        "iconAssetId": "zooweb-fact-lifespan",
+        "de": {
+          "label": "Lebensdauer",
+          "value": "bis 14 Jahre"
+        },
+        "en": {
+          "label": "Lifespan",
+          "value": "up to 14 years"
+        }
+      },
+      {
+        "key": "weight",
+        "iconAssetId": "zooweb-fact-weight",
+        "de": {
+          "label": "Gewicht",
+          "value": "0,8–1,5 kg"
+        },
+        "en": {
+          "label": "Weight",
+          "value": "0.8–1.5 kg"
+        }
+      }
+    ]
+  },
+  "map128-meerkat": {
+    "facts": [
+      {
+        "key": "region",
+        "iconAssetId": "zooweb-fact-region",
+        "de": {
+          "label": "Region",
+          "value": "Südafrika"
+        },
+        "en": {
+          "label": "Region",
+          "value": "Southern Africa"
+        }
+      },
+      {
+        "key": "lifespan",
+        "iconAssetId": "zooweb-fact-lifespan",
+        "de": {
+          "label": "Lebensdauer",
+          "value": "bis 15 Jahre"
+        },
+        "en": {
+          "label": "Lifespan",
+          "value": "up to 15 years"
+        }
+      },
+      {
+        "key": "weight",
+        "iconAssetId": "zooweb-fact-weight",
+        "de": {
+          "label": "Gewicht",
+          "value": "0,6–1 kg"
+        },
+        "en": {
+          "label": "Weight",
+          "value": "0.6–1 kg"
+        }
+      }
+    ]
+  },
+  "map128-seal": {
+    "facts": [
+      {
+        "key": "region",
+        "iconAssetId": "zooweb-fact-region",
+        "de": {
+          "label": "Region",
+          "value": "Nördliche Meere"
+        },
+        "en": {
+          "label": "Region",
+          "value": "Northern seas"
+        }
+      },
+      {
+        "key": "lifespan",
+        "iconAssetId": "zooweb-fact-lifespan",
+        "de": {
+          "label": "Lebensdauer",
+          "value": "bis 35 Jahre"
+        },
+        "en": {
+          "label": "Lifespan",
+          "value": "up to 35 years"
+        }
+      },
+      {
+        "key": "weight",
+        "iconAssetId": "zooweb-fact-weight",
+        "de": {
+          "label": "Gewicht",
+          "value": "50–170 kg"
+        },
+        "en": {
+          "label": "Weight",
+          "value": "50–170 kg"
+        }
+      }
+    ]
+  },
+  "map128-penguin": {
+    "facts": [
+      {
+        "key": "region",
+        "iconAssetId": "zooweb-fact-region",
+        "de": {
+          "label": "Region",
+          "value": "Subantarktis"
+        },
+        "en": {
+          "label": "Region",
+          "value": "Subantarctic"
+        }
+      },
+      {
+        "key": "lifespan",
+        "iconAssetId": "zooweb-fact-lifespan",
+        "de": {
+          "label": "Lebensdauer",
+          "value": "bis 30 Jahre"
+        },
+        "en": {
+          "label": "Lifespan",
+          "value": "up to 30 years"
+        }
+      },
+      {
+        "key": "weight",
+        "iconAssetId": "zooweb-fact-weight",
+        "de": {
+          "label": "Gewicht",
+          "value": "9–18 kg"
+        },
+        "en": {
+          "label": "Weight",
+          "value": "9–18 kg"
+        }
+      }
+    ]
+  },
+  "map128-pelican": {
+    "facts": [
+      {
+        "key": "region",
+        "iconAssetId": "zooweb-fact-region",
+        "de": {
+          "label": "Region",
+          "value": "Afrika & Eurasien"
+        },
+        "en": {
+          "label": "Region",
+          "value": "Africa & Eurasia"
+        }
+      },
+      {
+        "key": "lifespan",
+        "iconAssetId": "zooweb-fact-lifespan",
+        "de": {
+          "label": "Lebensdauer",
+          "value": "bis 30 Jahre"
+        },
+        "en": {
+          "label": "Lifespan",
+          "value": "up to 30 years"
+        }
+      },
+      {
+        "key": "weight",
+        "iconAssetId": "zooweb-fact-weight",
+        "de": {
+          "label": "Gewicht",
+          "value": "5–15 kg"
+        },
+        "en": {
+          "label": "Weight",
+          "value": "5–15 kg"
+        }
+      }
+    ]
+  },
+  "map128-otter": {
+    "facts": [
+      {
+        "key": "region",
+        "iconAssetId": "zooweb-fact-region",
+        "de": {
+          "label": "Region",
+          "value": "Eurasien"
+        },
+        "en": {
+          "label": "Region",
+          "value": "Eurasia"
+        }
+      },
+      {
+        "key": "lifespan",
+        "iconAssetId": "zooweb-fact-lifespan",
+        "de": {
+          "label": "Lebensdauer",
+          "value": "bis 20 Jahre"
+        },
+        "en": {
+          "label": "Lifespan",
+          "value": "up to 20 years"
+        }
+      },
+      {
+        "key": "weight",
+        "iconAssetId": "zooweb-fact-weight",
+        "de": {
+          "label": "Gewicht",
+          "value": "5–12 kg"
+        },
+        "en": {
+          "label": "Weight",
+          "value": "5–12 kg"
+        }
+      }
+    ]
+  },
+  "map128-orangutan": {
+    "facts": [
+      {
+        "key": "region",
+        "iconAssetId": "zooweb-fact-region",
+        "de": {
+          "label": "Region",
+          "value": "Borneo"
+        },
+        "en": {
+          "label": "Region",
+          "value": "Borneo"
+        }
+      },
+      {
+        "key": "lifespan",
+        "iconAssetId": "zooweb-fact-lifespan",
+        "de": {
+          "label": "Lebensdauer",
+          "value": "bis 60 Jahre"
+        },
+        "en": {
+          "label": "Lifespan",
+          "value": "up to 60 years"
+        }
+      },
+      {
+        "key": "weight",
+        "iconAssetId": "zooweb-fact-weight",
+        "de": {
+          "label": "Gewicht",
+          "value": "30–100 kg"
+        },
+        "en": {
+          "label": "Weight",
+          "value": "30–100 kg"
+        }
+      }
+    ]
+  },
+  "map128-tiger": {
+    "facts": [
+      {
+        "key": "region",
+        "iconAssetId": "zooweb-fact-region",
+        "de": {
+          "label": "Region",
+          "value": "Asien"
+        },
+        "en": {
+          "label": "Region",
+          "value": "Asia"
+        }
+      },
+      {
+        "key": "lifespan",
+        "iconAssetId": "zooweb-fact-lifespan",
+        "de": {
+          "label": "Lebensdauer",
+          "value": "bis 25 Jahre"
+        },
+        "en": {
+          "label": "Lifespan",
+          "value": "up to 25 years"
+        }
+      },
+      {
+        "key": "weight",
+        "iconAssetId": "zooweb-fact-weight",
+        "de": {
+          "label": "Gewicht",
+          "value": "75–300 kg"
+        },
+        "en": {
+          "label": "Weight",
+          "value": "75–300 kg"
+        }
+      }
+    ]
+  },
+  "map128-leopard": {
+    "facts": [
+      {
+        "key": "region",
+        "iconAssetId": "zooweb-fact-region",
+        "de": {
+          "label": "Region",
+          "value": "Afrika & Asien"
+        },
+        "en": {
+          "label": "Region",
+          "value": "Africa & Asia"
+        }
+      },
+      {
+        "key": "lifespan",
+        "iconAssetId": "zooweb-fact-lifespan",
+        "de": {
+          "label": "Lebensdauer",
+          "value": "bis 23 Jahre"
+        },
+        "en": {
+          "label": "Lifespan",
+          "value": "up to 23 years"
+        }
+      },
+      {
+        "key": "weight",
+        "iconAssetId": "zooweb-fact-weight",
+        "de": {
+          "label": "Gewicht",
+          "value": "30–90 kg"
+        },
+        "en": {
+          "label": "Weight",
+          "value": "30–90 kg"
+        }
+      }
+    ]
+  },
+  "map128-tapir": {
+    "facts": [
+      {
+        "key": "region",
+        "iconAssetId": "zooweb-fact-region",
+        "de": {
+          "label": "Region",
+          "value": "Südamerika"
+        },
+        "en": {
+          "label": "Region",
+          "value": "South America"
+        }
+      },
+      {
+        "key": "lifespan",
+        "iconAssetId": "zooweb-fact-lifespan",
+        "de": {
+          "label": "Lebensdauer",
+          "value": "bis 35 Jahre"
+        },
+        "en": {
+          "label": "Lifespan",
+          "value": "up to 35 years"
+        }
+      },
+      {
+        "key": "weight",
+        "iconAssetId": "zooweb-fact-weight",
+        "de": {
+          "label": "Gewicht",
+          "value": "150–250 kg"
+        },
+        "en": {
+          "label": "Weight",
+          "value": "150–250 kg"
+        }
+      }
+    ]
+  },
+  "map128-gorilla": {
+    "facts": [
+      {
+        "key": "region",
+        "iconAssetId": "zooweb-fact-region",
+        "de": {
+          "label": "Region",
+          "value": "Zentralafrika"
+        },
+        "en": {
+          "label": "Region",
+          "value": "Central Africa"
+        }
+      },
+      {
+        "key": "lifespan",
+        "iconAssetId": "zooweb-fact-lifespan",
+        "de": {
+          "label": "Lebensdauer",
+          "value": "bis 50 Jahre"
+        },
+        "en": {
+          "label": "Lifespan",
+          "value": "up to 50 years"
+        }
+      },
+      {
+        "key": "weight",
+        "iconAssetId": "zooweb-fact-weight",
+        "de": {
+          "label": "Gewicht",
+          "value": "70–200 kg"
+        },
+        "en": {
+          "label": "Weight",
+          "value": "70–200 kg"
+        }
+      }
+    ]
+  },
+  "map128-hippopotamus": {
+    "facts": [
+      {
+        "key": "region",
+        "iconAssetId": "zooweb-fact-region",
+        "de": {
+          "label": "Region",
+          "value": "Afrika"
+        },
+        "en": {
+          "label": "Region",
+          "value": "Africa"
+        }
+      },
+      {
+        "key": "lifespan",
+        "iconAssetId": "zooweb-fact-lifespan",
+        "de": {
+          "label": "Lebensdauer",
+          "value": "bis 50 Jahre"
+        },
+        "en": {
+          "label": "Lifespan",
+          "value": "up to 50 years"
+        }
+      },
+      {
+        "key": "weight",
+        "iconAssetId": "zooweb-fact-weight",
+        "de": {
+          "label": "Gewicht",
+          "value": "1400–4500 kg"
+        },
+        "en": {
+          "label": "Weight",
+          "value": "1400–4500 kg"
+        }
+      }
+    ]
+  },
+  "map128-flamingo": {
+    "facts": [
+      {
+        "key": "region",
+        "iconAssetId": "zooweb-fact-region",
+        "de": {
+          "label": "Region",
+          "value": "Afrika & Eurasien"
+        },
+        "en": {
+          "label": "Region",
+          "value": "Africa & Eurasia"
+        }
+      },
+      {
+        "key": "lifespan",
+        "iconAssetId": "zooweb-fact-lifespan",
+        "de": {
+          "label": "Lebensdauer",
+          "value": "bis 50 Jahre"
+        },
+        "en": {
+          "label": "Lifespan",
+          "value": "up to 50 years"
+        }
+      },
+      {
+        "key": "weight",
+        "iconAssetId": "zooweb-fact-weight",
+        "de": {
+          "label": "Gewicht",
+          "value": "2–4 kg"
+        },
+        "en": {
+          "label": "Weight",
+          "value": "2–4 kg"
+        }
+      }
+    ]
+  },
+  "map128-crocodile": {
+    "facts": [
+      {
+        "key": "region",
+        "iconAssetId": "zooweb-fact-region",
+        "de": {
+          "label": "Region",
+          "value": "Afrika"
+        },
+        "en": {
+          "label": "Region",
+          "value": "Africa"
+        }
+      },
+      {
+        "key": "lifespan",
+        "iconAssetId": "zooweb-fact-lifespan",
+        "de": {
+          "label": "Lebensdauer",
+          "value": "bis 70 Jahre"
+        },
+        "en": {
+          "label": "Lifespan",
+          "value": "up to 70 years"
+        }
+      },
+      {
+        "key": "weight",
+        "iconAssetId": "zooweb-fact-weight",
+        "de": {
+          "label": "Gewicht",
+          "value": "150–750 kg"
+        },
+        "en": {
+          "label": "Weight",
+          "value": "150–750 kg"
+        }
+      }
+    ]
+  },
+  "map128-capybara": {
+    "facts": [
+      {
+        "key": "region",
+        "iconAssetId": "zooweb-fact-region",
+        "de": {
+          "label": "Region",
+          "value": "Südamerika"
+        },
+        "en": {
+          "label": "Region",
+          "value": "South America"
+        }
+      },
+      {
+        "key": "lifespan",
+        "iconAssetId": "zooweb-fact-lifespan",
+        "de": {
+          "label": "Lebensdauer",
+          "value": "bis 12 Jahre"
+        },
+        "en": {
+          "label": "Lifespan",
+          "value": "up to 12 years"
+        }
+      },
+      {
+        "key": "weight",
+        "iconAssetId": "zooweb-fact-weight",
+        "de": {
+          "label": "Gewicht",
+          "value": "27–79 kg"
+        },
+        "en": {
+          "label": "Weight",
+          "value": "27–79 kg"
+        }
+      }
+    ]
+  },
+  "map128-lion": {
+    "facts": [
+      {
+        "key": "region",
+        "iconAssetId": "zooweb-fact-region",
+        "de": {
+          "label": "Region",
+          "value": "Afrika"
+        },
+        "en": {
+          "label": "Region",
+          "value": "Africa"
+        }
+      },
+      {
+        "key": "lifespan",
+        "iconAssetId": "zooweb-fact-lifespan",
+        "de": {
+          "label": "Lebensdauer",
+          "value": "bis 25 Jahre"
+        },
+        "en": {
+          "label": "Lifespan",
+          "value": "up to 25 years"
+        }
+      },
+      {
+        "key": "weight",
+        "iconAssetId": "zooweb-fact-weight",
+        "de": {
+          "label": "Gewicht",
+          "value": "120–250 kg"
+        },
+        "en": {
+          "label": "Weight",
+          "value": "120–250 kg"
+        }
+      }
+    ]
+  },
+  "map128-rhinoceros": {
+    "facts": [
+      {
+        "key": "region",
+        "iconAssetId": "zooweb-fact-region",
+        "de": {
+          "label": "Region",
+          "value": "Afrika"
+        },
+        "en": {
+          "label": "Region",
+          "value": "Africa"
+        }
+      },
+      {
+        "key": "lifespan",
+        "iconAssetId": "zooweb-fact-lifespan",
+        "de": {
+          "label": "Lebensdauer",
+          "value": "bis 50 Jahre"
+        },
+        "en": {
+          "label": "Lifespan",
+          "value": "up to 50 years"
+        }
+      },
+      {
+        "key": "weight",
+        "iconAssetId": "zooweb-fact-weight",
+        "de": {
+          "label": "Gewicht",
+          "value": "1400–2300 kg"
+        },
+        "en": {
+          "label": "Weight",
+          "value": "1400–2300 kg"
+        }
+      }
+    ]
+  },
+  "map128-hyena": {
+    "facts": [
+      {
+        "key": "region",
+        "iconAssetId": "zooweb-fact-region",
+        "de": {
+          "label": "Region",
+          "value": "Afrika"
+        },
+        "en": {
+          "label": "Region",
+          "value": "Africa"
+        }
+      },
+      {
+        "key": "lifespan",
+        "iconAssetId": "zooweb-fact-lifespan",
+        "de": {
+          "label": "Lebensdauer",
+          "value": "bis 25 Jahre"
+        },
+        "en": {
+          "label": "Lifespan",
+          "value": "up to 25 years"
+        }
+      },
+      {
+        "key": "weight",
+        "iconAssetId": "zooweb-fact-weight",
+        "de": {
+          "label": "Gewicht",
+          "value": "45–80 kg"
+        },
+        "en": {
+          "label": "Weight",
+          "value": "45–80 kg"
+        }
+      }
+    ]
+  },
+  "map128-zebra": {
+    "facts": [
+      {
+        "key": "region",
+        "iconAssetId": "zooweb-fact-region",
+        "de": {
+          "label": "Region",
+          "value": "Afrika"
+        },
+        "en": {
+          "label": "Region",
+          "value": "Africa"
+        }
+      },
+      {
+        "key": "lifespan",
+        "iconAssetId": "zooweb-fact-lifespan",
+        "de": {
+          "label": "Lebensdauer",
+          "value": "bis 25 Jahre"
+        },
+        "en": {
+          "label": "Lifespan",
+          "value": "up to 25 years"
+        }
+      },
+      {
+        "key": "weight",
+        "iconAssetId": "zooweb-fact-weight",
+        "de": {
+          "label": "Gewicht",
+          "value": "175–385 kg"
+        },
+        "en": {
+          "label": "Weight",
+          "value": "175–385 kg"
+        }
+      }
+    ]
+  },
+  "map128-giraffe": {
+    "facts": [
+      {
+        "key": "region",
+        "iconAssetId": "zooweb-fact-region",
+        "de": {
+          "label": "Region",
+          "value": "Afrika"
+        },
+        "en": {
+          "label": "Region",
+          "value": "Africa"
+        }
+      },
+      {
+        "key": "lifespan",
+        "iconAssetId": "zooweb-fact-lifespan",
+        "de": {
+          "label": "Lebensdauer",
+          "value": "bis 25 Jahre"
+        },
+        "en": {
+          "label": "Lifespan",
+          "value": "up to 25 years"
+        }
+      },
+      {
+        "key": "weight",
+        "iconAssetId": "zooweb-fact-weight",
+        "de": {
+          "label": "Gewicht",
+          "value": "700–1900 kg"
+        },
+        "en": {
+          "label": "Weight",
+          "value": "700–1900 kg"
+        }
+      }
+    ]
+  },
+  "map128-elephant": {
+    "facts": [
+      {
+        "key": "region",
+        "iconAssetId": "zooweb-fact-region",
+        "de": {
+          "label": "Region",
+          "value": "Afrika"
+        },
+        "en": {
+          "label": "Region",
+          "value": "Africa"
+        }
+      },
+      {
+        "key": "lifespan",
+        "iconAssetId": "zooweb-fact-lifespan",
+        "de": {
+          "label": "Lebensdauer",
+          "value": "bis 70 Jahre"
+        },
+        "en": {
+          "label": "Lifespan",
+          "value": "up to 70 years"
+        }
+      },
+      {
+        "key": "weight",
+        "iconAssetId": "zooweb-fact-weight",
+        "de": {
+          "label": "Gewicht",
+          "value": "2700–6000 kg"
+        },
+        "en": {
+          "label": "Weight",
+          "value": "2700–6000 kg"
+        }
+      }
+    ]
+  },
+  "map128-restaurant": {
+    "facts": [
+      {
+        "key": "short-0",
+        "iconAssetId": null,
+        "de": {
+          "label": "Küche",
+          "value": "Warme Speisen"
+        },
+        "en": {
+          "label": "Food",
+          "value": "Hot meals"
+        }
+      },
+      {
+        "key": "short-1",
+        "iconAssetId": null,
+        "de": {
+          "label": "Auswahl",
+          "value": "Vegetarisch"
+        },
+        "en": {
+          "label": "Options",
+          "value": "Vegetarian"
+        }
+      },
+      {
+        "key": "short-2",
+        "iconAssetId": null,
+        "de": {
+          "label": "Kinder",
+          "value": "Kleine Portionen"
+        },
+        "en": {
+          "label": "Children",
+          "value": "Small portions"
+        }
+      }
+    ]
+  },
+  "map128-restaurant-south": {
+    "facts": [
+      {
+        "key": "short-0",
+        "iconAssetId": null,
+        "de": {
+          "label": "Küche",
+          "value": "Speisen & Snacks"
+        },
+        "en": {
+          "label": "Food",
+          "value": "Meals & snacks"
+        }
+      },
+      {
+        "key": "short-1",
+        "iconAssetId": null,
+        "de": {
+          "label": "Getränke",
+          "value": "Saft & Wasser"
+        },
+        "en": {
+          "label": "Drinks",
+          "value": "Juice & water"
+        }
+      },
+      {
+        "key": "short-2",
+        "iconAssetId": null,
+        "de": {
+          "label": "Kinder",
+          "value": "Kleine Portionen"
+        },
+        "en": {
+          "label": "Children",
+          "value": "Small portions"
+        }
+      }
+    ]
+  },
+  "map128-cafe": {
+    "facts": [
+      {
+        "key": "short-0",
+        "iconAssetId": null,
+        "de": {
+          "label": "Angebot",
+          "value": "Kaffee & Kuchen"
+        },
+        "en": {
+          "label": "Menu",
+          "value": "Coffee & cake"
+        }
+      },
+      {
+        "key": "short-1",
+        "iconAssetId": null,
+        "de": {
+          "label": "Extras",
+          "value": "Tee & Eis"
+        },
+        "en": {
+          "label": "Extras",
+          "value": "Tea & ice cream"
+        }
+      },
+      {
+        "key": "short-2",
+        "iconAssetId": null,
+        "de": {
+          "label": "Lage",
+          "value": "Am Wasser"
+        },
+        "en": {
+          "label": "Area",
+          "value": "Waterside"
+        }
+      }
+    ]
+  },
+  "map128-restroom": {
+    "facts": [
+      {
+        "key": "short-0",
+        "iconAssetId": null,
+        "de": {
+          "label": "WC",
+          "value": "Damen & Herren"
+        },
+        "en": {
+          "label": "WC",
+          "value": "Women & men"
+        }
+      },
+      {
+        "key": "short-1",
+        "iconAssetId": null,
+        "de": {
+          "label": "Zugang",
+          "value": "Barrierefrei"
+        },
+        "en": {
+          "label": "Access",
+          "value": "Accessible"
+        }
+      },
+      {
+        "key": "short-2",
+        "iconAssetId": null,
+        "de": {
+          "label": "Baby",
+          "value": "Wickeltisch"
+        },
+        "en": {
+          "label": "Baby",
+          "value": "Changing table"
+        }
+      }
+    ]
+  },
+  "map128-first-aid": {
+    "facts": [
+      {
+        "key": "short-0",
+        "iconAssetId": null,
+        "de": {
+          "label": "Hilfe",
+          "value": "Erste Hilfe"
+        },
+        "en": {
+          "label": "Help",
+          "value": "First aid"
+        }
+      },
+      {
+        "key": "short-1",
+        "iconAssetId": null,
+        "de": {
+          "label": "Kontakt",
+          "value": "Zooteam"
+        },
+        "en": {
+          "label": "Contact",
+          "value": "Zoo staff"
+        }
+      },
+      {
+        "key": "short-2",
+        "iconAssetId": null,
+        "de": {
+          "label": "Notruf",
+          "value": "112"
+        },
+        "en": {
+          "label": "Emergency",
+          "value": "112"
+        }
+      }
+    ]
+  },
+  "map128-aquarium": {
+    "facts": [
+      {
+        "key": "short-0",
+        "iconAssetId": null,
+        "de": {
+          "label": "Tiere",
+          "value": "Fische"
+        },
+        "en": {
+          "label": "Animals",
+          "value": "Fish"
+        }
+      },
+      {
+        "key": "short-1",
+        "iconAssetId": null,
+        "de": {
+          "label": "Bereich",
+          "value": "Wasser & Küste"
+        },
+        "en": {
+          "label": "Area",
+          "value": "Water & Coast"
+        }
+      },
+      {
+        "key": "short-2",
+        "iconAssetId": null,
+        "de": {
+          "label": "Besuch",
+          "value": "20–30 Min."
+        },
+        "en": {
+          "label": "Visit",
+          "value": "20–30 min"
+        }
+      }
+    ]
+  },
+  "map128-terrarium": {
+    "facts": [
+      {
+        "key": "short-0",
+        "iconAssetId": null,
+        "de": {
+          "label": "Tiere",
+          "value": "Reptilien"
+        },
+        "en": {
+          "label": "Animals",
+          "value": "Reptiles"
+        }
+      },
+      {
+        "key": "short-1",
+        "iconAssetId": null,
+        "de": {
+          "label": "Ort",
+          "value": "Glashaus"
+        },
+        "en": {
+          "label": "Place",
+          "value": "Glasshouse"
+        }
+      },
+      {
+        "key": "short-2",
+        "iconAssetId": null,
+        "de": {
+          "label": "Besuch",
+          "value": "15–20 Min."
+        },
+        "en": {
+          "label": "Visit",
+          "value": "15–20 min"
+        }
+      }
+    ]
+  },
+  "map128-spider-house": {
+    "facts": [
+      {
+        "key": "short-0",
+        "iconAssetId": null,
+        "de": {
+          "label": "Tiere",
+          "value": "Spinnen"
+        },
+        "en": {
+          "label": "Animals",
+          "value": "Spiders"
+        }
+      },
+      {
+        "key": "short-1",
+        "iconAssetId": null,
+        "de": {
+          "label": "Beine",
+          "value": "8"
+        },
+        "en": {
+          "label": "Legs",
+          "value": "8"
+        }
+      },
+      {
+        "key": "short-2",
+        "iconAssetId": null,
+        "de": {
+          "label": "Besuch",
+          "value": "10–15 Min."
+        },
+        "en": {
+          "label": "Visit",
+          "value": "10–15 min"
+        }
+      }
+    ]
+  },
+  "map128-entrance": {
+    "facts": [
+      {
+        "key": "short-0",
+        "iconAssetId": null,
+        "de": {
+          "label": "Zugang",
+          "value": "Ein- & Ausgang"
+        },
+        "en": {
+          "label": "Access",
+          "value": "Entry & exit"
+        }
+      },
+      {
+        "key": "short-1",
+        "iconAssetId": null,
+        "de": {
+          "label": "Einlass",
+          "value": "Ticket zeigen"
+        },
+        "en": {
+          "label": "Entry",
+          "value": "Show ticket"
+        }
+      },
+      {
+        "key": "short-2",
+        "iconAssetId": null,
+        "de": {
+          "label": "Start",
+          "value": "Rundweg"
+        },
+        "en": {
+          "label": "Start",
+          "value": "Zoo trail"
+        }
+      }
+    ]
+  },
+  "map128-information": {
+    "facts": [
+      {
+        "key": "short-0",
+        "iconAssetId": null,
+        "de": {
+          "label": "Service",
+          "value": "Auskunft"
+        },
+        "en": {
+          "label": "Service",
+          "value": "Visitor help"
+        }
+      },
+      {
+        "key": "short-1",
+        "iconAssetId": null,
+        "de": {
+          "label": "Fundbüro",
+          "value": "Hier melden"
+        },
+        "en": {
+          "label": "Lost items",
+          "value": "Ask here"
+        }
+      },
+      {
+        "key": "short-2",
+        "iconAssetId": null,
+        "de": {
+          "label": "Sprachen",
+          "value": "DE / EN"
+        },
+        "en": {
+          "label": "Languages",
+          "value": "DE / EN"
+        }
+      }
+    ]
+  },
+  "map128-souvenir": {
+    "facts": [
+      {
+        "key": "short-0",
+        "iconAssetId": null,
+        "de": {
+          "label": "Shop",
+          "value": "Geschenke"
+        },
+        "en": {
+          "label": "Shop",
+          "value": "Gifts"
+        }
+      },
+      {
+        "key": "short-1",
+        "iconAssetId": null,
+        "de": {
+          "label": "Auswahl",
+          "value": "Bücher & Plüsch"
+        },
+        "en": {
+          "label": "Range",
+          "value": "Books & toys"
+        }
+      },
+      {
+        "key": "short-2",
+        "iconAssetId": null,
+        "de": {
+          "label": "Lage",
+          "value": "Am Ausgang"
+        },
+        "en": {
+          "label": "Area",
+          "value": "By the exit"
+        }
+      }
+    ]
+  }
+}

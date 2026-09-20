@@ -1,0 +1,15 @@
+{
+  "wolf": [469, 184], "brown-bear": [302, 215], "moose": [403, 281],
+  "lynx": [198, 292], "mountain-goat": [266, 354], "red-fox": [432, 375],
+  "ostrich": [602, 182], "camel": [743, 279], "fennec": [608, 315], "meerkat": [797, 408],
+  "seal": [850, 340], "penguin": [938, 389], "pelican": [1152, 445], "otter": [1040, 540],
+  "orangutan": [550, 521], "tiger": [665, 522], "leopard": [539, 641],
+  "tapir": [713, 622], "gorilla": [631, 710],
+  "hippopotamus": [163, 704], "flamingo": [365, 850], "crocodile": [267, 739], "capybara": [391, 987],
+  "lion": [815, 873], "rhinoceros": [900, 829], "hyena": [1007, 857],
+  "zebra": [827, 965], "giraffe": [853, 1060], "elephant": [1110, 807],
+  "restaurant": [562, 406], "restaurant-south": [475, 878], "cafe": [1090, 410],
+  "restroom": [792, 539], "first-aid": [472, 619], "aquarium": [864, 619],
+  "terrarium": [932, 511], "spider-house": [761, 775], "entrance": [628, 997],
+  "information": [528, 1047], "souvenir": [731, 1048]
+}

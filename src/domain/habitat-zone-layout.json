@@ -1,0 +1,15 @@
+{
+  "appearance": {
+    "textColor": "#294B39", "backgroundColor": "#FFFBEF", "borderColor": "#8C9A70",
+    "fontSize": 12, "fontWeight": 800, "uppercase": false, "borderWidth": 1,
+    "borderRadius": 10, "paddingX": 7, "paddingY": 4, "maxWidth": 92
+  },
+  "labels": [
+    { "id": "habitat-north", "title": "Nordwald & Berge", "translations": { "en": "Northern Forests", "ru": "Северные леса и горы" }, "position": { "x": 0.255, "y": 0.32 }, "visible": true },
+    { "id": "habitat-desert", "title": "Wüstenwelt", "translations": { "en": "Desert World", "ru": "Мир пустынь" }, "position": { "x": 0.55, "y": 0.19 }, "visible": true },
+    { "id": "habitat-coast", "title": "Wasser & Küste", "translations": { "en": "Water & Coast", "ru": "Водный мир и побережья" }, "position": { "x": 0.794, "y": 0.388 }, "visible": true },
+    { "id": "habitat-tropics", "title": "Tropenwald", "translations": { "en": "Tropical Forest", "ru": "Тропический лес" }, "position": { "x": 0.497, "y": 0.496 }, "visible": true },
+    { "id": "habitat-wetlands", "title": "Flusswelten", "translations": { "en": "Rivers & Wetlands", "ru": "Реки и водно-болотные угодья" }, "position": { "x": 0.253, "y": 0.712 }, "visible": true },
+    { "id": "habitat-savanna", "title": "Afrikas Savanne", "translations": { "en": "African Savanna", "ru": "Африканская саванна" }, "position": { "x": 0.769, "y": 0.766 }, "visible": true }
+  ]
+}
