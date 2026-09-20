@@ -35,7 +35,8 @@ it('contains three six-animal groups with individual icons, JPEG photos and bili
   }
   expect(translationCompletion('en','de',template.project.categories,template.project.items,[])).toBe(100)
   const lion=template.project.items.find(i=>i.id==='map128-lion')!
-  expect(new Set(lion.imageAssetIds).size).toBe(3)
+  // The approved Chrome export retains two selected lion photos.
+  expect(lion.imageAssetIds).toEqual(['animal-photo-lion-v1', 'exhibit-photo-lion-2-v1'])
   for(const id of lion.imageAssetIds!) expect(template.assets.some(a=>a.asset.id===id)).toBe(true)
 })
 it('migrates once with a recovery snapshot and preserves locations, unrelated content and later edits',async()=>{

@@ -9,10 +9,10 @@ const template = StartupTemplateSchema.parse(JSON.parse(readFileSync('public/sta
 const databases: ZooMapLocalDatabase[] = []
 afterEach(() => databases.forEach(database => database.close()))
 
-it('has complete German and English text and facts for all 40 cards, without Russian', () => {
+it('has complete German and English text and facts for all 41 cards, without Russian', () => {
   const p = template.project
   expect(p.enabledLocales).toEqual(['de', 'en'])
-  expect(p.items).toHaveLength(40)
+  expect(p.items).toHaveLength(41)
   expect(translationCompletion('en', 'de', p.categories, p.items, p.events)).toBe(100)
   expect(JSON.stringify(p)).not.toMatch(/[\u0400-\u04ff]/)
   for (const item of p.items) {

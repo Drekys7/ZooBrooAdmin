@@ -1,5 +1,20 @@
 # Forced test-release reset
 
+## Approved Chrome baseline (20 September 2026)
+
+The exact supplied export is archived at `prepared-assets/baselines/chrome-2026-09-20.json`.
+Its project data is the baseline: 41 root markers, 15 group members, all positions,
+category scales, zone settings and background outline settings are preserved verbatim.
+All 109 existing embedded assets are retained. The earlier template is backed up at
+`backups/startup-template-before-chrome-baseline.json`.
+Do not rerun earlier content-generation scripts over this approved baseline.
+The import helper validates schema equality and asset availability before writing:
+`node scripts/import-chrome-baseline.mjs <export.json>`.
+For a future baseline, archive it under a new dated filename and update the regression
+fixture and release revision deliberately; this helper uses the current fixed archive name.
+
+## Reset behavior
+
 The current test release intentionally replaces ALL local admin projects, resources,
 local published snapshots and migration backups with `public/startup-template.json`.
 Old browser data is not recoverable through this app after a successful reset.

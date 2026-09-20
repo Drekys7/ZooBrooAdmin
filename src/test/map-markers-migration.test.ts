@@ -9,9 +9,9 @@ const template = JSON.parse(readFileSync('public/startup-template.json', 'utf8')
 const databases: ZooMapLocalDatabase[] = []
 afterEach(() => { databases.forEach(db => db.close()); vi.unstubAllGlobals() })
 
-it('ships 40 placed markers with 39 distinct 128px icons and configurable circles', () => {
+it('ships 41 placed markers with 39 distinct 128px icons and configurable circles', () => {
   const data = StartupTemplateSchema.parse(template)
-  expect(data.project.items).toHaveLength(40)
+  expect(data.project.items).toHaveLength(41)
   const markerIconIds = new Set(data.project.items.map(item => item.iconAssetId))
   const icons = data.assets.filter(entry => entry.asset.kind === 'icon' && markerIconIds.has(entry.asset.id))
   expect(icons).toHaveLength(39)
@@ -33,7 +33,7 @@ it('backs up and replaces old media once, preserving subsequent edits and fonts'
   await db.assets.bulkPut([{ ...metadata, id: 'old-image', kind: 'image' }, { ...metadata, id: 'font', kind: 'font' }])
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => template }))
   await migrateMapMarkers(db)
-  expect((await db.projects.get(old.id))?.items).toHaveLength(40)
+  expect((await db.projects.get(old.id))?.items).toHaveLength(41)
   expect(await db.assets.get('old-image')).toBeUndefined()
   expect(await db.assets.get('font')).toBeDefined()
   expect((await db.projectMigrations.toArray())[0].assets).toHaveLength(2)
