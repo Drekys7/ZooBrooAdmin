@@ -40,7 +40,7 @@ const categoryDefs = [
 project.categories = categoryDefs.map(([id, name, type, color, colorizeIcon], sortOrder) => ({
   id, name, type, color, colorizeIcon, sortOrder, visible: true,
   markerStyle: 'circle', iconScale: 0.75, iconContentScale: 0.95,
-  iconBackgroundColor: '#ffffff', imageMaskRadius: 100,
+  iconBackgroundColor: '#ffffff',
   outlineEnabled: false, shadowEnabled: true, shadowBlur: 6,
   shadowOpacity: 25, shadowColor: '#000000',
 }))

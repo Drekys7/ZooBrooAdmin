@@ -3,7 +3,6 @@ import {
   categoryIconBackgroundColor,
   categoryIconContentScale,
   categoryIconScale,
-  categoryImageMaskRadius,
   categoryMarkerStyle,
   categoryOutlineColor,
   categoryOutlineEnabled,
@@ -38,7 +37,6 @@ export function ItemMarkerOverrides({ item, category, onUpdate }: Props) {
     markerStyle: categoryMarkerStyle(category),
     iconScale: categoryIconScale(category),
     iconContentScale: categoryIconContentScale(category),
-    imageMaskRadius: categoryImageMaskRadius(category),
     iconBackgroundColor: categoryIconBackgroundColor(category),
     colorizeIcon: categoryColorizeIcon(category),
     outlineEnabled: categoryOutlineEnabled(category),
@@ -112,7 +110,6 @@ export function ItemMarkerOverrides({ item, category, onUpdate }: Props) {
         {row('markerStyle', 'Stil', <select disabled={!hasOverride('markerStyle')} value={valueFor('markerStyle')} onChange={(event) => setOverride('markerStyle', event.target.value as MarkerStyle)}>{(Object.keys(styleLabels) as MarkerStyle[]).map((style) => <option key={style} value={style}>{styleLabels[style]}</option>)}</select>)}
         {row('iconScale', 'Symbolgröße', range('iconScale', .5, 2, .05, '%'))}
         {row('iconContentScale', 'Bildgröße', range('iconContentScale', .5, 1.5, .05, '%'))}
-        {row('imageMaskRadius', 'Maskenradius', range('imageMaskRadius', 0, 100, 5, '%'))}
         {row('iconBackgroundColor', 'Symbolhintergrund', color('iconBackgroundColor'))}
         {row('colorizeIcon', 'Bild einfärben', bool('colorizeIcon'))}
         {row('outlineEnabled', 'Kontur anzeigen', bool('outlineEnabled'))}

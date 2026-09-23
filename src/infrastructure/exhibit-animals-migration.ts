@@ -10,7 +10,8 @@ export async function migrateExhibitAnimals(database: ZooMapLocalDatabase): Prom
   const template = StartupTemplateSchema.parse(await response.json())
   const groupIds = ['map128-aquarium', 'map128-terrarium', 'map128-spider-house']
   for (const groupId of groupIds) {
-    if (template.project.items.find(item => item.id === groupId)?.members?.length !== 5) throw new Error('Unvollständige Tiergruppe.')
+    const expectedMembers = groupId === 'map128-aquarium' ? 4 : 5
+    if (template.project.items.find(item => item.id === groupId)?.members?.length !== expectedMembers) throw new Error('Unvollständige Tiergruppe.')
   }
   const rows = template.assets.filter(entry => entry.asset.id.startsWith('exhibit-')).map(({asset, base64}) => {
     const data = Uint8Array.from(atob(base64), c => c.charCodeAt(0)).buffer

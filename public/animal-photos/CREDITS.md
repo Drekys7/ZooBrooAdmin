@@ -32,7 +32,7 @@ Jjron — [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/) — [S
 
 ## Fennec Fox
 
-Bachounda — [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0) — [Source](https://commons.wikimedia.org/wiki/File:Algerie_Blida_Chiffa_Source_de_Singes_(73)_Fenec.jpg). resize-compress.
+Sergey Galyonkin — [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/) — [Source](https://commons.wikimedia.org/wiki/File:2018-09-24_a_Vulpes_zerda_in_Tokyo.jpg). Resized and JPEG compressed; no crop.
 
 ## Meerkat
 
@@ -44,7 +44,7 @@ LufkinF — [CC0](https://creativecommons.org/publicdomain/zero/1.0/deed.en) —
 
 ## King Penguin
 
-This illustration was made by Samuel Blanc . If you plan on using it, an email to samuel @ sblanc.com would be greatly appreciated. — [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0) — [Source](https://commons.wikimedia.org/wiki/File:Manchot_royal_-_King_Penguin.jpg). resize-compress.
+dfaulder — [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) — [Source](https://commons.wikimedia.org/wiki/File:King_Penguins_(4313138090).jpg). Resized and JPEG compressed; no crop.
 
 ## Great White Pelican
 

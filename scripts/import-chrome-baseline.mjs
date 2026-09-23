@@ -4,10 +4,12 @@ import {createServer} from 'vite'
 
 const source = process.argv[2]
 if (!source) throw new Error('Supply the exported project JSON path')
-const server = await createServer({server: {middlewareMode: true}, appType: 'custom'})
+const baseline = process.argv[3] || 'chrome-2026-09-20'
+if (!/^[a-z0-9-]+$/.test(baseline)) throw new Error('Invalid baseline name')
+const server = await createServer({server: {middlewareMode: true}, appType: 'custom', optimizeDeps: {noDiscovery: true, include: []}})
 try {
   const {StartupTemplateSchema} = await server.ssrLoadModule('/src/application/startup-template.ts')
-  const exported = JSON.parse(readFileSync(source, 'utf8'))
+  const exported = JSON.parse(readFileSync(source, 'utf8'), (key, value) => key === 'imageMaskRadius' ? undefined : value)
   const {fontFiles = [], ...project} = exported
   if (fontFiles.length) throw new Error('Import embedded fonts before installing this baseline')
   const path = 'public/startup-template.json'
@@ -26,10 +28,10 @@ try {
     if (Buffer.from(base64, 'base64').length !== asset.size) throw new Error(`Corrupt asset: ${asset.id}`)
   }
   mkdirSync('backups', {recursive: true})
-  const backup = 'backups/startup-template-before-chrome-baseline.json'
+  const backup = `backups/startup-template-before-${baseline}.json`
   if (!existsSync(backup)) copyFileSync(path, backup)
   mkdirSync('prepared-assets/baselines', {recursive: true})
-  copyFileSync(source, 'prepared-assets/baselines/chrome-2026-09-20.json')
+  copyFileSync(source, `prepared-assets/baselines/${baseline}.json`)
   writeFileSync(path, JSON.stringify(next))
   console.log(`Installed exact exported project: ${project.items.length} markers; ${next.assets.length} assets retained.`)
 } finally {

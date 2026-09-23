@@ -10,13 +10,14 @@ const template = StartupTemplateSchema.parse(JSON.parse(raw))
 const ids = ['map128-aquarium','map128-terrarium','map128-spider-house']
 const databases: ZooMapLocalDatabase[] = []
 afterEach(()=>{databases.forEach(db=>db.close());vi.unstubAllGlobals()})
-it('contains three six-animal groups with individual icons, JPEG photos and bilingual copy',()=>{
+it('contains the five-animal aquarium and two six-animal groups with individual icons, photos and bilingual copy',()=>{
   for(const id of ids){
     const root = template.project.items.find(i=>i.id===id)!
-    expect(root.iconAssetId).toBe(id)
-    expect(root.members).toHaveLength(5)
+    const isAquarium = id === 'map128-aquarium'
+    expect(root.iconAssetId).toBe(isAquarium ? 'exhibit-icon-clownfish-v1' : id)
+    expect(root.members).toHaveLength(isAquarium ? 4 : 5)
     const entries=groupEntries(root)
-    expect(new Set(entries.map(i=>i.iconAssetId)).size).toBe(6)
+    expect(new Set(entries.map(i=>i.iconAssetId)).size).toBe(isAquarium ? 5 : 6)
     for(const item of entries){
       expect(item.facts).toHaveLength(3)
       for(const locale of ['de','en']){
@@ -50,7 +51,7 @@ it('migrates once with a recovery snapshot and preserves locations, unrelated co
   await migrateExhibitAnimals(db)
   const after=(await db.projects.get(before.id))!
   expect(after.items.find(i=>i.id===ids[0])!.position).toEqual(root.position)
-  expect(after.items.find(i=>i.id===ids[0])!.members).toHaveLength(5)
+  expect(after.items.find(i=>i.id===ids[0])!.members).toHaveLength(4)
   expect(after.items[0]).toEqual(before.items[0])
   expect(await db.assets.count()).toBe(35)
   expect((await db.projectMigrations.toArray())[0].project).toEqual(before)

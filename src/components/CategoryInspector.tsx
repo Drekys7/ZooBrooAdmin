@@ -5,7 +5,6 @@ import {
   categoryIconScale,
   categoryIconContentScale,
   categoryIconBackgroundColor,
-  categoryImageMaskRadius,
   categoryColorizeIcon,
   categoryMarkerStyle,
   categoryOutlineColor,
@@ -164,38 +163,6 @@ function IconContentScaleField({
   )
 }
 
-function ImageMaskRadiusField({
-  value,
-  mixed,
-  onChange,
-}: {
-  value: number
-  mixed: boolean
-  onChange: (value: number) => void
-}) {
-  const [draft, setDraft] = useState(value)
-  useEffect(() => setDraft(value), [value])
-  return (
-    <label className="field category-scale-field">
-      <span><span>Maskenradius</span><strong>{mixed && draft === value ? 'Gemischt' : `${Math.round(draft)}%`}</strong></span>
-      <input
-        type="range"
-        min="0"
-        max="100"
-        step="5"
-        value={draft}
-        onChange={(event) => {
-          const next = Number(event.target.value)
-          setDraft(next)
-          onChange(next)
-        }}
-        aria-label="Maskenradius"
-      />
-      <small><span>0%</span><span>100%</span></small>
-    </label>
-  )
-}
-
 function ShadowRangeField({
   label,
   value,
@@ -262,8 +229,6 @@ export function CategoryInspector({
   const commonScale = scalesMatch && selectedCategories[0] ? categoryIconScale(selectedCategories[0]) : 1
   const contentScalesMatch = selectedCategories.every((entry) => categoryIconContentScale(entry) === categoryIconContentScale(selectedCategories[0]!))
   const commonContentScale = contentScalesMatch && selectedCategories[0] ? categoryIconContentScale(selectedCategories[0]) : 1
-  const maskRadiiMatch = selectedCategories.every((entry) => categoryImageMaskRadius(entry) === categoryImageMaskRadius(selectedCategories[0]!))
-  const commonMaskRadius = maskRadiiMatch && selectedCategories[0] ? categoryImageMaskRadius(selectedCategories[0]) : 100
   const backgroundColorsMatch = selectedCategories.every((entry) => categoryIconBackgroundColor(entry) === categoryIconBackgroundColor(selectedCategories[0]!))
   const commonBackgroundColor = backgroundColorsMatch && selectedCategories[0] ? categoryIconBackgroundColor(selectedCategories[0]) : '#FFFFFF'
   const colorizeIconsMatch = selectedCategories.every((entry) => categoryColorizeIcon(entry) === categoryColorizeIcon(selectedCategories[0]!))
@@ -332,11 +297,6 @@ export function CategoryInspector({
             value={commonContentScale}
             mixed={!contentScalesMatch}
             onChange={(iconContentScale) => update({ iconContentScale })}
-          />
-          <ImageMaskRadiusField
-            value={commonMaskRadius}
-            mixed={!maskRadiiMatch}
-            onChange={(imageMaskRadius) => update({ imageMaskRadius })}
           />
 
           <label className="field color-field">

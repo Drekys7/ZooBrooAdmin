@@ -2,7 +2,7 @@ import {StartupTemplateSchema} from '../application/startup-template'
 import type {ZooMapLocalDatabase} from './local-database'
 
 // TEST PHASE ONLY: increment deliberately to discard every browser's local edits again.
-export const TEST_RELEASE_REVISION = '2026-09-20-chrome-baseline-v2'
+export const TEST_RELEASE_REVISION = '2026-09-24-approved-baseline-v1'
 export const TEST_RELEASE_RESET_ID = `test-release-reset:${TEST_RELEASE_REVISION}`
 
 export async function resetTestRelease(database: ZooMapLocalDatabase): Promise<void> {

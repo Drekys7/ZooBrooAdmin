@@ -19,7 +19,6 @@ import {
   mapViewSettingsForMode,
   navigationLimitPoints,
   navigationPreviewPoint,
-  imageMaskRadiusToCssRadius,
   normalizePoint,
   positionToLatLng,
   previewMapSetting,
@@ -145,11 +144,6 @@ describe('MapCanvas marker interaction', () => {
 });
 
 describe('MapCanvas rendering', () => {
-  it('converts the category mask percentage to a centered circle radius', () => {
-    expect(imageMaskRadiusToCssRadius(100)).toBe('50%')
-    expect(imageMaskRadiusToCssRadius(55)).toBe('27.5%')
-    expect(imageMaskRadiusToCssRadius(0)).toBe('0%')
-  })
 
   it('converts category shadow settings to a browser color', () => {
     expect(markerShadowColor('#123456', 40)).toBe('rgba(18, 52, 86, 0.4)')

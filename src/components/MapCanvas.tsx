@@ -8,7 +8,6 @@ import {
   categoryIconContentScale,
   categoryIconBackgroundColor,
   categoryColorizeIcon,
-  categoryImageMaskRadius,
   categoryMarkerStyle,
   categoryOutlineColor,
   categoryOutlineEnabled,
@@ -420,10 +419,6 @@ export function markerTooltipAnchor(markerStyle: MarkerStyle, iconHeight: number
   return [0, markerStyle === 'pin' ? -iconHeight : -(iconHeight / 2)]
 }
 
-export function imageMaskRadiusToCssRadius(value: number): string {
-  const normalized = Number.isFinite(value) ? Math.min(100, Math.max(0, value)) : 100
-  return `${normalized / 2}%`
-}
 
 export function markerShadowColor(color: string, opacity: number, enabled = true): string {
   const match = /^#([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i.exec(color)
@@ -485,7 +480,6 @@ function createMarkerIcon(
   const markerStyle: MarkerStyle = effectiveCategory ? categoryMarkerStyle(effectiveCategory) : isAnimal ? 'image' : 'circle'
   const iconScale = effectiveCategory ? categoryIconScale(effectiveCategory) : 1
   const iconContentScale = effectiveCategory ? categoryIconContentScale(effectiveCategory) : 1
-  const imageMaskRadius = effectiveCategory ? categoryImageMaskRadius(effectiveCategory) : 100
   const iconBackgroundColor = effectiveCategory ? categoryIconBackgroundColor(effectiveCategory) : '#FFFFFF'
   const colorizeIcon = effectiveCategory ? categoryColorizeIcon(effectiveCategory) : false
   const outlineEnabled = effectiveCategory ? categoryOutlineEnabled(effectiveCategory) : false
@@ -504,7 +498,6 @@ function createMarkerIcon(
   body.style.setProperty('--marker-width', `${bodyWidth}px`);
   body.style.setProperty('--marker-height', `${bodyHeight}px`);
   body.style.setProperty('--marker-content-scale', `${iconContentScale}`);
-  body.style.setProperty('--marker-image-mask-radius', imageMaskRadiusToCssRadius(imageMaskRadius));
   body.style.setProperty('--marker-background-color', safeMarkerColor(iconBackgroundColor));
   body.style.setProperty('--marker-outline-width', `${outlineWidth}px`);
   body.style.setProperty('--marker-outline-color', safeMarkerColor(outlineColor));
@@ -637,7 +630,6 @@ function categorySignature(category: MapCategory | undefined): string {
     categoryIconContentScale(category),
     categoryIconBackgroundColor(category),
     categoryColorizeIcon(category),
-    categoryImageMaskRadius(category),
     categoryOutlineEnabled(category),
     categoryOutlineWidth(category),
     categoryOutlineColor(category),

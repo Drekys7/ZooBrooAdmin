@@ -38,7 +38,6 @@ describe('PublishedZooMap public contract', () => {
     expect(snapshot.categories.map((category) => category.markerStyle)).toEqual(['image', 'circle'])
     expect(snapshot.categories.map((category) => category.iconScale)).toEqual([1, 1.2])
     expect(snapshot.categories.map((category) => category.iconContentScale)).toEqual([1, 0.9])
-    expect(snapshot.categories.map((category) => category.imageMaskRadius)).toEqual([100, 100])
     expect(snapshot.categories.map((category) => category.iconBackgroundColor)).toEqual(['#FFFFFF', '#FFF4E8'])
     expect(snapshot.categories.map((category) => category.colorizeIcon)).toEqual([false, true])
     expect(snapshot.categories.map((category) => category.outlineEnabled)).toEqual([true, false])

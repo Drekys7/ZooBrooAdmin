@@ -39,6 +39,7 @@ describe('ItemMarkerOverrides', () => {
     render(<ItemMarkerOverrides item={{ ...item, iconAssetId: 'own-icon' }} category={category} onUpdate={onUpdate} />)
 
     fireEvent.click(screen.getByText('Individuelle Einstellungen'))
+    expect(screen.queryByText('Maskenradius')).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('checkbox', { name: 'Farbe überschreiben' }))
 
     expect(onUpdate).toHaveBeenCalledWith({

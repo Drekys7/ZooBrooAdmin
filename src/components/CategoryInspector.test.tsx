@@ -12,7 +12,6 @@ const category: MapCategory = {
   markerStyle: 'image',
   iconScale: 1,
   iconContentScale: 1,
-  imageMaskRadius: 100,
   iconBackgroundColor: '#FFFFFF',
   colorizeIcon: false,
   outlineEnabled: true,
@@ -125,7 +124,7 @@ describe('CategoryInspector', () => {
     expect(onUpdateCategory).toHaveBeenCalledWith('animals', { iconBackgroundColor: '#abcdef' })
   })
 
-  it('updates the animal image mask radius immediately in five-percent steps', () => {
+  it('does not expose a mask radius setting', () => {
     const onUpdateCategory = vi.fn()
     render(
       <CategoryInspector
@@ -141,12 +140,7 @@ describe('CategoryInspector', () => {
       />,
     )
 
-    const slider = screen.getByRole('slider', { name: 'Maskenradius' })
-    expect(slider).toHaveAttribute('step', '5')
-    fireEvent.change(slider, { target: { value: '65' } })
-
-    expect(screen.getByText('65%')).toBeInTheDocument()
-    expect(onUpdateCategory).toHaveBeenCalledWith('animals', { imageMaskRadius: 65 })
+    expect(screen.queryByRole('slider', { name: 'Maskenradius' })).not.toBeInTheDocument()
   })
 
   it('updates category shadow settings immediately', () => {

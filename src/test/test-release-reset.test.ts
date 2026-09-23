@@ -3,6 +3,7 @@ import {afterEach, expect, it, vi} from 'vitest'
 import {StartupTemplateSchema} from '../application/startup-template'
 import {ZooMapLocalDatabase} from '../infrastructure/local-database'
 import {resetTestRelease, TEST_RELEASE_RESET_ID} from '../infrastructure/test-release-reset'
+import {createLocalApplication} from '../infrastructure/composition-root'
 const raw=JSON.parse(readFileSync('public/startup-template.json','utf8'))
 const template=StartupTemplateSchema.parse(raw)
 const databases:ZooMapLocalDatabase[]=[]
@@ -65,4 +66,20 @@ it('installs the same release into an empty browser',async()=>{
  await resetTestRelease(db)
  expect(await db.projects.toArray()).toEqual([template.project])
  expect(await db.projectMigrations.get(TEST_RELEASE_RESET_ID)).toBeDefined()
+})
+
+it('upgrades the previous release through the application and preserves edits on later starts', async () => {
+ const {db,old}=await setup();mockFetch()
+ await db.projectMigrations.put({id:'test-release-reset:2026-09-20-chrome-baseline-v2',project:old,assets:[],createdAt:old.createdAt})
+ const application=createLocalApplication(db.name)
+ try {
+  await application.migrateMapMarkers()
+  expect(await db.projects.toArray()).toEqual([template.project])
+  const edited=structuredClone(template.project)
+  edited.items.find(item=>item.id==='map128-aquarium')!.facts[1].value='Later lifespan edit'
+  await db.projects.put(edited)
+  await application.migrateMapMarkers()
+  expect(await db.projects.get(edited.id)).toEqual(edited)
+  expect(fetch).toHaveBeenCalledTimes(1)
+ } finally {application.close()}
 })

@@ -1,0 +1,19 @@
+{
+  "map128-aquarium": { "lifespan": ["bis 20 Jahre", "up to 20 years"], "weight": ["ca. 15 g", "approx. 15 g"] },
+  "exhibit-animal-yellow-tang": { "lifespan": ["bis 30 Jahre", "up to 30 years"], "weight": ["ca. 30–230 g", "approx. 30–230 g"] },
+  "exhibit-animal-lionfish": { "lifespan": ["bis 15 Jahre", "up to 15 years"], "weight": ["bis ca. 1,2 kg", "up to approx. 1.2 kg"] },
+  "exhibit-animal-seahorse": { "lifespan": ["ca. 1–4 Jahre", "approx. 1–4 years"], "weight": ["Nicht gesichert", "Not established"] },
+  "exhibit-animal-cardinalfish": { "lifespan": ["bis 5 Jahre", "up to 5 years"], "weight": ["bis ca. 11 g", "up to approx. 11 g"] },
+  "map128-terrarium": { "lifespan": ["bis 20 Jahre", "up to 20 years"], "weight": ["ca. 200–500 g", "approx. 200–500 g"] },
+  "exhibit-animal-leopard-gecko": { "lifespan": ["bis 20 Jahre", "up to 20 years"], "weight": ["ca. 80 g", "approx. 80 g"] },
+  "exhibit-animal-bearded-dragon": { "lifespan": ["bis 20 Jahre", "up to 20 years"], "weight": ["ca. 400 g", "approx. 400 g"] },
+  "exhibit-animal-ball-python": { "lifespan": ["bis 30 Jahre", "up to 30 years"], "weight": ["ca. 1–2 kg", "approx. 1–2 kg"] },
+  "exhibit-animal-chameleon": { "lifespan": ["ca. 5–7 Jahre", "approx. 5–7 years"], "weight": ["85–170 g", "85–170 g"] },
+  "exhibit-animal-tortoise": { "lifespan": ["bis 50 Jahre", "up to 50 years"], "weight": ["bis ca. 9 kg", "up to approx. 9 kg"] },
+  "map128-spider-house": { "lifespan": ["bis 20 Jahre (♀)", "up to 20 years (♀)"], "weight": ["55–85 g", "55–85 g"] },
+  "exhibit-animal-redknee": { "lifespan": ["bis 30 Jahre (♀)", "up to 30 years (♀)"], "weight": ["Nicht gesichert", "Not established"] },
+  "exhibit-animal-curlyhair": { "lifespan": ["bis 30 Jahre (♀)", "up to 30 years (♀)"], "weight": ["bis ca. 57 g (♀)", "up to approx. 57 g (♀)"] },
+  "exhibit-animal-greenbottle": { "lifespan": ["bis 14 Jahre (♀)", "up to 14 years (♀)"], "weight": ["ca. 14 g", "approx. 14 g"] },
+  "exhibit-animal-pinktoe": { "lifespan": ["bis 15 Jahre (♀)", "up to 15 years (♀)"], "weight": ["Nicht gesichert", "Not established"] },
+  "exhibit-animal-salmonpink": { "lifespan": ["bis 15 Jahre (♀)", "up to 15 years (♀)"], "weight": ["ca. 100 g (♀)", "approx. 100 g (♀)"] }
+}

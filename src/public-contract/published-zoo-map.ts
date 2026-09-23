@@ -75,7 +75,15 @@ export const NormalizedPositionSchema = z
   })
   .strict()
 
-export const PublishedCategorySchema = z
+// Accept older snapshots without retaining the retired marker setting.
+function discardLegacyMaskRadius(input: unknown): unknown {
+  if (!input || typeof input !== 'object' || Array.isArray(input)) return input
+  const clean = {...input} as Record<string, unknown>
+  delete clean.imageMaskRadius
+  return clean
+}
+
+export const PublishedCategorySchema = z.preprocess(discardLegacyMaskRadius, z
   .object({
     id: idSchema,
     name: z.string().trim().min(1),
@@ -85,7 +93,6 @@ export const PublishedCategorySchema = z
     markerStyle: MarkerStyleSchema.optional(),
     iconScale: z.number().finite().min(0.5).max(2).optional(),
     iconContentScale: z.number().finite().min(0.5).max(1.5).optional(),
-    imageMaskRadius: z.number().finite().min(0).max(100).optional(),
     iconBackgroundColor: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
     colorizeIcon: z.boolean().optional(),
     outlineEnabled: z.boolean().optional(),
@@ -99,7 +106,7 @@ export const PublishedCategorySchema = z
     sortOrder: z.number().int(),
     translations: z.record(localeCodeSchema, z.object({ name: z.string().optional() })).optional(),
   })
-  .strict()
+  .strict())
 
 export const PublishedFactSchema = z
   .object({
@@ -111,13 +118,12 @@ export const PublishedFactSchema = z
   })
   .strict()
 
-export const PublishedMarkerOverridesSchema = z
+export const PublishedMarkerOverridesSchema = z.preprocess(discardLegacyMaskRadius, z
   .object({
     color: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
     markerStyle: MarkerStyleSchema.optional(),
     iconScale: z.number().finite().min(0.5).max(2).optional(),
     iconContentScale: z.number().finite().min(0.5).max(1.5).optional(),
-    imageMaskRadius: z.number().finite().min(0).max(100).optional(),
     iconBackgroundColor: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
     colorizeIcon: z.boolean().optional(),
     outlineEnabled: z.boolean().optional(),
@@ -128,7 +134,7 @@ export const PublishedMarkerOverridesSchema = z
     shadowOpacity: z.number().finite().min(0).max(100).optional(),
     shadowColor: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
   })
-  .strict()
+  .strict())
 
 const PublishedMapItemBaseSchema = z
   .object({

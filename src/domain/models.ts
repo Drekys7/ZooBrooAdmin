@@ -76,7 +76,6 @@ export const MapCategorySchema = z.object({
   markerStyle: MarkerStyleSchema.optional(),
   iconScale: z.number().finite().min(0.5).max(2).optional(),
   iconContentScale: z.number().finite().min(0.5).max(1.5).optional(),
-  imageMaskRadius: z.number().finite().min(0).max(100).optional(),
   iconBackgroundColor: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
   colorizeIcon: z.boolean().optional(),
   outlineEnabled: z.boolean().optional(),
@@ -96,7 +95,6 @@ export const MarkerOverridesSchema = z.object({
   markerStyle: MarkerStyleSchema.optional(),
   iconScale: z.number().finite().min(0.5).max(2).optional(),
   iconContentScale: z.number().finite().min(0.5).max(1.5).optional(),
-  imageMaskRadius: z.number().finite().min(0).max(100).optional(),
   iconBackgroundColor: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
   colorizeIcon: z.boolean().optional(),
   outlineEnabled: z.boolean().optional(),
@@ -294,9 +292,6 @@ export function categoryIconContentScale(category: Pick<MapCategory, "iconConten
   return category.iconContentScale ?? 1;
 }
 
-export function categoryImageMaskRadius(category: Pick<MapCategory, "imageMaskRadius">): number {
-  return category.imageMaskRadius ?? 100;
-}
 
 export function categoryIconBackgroundColor(category: Pick<MapCategory, "iconBackgroundColor">): string {
   return category.iconBackgroundColor ?? "#FFFFFF";
